@@ -6,6 +6,7 @@ import Enterprise from './modules/user/pages/Enterprise';
 import Login from './modules/user/pages/Login';
 import Dashboard from './modules/user/pages/Dashboard';
 import PickPlan from './modules/user/pages/PickPlan';
+import Subscribe from './modules/user/pages/Subscribe';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/dashboard/plan" element={<PickPlan />} />
+        <Route path="/dashboard/plan/subscribe" element={<Subscribe />} />
         <Route path="/dashboard/:tab/*" element={<Dashboard />} />
       </Routes>
     </Router>

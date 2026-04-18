@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import logo from '../../../assets/storify-logo.png';
 
-const DashboardSidebar = ({ isOpen, setIsOpen }) => {
+const DashboardSidebar = ({ isOpen, setIsOpen, isChatOpen, setIsChatOpen }) => {
     const location = useLocation();
     
     const isActive = (id) => {
@@ -62,9 +62,13 @@ const DashboardSidebar = ({ isOpen, setIsOpen }) => {
                 onClick={() => setIsOpen(false)}
             />
 
-            <aside className={`w-64 bg-[#0B0F14] border-r border-white/5 flex flex-col h-screen fixed left-0 top-0 z-[70] overflow-y-auto transition-transform duration-300 transform ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} shadow-2xl lg:shadow-none`}>
+            <aside className={`w-64 bg-[#f1f1f1] border-r border-gray-200 flex flex-col h-screen fixed left-0 top-0 z-[70] overflow-y-auto transition-transform duration-300 transform ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} shadow-2xl lg:shadow-none`}>
             <div className="p-6 mb-2">
-                <Link to="/dashboard" className="flex items-center">
+                <Link 
+                    to="/dashboard" 
+                    onClick={() => setIsChatOpen(false)}
+                    className="flex items-center"
+                >
                     <img src={logo} alt="Storify" className="h-8 w-auto" />
                 </Link>
             </div>
@@ -75,16 +79,17 @@ const DashboardSidebar = ({ isOpen, setIsOpen }) => {
                         <div key={item.id}>
                             <Link
                                 to={item.id === 'home' ? '/dashboard' : `/dashboard/${item.id}`}
+                                onClick={() => setIsChatOpen(false)}
                                 className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-bold transition-all group ${
                                     isActive(item.id)
-                                        ? 'bg-storify/10 text-storify-glow border border-storify/20 shadow-[0_0_15px_rgba(20,184,166,0.1)]'
-                                        : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                                        ? 'bg-white text-black shadow-sm'
+                                        : 'text-[#5c5f62] hover:bg-black/5 hover:text-black font-semibold'
                                 }`}
                             >
                                 <svg className={`w-5 h-5 transition-colors ${
                                     isActive(item.id)
-                                        ? 'text-storify-glow'
-                                        : 'text-gray-500 group-hover:text-white'
+                                        ? 'text-black'
+                                        : 'text-[#5c5f62] group-hover:text-black'
                                 }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
                                 </svg>
@@ -140,8 +145,9 @@ const DashboardSidebar = ({ isOpen, setIsOpen }) => {
                             <Link
                                 key={item.id}
                                 to={`/dashboard/${item.id}`}
-                                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-bold transition-all transition-all ${
-                                    isActive(item.id) ? 'bg-storify/10 text-storify-glow' : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                                onClick={() => setIsChatOpen(false)}
+                                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-bold transition-all ${
+                                    isActive(item.id) ? 'bg-white text-black shadow-sm' : 'text-[#5c5f62] hover:bg-black/5 hover:text-black'
                                 }`}
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -161,29 +167,52 @@ const DashboardSidebar = ({ isOpen, setIsOpen }) => {
                         </button>
                     </div>
                     <button className="w-full flex items-center gap-3 px-3 py-1.5 rounded-lg text-sm font-semibold text-[#5c5f62] hover:bg-[#e4e3e6] transition-all">
-                        <div className="w-5 h-5 flex items-center justify-center bg-[#e4e3e6] rounded">
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" /></svg>
+                        <div className="w-5 h-5 flex items-center justify-center bg-gray-200 rounded">
+                            <svg className="w-3 h-3 text-[#5c5f62]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" /></svg>
                         </div>
-                        Add apps
+                        Add
                     </button>
                 </div>
             </nav>
 
-            <div className="p-4 border-t border-white/5 space-y-1">
-                <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-bold text-gray-400 hover:bg-white/5 hover:text-white transition-all">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                    Settings
-                </button>
-                <div className="p-4 bg-[#111827] border border-white/5 rounded-2xl text-white mt-4 relative overflow-hidden group cursor-pointer hover:border-white/10 transition-all shadow-2xl teal-glow">
+            <div className="p-4 border-t border-gray-200 space-y-4">
+                <div className="space-y-1">
+                    <div className="px-3 mb-2 flex items-center justify-between group cursor-pointer">
+                        <span className="text-[10px] font-black text-gray-500 tracking-[0.2em] uppercase">Sidekick conversations</span>
+                        <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                    </div>
+                    <div className="space-y-0.5">
+                        <button 
+                            onClick={() => setIsChatOpen(true)}
+                            className={`w-full flex items-center gap-3 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all ${
+                                isChatOpen ? 'bg-white text-black shadow-sm' : 'text-[#5c5f62] hover:bg-black/5'
+                            }`}
+                        >
+                            Hello
+                        </button>
+                        <button 
+                            onClick={() => setIsChatOpen(true)}
+                            className="w-full flex items-center gap-3 px-3 py-1.5 rounded-lg text-sm font-semibold text-[#5c5f62] hover:bg-black/5 text-left truncate"
+                        >
+                            Creating a memorable store na...
+                        </button>
+                    </div>
+                </div>
+
+                <div className="space-y-1">
+                    <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-bold text-[#5c5f62] hover:bg-black/5 hover:text-black transition-all">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                        Settings
+                    </button>
+                </div>
+                <div className="p-4 bg-[#0B0F14] rounded-xl text-white mt-4 relative overflow-hidden group transition-all shadow-xl">
                     <div className="relative z-10">
-                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-1">Trial ends in 3 days</p>
-                        <p className="text-sm font-bold mb-4">Subscribe for <span className="text-storify-glow">₹20</span></p>
-                        <Link to="/dashboard/plan" className="w-full py-2.5 teal-gradient text-white text-xs font-black uppercase tracking-widest rounded-xl hover:opacity-90 transition-all block text-center shadow-lg active:scale-95">
+                        <p className="text-[10px] font-black text-white/50 uppercase tracking-[0.2em] mb-1">Ends soon</p>
+                        <p className="text-sm font-bold mb-4">Subscribe for ₹20</p>
+                        <Link to="/dashboard/plan" className="w-full py-2 bg-white text-black text-xs font-black uppercase tracking-widest rounded-lg hover:bg-gray-100 transition-all block text-center shadow-lg active:scale-95">
                             Subscribe
                         </Link>
                     </div>
-                    {/* Abstract background flare */}
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-storify/10 blur-[40px] rounded-full -mr-12 -mt-12 group-hover:bg-storify/20 transition-all"></div>
                 </div>
             </div>
         </aside>

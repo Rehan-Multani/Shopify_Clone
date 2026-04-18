@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import logo from '../../../assets/storify-logo.png';
 import { Link, useNavigate } from 'react-router-dom';
 
 const PickPlan = () => {
     const navigate = useNavigate();
+    const [selectedPlanName, setSelectedPlanName] = useState('Basic');
 
     const benefits = [
         "World's best checkout",
@@ -76,32 +77,43 @@ const PickPlan = () => {
         }
     ];
 
+    const handleSelectPlan = (plan) => {
+        navigate('/dashboard/plan/subscribe', { 
+            state: { 
+                plan: {
+                    name: plan.name,
+                    price: plan.trialPrice ? plan.trialPrice : plan.startingAt
+                } 
+            } 
+        });
+    };
+
     return (
-        <div className="min-h-screen bg-[#0B0F14] flex flex-col pt-4 pb-12 px-4 sm:px-6 lg:px-8 font-sans">
+        <div className="min-h-screen bg-[#f6f6f7] flex flex-col pt-4 pb-12 px-4 sm:px-6 lg:px-8 font-sans text-stone-900">
             {/* Header */}
             <div className="max-w-7xl mx-auto w-full flex items-center justify-between mb-8">
-                <div className="flex items-center gap-2">
-                    <img src={logo} alt="Storify" className="h-4 w-auto" />
-                    <span className="text-gray-600 font-normal mr-1">›</span>
-                    <span className="text-base text-white font-black uppercase tracking-widest">Pick your plan</span>
+                <div className="flex items-center gap-2 group cursor-pointer" onClick={() => navigate('/dashboard')}>
+                    <img src={logo} alt="Storify" className="h-4 w-auto grayscale contrast-125 group-hover:grayscale-0 transition-all" />
+                    <span className="text-gray-400 font-normal mr-1">›</span>
+                    <span className="text-base text-[#202223] font-black uppercase tracking-widest group-hover:text-black">Pick your plan</span>
                 </div>
                 <button 
                     onClick={() => navigate('/dashboard')}
-                    className="p-2 hover:bg-white/5 rounded-lg transition-all text-gray-500 hover:text-white"
+                    className="p-2 hover:bg-white rounded-lg transition-all text-gray-500 hover:text-black border border-transparent hover:border-gray-200 shadow-sm hover:shadow-md"
                 >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
             </div>
-
-            {/* Sub-headline & Benefits */}
+            
+            {/* ... benefits section remains the same ... */}
             <div className="max-w-4xl mx-auto text-center mb-12">
-                <h2 className="text-xl sm:text-2xl font-black text-white mb-8 tracking-tight">Everything you need to run your business</h2>
+                <h2 className="text-xl sm:text-2xl font-black text-[#202223] mb-8 tracking-tight">Everything you need to run your business</h2>
                 <div className="flex flex-wrap justify-center gap-x-8 gap-y-3">
                     {benefits.map((benefit, i) => (
-                        <div key={i} className="flex items-center gap-2 text-xs font-bold text-gray-500 uppercase tracking-widest">
-                            <svg className="w-4 h-4 text-storify-glow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                        <div key={i} className="flex items-center gap-2 text-xs font-bold text-[#5c5f62] uppercase tracking-widest">
+                            <svg className="w-4 h-4 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
                                 <polyline points="20 6 9 17 4 12"></polyline>
                             </svg>
                             {benefit}
@@ -115,57 +127,74 @@ const PickPlan = () => {
                 {plans.map((plan, i) => (
                     <div 
                         key={i} 
-                        className={`bg-[#111827] rounded-[32px] overflow-hidden flex flex-col relative transition-all duration-500 hover:shadow-[0_20px_60px_rgba(20,184,166,0.1)] border border-white/5 hover:border-storify/20 ${plan.popular ? 'teal-glow' : ''}`}
+                        onClick={() => setSelectedPlanName(plan.name)}
+                        className={`bg-white rounded-[24px] overflow-hidden flex flex-col relative transition-all duration-500 cursor-pointer ${
+                            selectedPlanName === plan.name 
+                                ? 'ring-[3px] ring-black shadow-2xl scale-[1.02] z-10' 
+                                : 'hover:shadow-xl border border-gray-200'
+                        }`}
                     >
-                        {plan.popular && (
-                            <div className="teal-gradient text-white text-[10px] font-black py-2 text-center uppercase tracking-[0.2em] shadow-lg">
-                                Most popular
+                        {(plan.popular || selectedPlanName === plan.name) && (
+                            <div className={`text-[10px] font-black py-2 text-center uppercase tracking-[0.2em] ${
+                                selectedPlanName === plan.name ? 'bg-black text-white' : 'bg-gray-100 text-gray-500'
+                            }`}>
+                                {plan.popular ? 'Most popular' : '\u00A0'}
                             </div>
                         )}
                         
-                        <div className="p-10 flex flex-col h-full">
-                            <div className="mb-10 text-center">
-                                <h3 className="text-3xl font-black text-white mb-2 tracking-tight">{plan.name}</h3>
-                                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">{plan.tagline}</p>
+                        <div className="p-8 flex flex-col h-full">
+                            <div className="mb-8 text-center text-[#202223]">
+                                <h3 className="text-2xl font-black mb-1 tracking-tight">{plan.name}</h3>
+                                <p className="text-[10px] font-bold text-[#5c5f62] uppercase tracking-[0.15em]">{plan.tagline}</p>
                             </div>
 
-                            <div className="mb-10 text-center">
+                            <div className="mb-8 text-center">
                                 {plan.originalPrice && (
-                                    <div className="text-3xl text-gray-600 line-through font-bold decoration-[3px] opacity-50 mb-1">₹{plan.originalPrice}</div>
+                                    <div className="text-2xl text-gray-300 line-through font-bold decoration-[2px] mb-1">₹{plan.originalPrice}</div>
                                 )}
                                 {plan.trialPrice ? (
                                     <div className="flex flex-col items-center gap-1">
-                                        <div className="flex items-baseline gap-2">
-                                            <span className="text-5xl font-black text-white">₹{plan.trialPrice}</span>
-                                            <span className="text-[10px] text-storify-glow font-black uppercase tracking-widest">INR/mo</span>
+                                        <div className="flex items-baseline gap-1">
+                                            <span className="text-4xl font-black text-[#202223]">₹{plan.trialPrice}</span>
+                                            <span className="text-[10px] text-[#202223] font-black uppercase tracking-widest">INR/mo</span>
                                         </div>
-                                        <div className="text-[9px] text-gray-600 font-black uppercase tracking-[0.1em] mt-2 leading-relaxed">
+                                        <div className="text-[9px] text-[#5c5f62] font-black uppercase tracking-[0.1em] mt-1">
                                             For first 3 months
                                         </div>
                                     </div>
                                 ) : (
                                     <div className="py-2">
-                                        <p className="text-[10px] font-black text-gray-600 mb-2 leading-none uppercase tracking-widest">Starting at</p>
-                                        <div className="flex items-baseline justify-center gap-2">
-                                            <span className="text-4xl font-black text-white">₹{plan.startingAt}</span>
-                                            <span className="text-[10px] text-gray-600 font-bold uppercase">/mo</span>
+                                        <p className="text-[10px] font-black text-[#5c5f62] mb-1 leading-none uppercase tracking-widest">Starting at</p>
+                                        <div className="flex items-baseline justify-center gap-1">
+                                            <span className="text-3xl font-black text-[#202223]">₹{plan.startingAt}</span>
+                                            <span className="text-[10px] text-[#5c5f62] font-bold uppercase">/mo</span>
                                         </div>
                                     </div>
                                 )}
                             </div>
 
-                            <button className={`w-full py-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all mb-10 active:scale-95 shadow-xl ${plan.popular ? 'teal-gradient text-white' : 'bg-white/5 text-white hover:bg-white/10 border border-white/5'}`}>
+                            <button 
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleSelectPlan(plan);
+                                }}
+                                className={`w-full py-3.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all mb-8 active:scale-95 ${
+                                    selectedPlanName === plan.name 
+                                        ? 'bg-black text-white hover:opacity-90 shadow-lg shadow-black/10' 
+                                        : 'bg-white text-black border border-gray-200 hover:bg-gray-50 hover:shadow-md'
+                                }`}
+                            >
                                 Select {plan.name}
                             </button>
 
                             <div className="flex-grow">
-                                <ul className="space-y-4">
+                                <ul className="space-y-3">
                                     {plan.features.map((feature, fIdx) => (
-                                        <li key={fIdx} className="flex gap-3 text-xs leading-relaxed text-gray-400 font-medium">
-                                            <svg className="w-4 h-4 text-storify flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                                        <li key={fIdx} className="flex gap-3 text-[11px] leading-relaxed text-[#5c5f62] font-semibold">
+                                            <svg className="w-3.5 h-3.5 text-black flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
                                                 <polyline points="20 6 9 17 4 12"></polyline>
                                             </svg>
-                                            <span className={feature.includes('Fully customizable') || feature.includes('Sell wholesale') || feature.includes('Optimize ads') ? 'text-storify-glow font-black' : ''}>
+                                            <span className={feature.includes('Fully customizable') || feature.includes('Sell wholesale') || feature.includes('Optimize ads') ? 'text-black font-black' : ''}>
                                               {feature}
                                             </span>
                                         </li>
