@@ -12,7 +12,7 @@ const MerchantStoriesSection = () => {
     },
     {
       img: story2,
-      tag: 'Switch to Shopify',
+      tag: 'Switch to Storify',
       title: 'Get more customers. Make more sales.',
     },
     {
@@ -87,7 +87,7 @@ const MerchantStoriesSection = () => {
         {/* Subtle footer copy from the reference image */}
         <div className="mt-24">
            <p className="text-4xl lg:text-[40px] font-bold text-white tracking-tight leading-tight max-w-2xl">
-              Dream big, build fast, and grow far on Shopify.
+              Dream big, build fast, and grow far on Storify.
            </p>
         </div>
 

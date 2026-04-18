@@ -2,20 +2,36 @@
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  --color-shopify: #2dd4bf;
-  --color-shopify-dark: #0d9488;
-  --color-shopify-light: #f0fdfa;
+  --color-storify: #14B8A6;
+  --color-storify-dark: #0F766E;
+  --color-storify-deep: #115E59;
+  --color-storify-glow: #2DD4BF;
+  --color-storify-hover: #5EEAD4;
+  
+  --bg-main: #0B0F14;
+  --bg-card: #111827;
+  --bg-secondary: #1F2937;
+  
+  --text-primary: #FFFFFF;
+  --text-secondary: #9CA3AF;
+  --text-muted: #6B7280;
 }
 
 @layer base {
   body {
-    @apply font-sans antialiased text-white bg-black;
+    @apply font-sans antialiased text-white bg-[#0B0F14];
   }
 }
 
 @layer utilities {
+  .teal-gradient {
+    background: linear-gradient(135deg, #14B8A6, #0F766E);
+  }
+  .teal-glow {
+    box-shadow: 0 0 20px rgba(20, 184, 166, 0.3);
+  }
   .glass {
-    @apply bg-white/80 backdrop-blur-md border-b border-gray-100;
+    @apply bg-white/5 backdrop-blur-md border-b border-white/5;
   }
   .no-scrollbar::-webkit-scrollbar {
     display: none;

@@ -22,14 +22,14 @@ const ImageShowcaseSection = () => {
   const displayImages = [...images, ...images];
 
   return (
-    <section className="pt-32 pb-8 bg-[#0a0f1a] overflow-hidden relative border-t border-white/5">
+    <section className="pt-32 pb-8 bg-[#0B0F14] overflow-hidden relative border-t border-white/5">
       {/* Section Heading */}
       <div className="container mx-auto px-6 mb-12 text-center">
         <h2 className="text-4xl lg:text-7xl font-extrabold text-white mb-8 tracking-tight leading-tight">
-          See the <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-400">success</span> behind every store
+          See the <span className="text-transparent bg-clip-text bg-gradient-to-r from-storify-glow to-storify">success</span> behind every store
         </h2>
-        <p className="text-xl lg:text-2xl text-white/60 max-w-3xl mx-auto leading-relaxed font-normal">
-          From solo founders to global enterprises, millions of merchants trust Shopify to power their dreams.
+        <p className="text-xl lg:text-2xl text-gray-500 max-w-3xl mx-auto leading-relaxed font-normal italic">
+          From solo founders to global enterprises, millions of merchants trust Storify to power their dreams.
         </p>
       </div>
 
@@ -41,18 +41,18 @@ const ImageShowcaseSection = () => {
               key={index} 
               className="w-[300px] flex-shrink-0"
             >
-              <div className="w-full aspect-[4/5] rounded-[40px] overflow-hidden border border-white/10 bg-[#1a1c23] shadow-2xl transition-all duration-500 hover:-translate-y-8 hover:rotate-[3deg] hover:scale-110 hover:z-50 hover:border-[#00c2c2]/50 hover:shadow-[0_40px_80px_rgba(0,194,194,0.15)] cursor-pointer group/image relative">
+              <div className="w-full aspect-[4/5] rounded-[48px] overflow-hidden border border-white/5 bg-[#111827] shadow-2xl transition-all duration-700 hover:-translate-y-12 hover:rotate-[4deg] hover:scale-110 hover:z-50 hover:border-storify/50 hover:shadow-[0_40px_80px_rgba(20,184,166,0.2)] cursor-pointer group/image relative">
                 <img 
                   src={image.src} 
                   alt={image.alt} 
-                  className="w-full h-full object-cover grayscale-[20%] group-hover/image:grayscale-0 transition-all duration-700"
+                  className="w-full h-full object-cover grayscale-[40%] group-hover/image:grayscale-0 transition-all duration-700 opacity-80 group-hover/image:opacity-100"
                 />
               </div>
 
               {/* Description below card */}
-              <div className="mt-8 px-4 text-center space-y-2 opacity-80 group-hover:opacity-100 transition-opacity">
+              <div className="mt-8 px-4 text-center space-y-2 opacity-50 group-hover:opacity-100 transition-opacity">
                 <h3 className="text-xl font-bold text-white tracking-wide">{image.title}</h3>
-                <p className="text-white/50 text-sm font-medium">{image.desc}</p>
+                <p className="text-gray-500 text-sm font-black uppercase tracking-widest">{image.desc}</p>
               </div>
             </div>
           ))}

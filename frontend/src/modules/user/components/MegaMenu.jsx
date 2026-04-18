@@ -1,4 +1,5 @@
 import React from 'react';
+import logo from '../../../assets/storify-logo.png';
 
 const MegaMenu = ({ activeMenu }) => {
   if (!activeMenu) return null;
@@ -53,7 +54,7 @@ const MegaMenu = ({ activeMenu }) => {
 
   return (
     <div 
-      className="absolute top-full left-0 right-0 bg-[#0d1117] border-t border-white/5 shadow-2xl py-8 animate-in fade-in slide-in-from-top-4 duration-300 z-50 overflow-hidden"
+      className="absolute top-full left-0 right-0 bg-[#111827]/95 backdrop-blur-xl border-t border-white/5 shadow-[0_30px_60px_rgba(0,0,0,0.8)] py-12 animate-in fade-in slide-in-from-top-4 duration-300 z-50 overflow-hidden"
       onMouseEnter={() => {}} // Maintain active state if needed
     >
       <div className="container mx-auto px-6 grid grid-cols-12 gap-8">
@@ -63,14 +64,14 @@ const MegaMenu = ({ activeMenu }) => {
           {sections.map((section, idx) => (
             <div key={idx} className="space-y-6">
               <div>
-                <h4 className="text-[10px] font-bold text-[#00c2c2] uppercase tracking-[0.2em] mb-4">
+                <h4 className="text-[10px] font-black text-storify-glow uppercase tracking-[0.2em] mb-4">
                   {section.title}
                 </h4>
                 <ul className="space-y-2">
                   {section.links.map((link, lIdx) => (
                     <li key={lIdx}>
-                      <a href="#" className="flex items-center gap-3 text-white/90 hover:text-shopify transition-colors group">
-                        <svg className="w-5 h-5 text-gray-500 group-hover:text-shopify transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <a href="#" className="flex items-center gap-3 text-white/90 hover:text-storify transition-colors group">
+                        <svg className="w-5 h-5 text-gray-500 group-hover:text-storify transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={link.icon} />
                         </svg>
                         <span className="text-[14px] font-medium">{link.label}</span>
@@ -82,14 +83,14 @@ const MegaMenu = ({ activeMenu }) => {
 
               {section.extra && section.extra.map((ex, eIdx) => (
                 <div key={eIdx}>
-                  <h4 className="text-[10px] font-bold text-[#00c2c2] uppercase tracking-[0.2em] mb-4">
+                  <h4 className="text-[10px] font-black text-storify-glow uppercase tracking-[0.2em] mb-4">
                     {ex.title}
                   </h4>
                   <ul className="space-y-2">
                     {ex.links.map((link, lIdx) => (
                       <li key={lIdx}>
-                        <a href="#" className="flex items-center gap-3 text-white/90 hover:text-shopify transition-colors group">
-                          <svg className="w-5 h-5 text-gray-500 group-hover:text-shopify transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <a href="#" className="flex items-center gap-3 text-white/90 hover:text-storify transition-colors group">
+                          <svg className="w-5 h-5 text-gray-500 group-hover:text-storify transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={link.icon} />
                           </svg>
                           <span className="text-[14px] font-medium">{link.label}</span>
@@ -107,38 +108,38 @@ const MegaMenu = ({ activeMenu }) => {
         <div className="col-span-12 lg:col-span-3 lg:border-l lg:border-white/5 lg:pl-8">
            <div className="space-y-6">
               <div>
-                <h4 className="text-[10px] font-bold text-[#00c2c2] uppercase tracking-[0.2em] mb-4">
+                <h4 className="text-[10px] font-black text-storify-glow uppercase tracking-[0.2em] mb-4">
                   NON-STOP INNOVATION
                 </h4>
-                <div className="bg-[#1a1c23] rounded-2xl p-6 border border-white/5 group/card cursor-pointer hover:shadow-2xl transition-all">
+                <div className="bg-[#1F2937] rounded-2xl p-6 border border-white/5 group/card cursor-pointer hover:shadow-2xl transition-all hover:border-storify/30">
                    <div className="relative mb-4">
                       <div className="w-full aspect-video bg-gradient-to-br from-indigo-900 to-black rounded-lg overflow-hidden flex items-center justify-center p-4">
                          {/* Mockup "Editions" Visual */}
                          <div className="relative w-full h-full">
                             <div className="absolute inset-0 flex items-center justify-center">
-                               <div className="w-3/4 h-3/4 bg-white/10 rounded-lg transform -rotate-12 translate-x-2"></div>
-                               <div className="w-3/4 h-3/4 bg-white/10 rounded-lg transform rotate-6 translate-x-1 underline shadow-2xl"></div>
-                               <div className="w-3/4 h-3/4 bg-shopify rounded-lg flex items-center justify-center p-2">
-                                  <span className="text-white text-[10px] font-black tracking-tighter">EDITIONS</span>
+                               <div className="w-3/4 h-3/4 bg-white/5 rounded-lg transform -rotate-12 translate-x-2 border border-white/5"></div>
+                               <div className="w-3/4 h-3/4 bg-white/5 rounded-lg transform rotate-6 translate-x-1 underline border border-white/5 shadow-2xl"></div>
+                               <div className="w-3/4 h-3/4 bg-[#0B0F14] rounded-lg flex items-center justify-center p-4 shadow-inner border border-white/10">
+                                  <img src={logo} alt="Storify Logo" className="w-full h-auto" />
                                </div>
                             </div>
                          </div>
                       </div>
                    </div>
-                   <h5 className="text-white font-bold mb-2">Shopify Editions</h5>
-                   <p className="text-xs text-white/70">150+ updates to Shopify, twice a year.</p>
+                   <h5 className="text-white font-bold mb-2">Storify Editions</h5>
+                   <p className="text-xs text-white/70">150+ updates to Storify, twice a year.</p>
                 </div>
               </div>
 
               <div>
-                <h4 className="text-[10px] font-bold text-[#00c2c2] uppercase tracking-[0.2em] mb-4">
+                <h4 className="text-[10px] font-black text-storify-glow uppercase tracking-[0.2em] mb-4">
                   LATEST UPDATES
                 </h4>
                 <ul className="space-y-4">
                   {['Sidekick Pulse', 'Product Network', 'Full dev MCP support'].map((item, i) => (
                     <li key={i} className="flex items-center gap-3">
-                       <div className="w-2 h-2 rounded-full bg-shopify flex-shrink-0"></div>
-                       <a href="#" className="text-sm font-medium text-white/90 hover:text-shopify transition-colors">{item}</a>
+                       <div className="w-2 h-2 rounded-full bg-storify flex-shrink-0"></div>
+                       <a href="#" className="text-sm font-medium text-white/90 hover:text-storify transition-colors">{item}</a>
                     </li>
                   ))}
                 </ul>
@@ -151,8 +152,8 @@ const MegaMenu = ({ activeMenu }) => {
       {/* Full-width bottom bar */}
       <div className="border-t border-white/5 mt-8 pt-6 container mx-auto px-6">
          <div className="flex flex-wrap gap-8 lg:gap-16">
-            {['CUSTOMIZE & EXTEND SHOPIFY', 'Commerce for Agents', 'Shopify App Store', 'Shopify.dev'].map((item, i) => (
-               <a key={i} href="#" className={`text-[11px] font-bold tracking-[0.1em] transition-colors ${i === 0 ? 'text-[#00c2c2]' : 'text-white/70 hover:text-white'}`}>
+            {['CUSTOMIZE & EXTEND STORIFY', 'Commerce for Agents', 'Storify App Store', 'Storify.dev'].map((item, i) => (
+               <a key={i} href="#" className={`text-[11px] font-black tracking-[0.1em] transition-colors uppercase ${i === 0 ? 'text-storify-glow' : 'text-white/50 hover:text-white'}`}>
                   {item}
                </a>
             ))}

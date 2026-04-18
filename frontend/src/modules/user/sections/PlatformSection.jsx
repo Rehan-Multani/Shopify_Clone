@@ -35,12 +35,12 @@ const PlatformSection = () => {
   ];
 
   return (
-    <section className="bg-[#0a0f1a] py-24 overflow-hidden relative">
+    <section className="bg-[#0B0F14] py-24 overflow-hidden relative">
       <div className="container mx-auto px-6 mb-16">
         <h2 className="text-4xl lg:text-6xl font-extrabold text-white mb-6 tracking-tight leading-tight">
-          The <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-400">one commerce platform</span> behind it all
+          The <span className="text-transparent bg-clip-text bg-gradient-to-r from-storify-glow to-storify">one commerce platform</span> behind it all
         </h2>
-        <p className="text-xl lg:text-3xl text-white/70 max-w-4xl leading-tight font-normal">
+        <p className="text-xl lg:text-3xl text-white/50 max-w-4xl leading-tight font-normal">
           Sell online and in person. Sell locally and globally. Sell direct and wholesale. Sell on desktop and mobile.
         </p>
       </div>
@@ -53,7 +53,7 @@ const PlatformSection = () => {
               key={index} 
               className="group cursor-pointer"
             >
-              <div className="relative w-full h-[320px] rounded-[32px] overflow-hidden border border-white/10 bg-[#1a1c23] transition-all duration-500 hover:border-[#00c2c2]/50">
+              <div className="relative w-full h-[320px] rounded-[32px] overflow-hidden border border-white/5 bg-[#111827] transition-all duration-500 hover:border-storify/50 group-hover:shadow-[0_0_40px_rgba(20,184,166,0.15)]">
                 {/* Front Image (Fades out) */}
                 <img 
                   src={item.frontImg} 
@@ -69,15 +69,15 @@ const PlatformSection = () => {
                 />
 
                 {/* Optional Overlay */}
-                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors pointer-events-none"></div>
+                <div className="absolute inset-0 bg-[#0B0F14]/10 group-hover:bg-[#0B0F14]/40 transition-colors pointer-events-none"></div>
               </div>
 
               {/* Text Below Card */}
               <div className="mt-8 space-y-3">
-                <h3 className="text-2xl font-bold text-white group-hover:text-[#00c2c2] transition-colors">
+                <h3 className="text-2xl font-bold text-white group-hover:text-storify-glow transition-colors">
                   {item.title}
                 </h3>
-                <p className="text-white/60 text-lg leading-relaxed font-normal">
+                <p className="text-gray-400 text-lg leading-relaxed font-normal">
                   {item.description}
                 </p>
               </div>

@@ -102,31 +102,31 @@ const HeroSection = () => {
       <div className="container mx-auto px-6 relative z-20 pb-28">
         <div className="max-w-4xl">
           <h1 className="text-5xl lg:text-[80px] font-extrabold text-white mb-8 tracking-[-0.03em] leading-tight drop-shadow-2xl">
-            Be the <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-400">next store</span><br />
+            Be the <span className="text-transparent bg-clip-text bg-gradient-to-r from-storify-glow to-storify">next store</span><br />
             they line up for
           </h1>
 
           <p className="text-lg lg:text-xl text-white/90 mb-12 max-w-2xl leading-relaxed font-normal">
-            Dream big, build fast, and grow far on Shopify.
+            Dream big, build fast, and grow far on Storify.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center gap-6">
             <Link
               to="/login"
-              className="h-16 px-10 bg-white hover:bg-white/90 text-black rounded-full text-lg font-bold transition-all shadow-md active:scale-95 flex items-center justify-center"
+              className="h-16 px-10 teal-gradient text-white rounded-full text-lg font-bold transition-all teal-glow active:scale-95 flex items-center justify-center hover:opacity-90"
             >
               Start for free
             </Link>
             <button 
               onClick={swapVideos}
-              className="h-16 px-8 bg-transparent hover:bg-white/10 text-white rounded-full text-lg font-bold transition-all border-2 border-white/40 flex items-center gap-3 active:scale-95 group"
+              className="h-16 px-8 bg-white/5 hover:bg-white/10 text-white rounded-full text-lg font-bold transition-all border border-white/20 backdrop-blur-sm flex items-center gap-3 active:scale-95 group"
             >
-              <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center transition-transform group-hover:scale-110">
                 <svg className="w-4 h-4 text-black fill-current translate-x-0.5" viewBox="0 0 24 24">
                   <path d="M5 4l14 8-14 8z" />
                 </svg>
               </div>
-              <span className="group-hover:text-white transition-colors">Next Showcase</span>
+              <span className="transition-colors group-hover:text-storify-glow">Next Showcase</span>
             </button>
           </div>
         </div>

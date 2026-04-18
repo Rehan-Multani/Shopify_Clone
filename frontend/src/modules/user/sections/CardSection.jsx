@@ -19,37 +19,37 @@ const CardSection = () => {
       icon: '💳',
       title: 'Payments',
       description: 'Accept every major payment method globally with secure, built-in checkout experiences.',
-      accentColor: '#8B5CF6',
+      accentColor: '#14B8A6',
     },
     {
       icon: '📈',
       title: 'Marketing',
       description: 'Reach new audiences and drive growth with integrated SEO and social marketing tools.',
-      accentColor: '#F59E0B',
+      accentColor: '#14B8A6',
     },
     {
       icon: '📊',
       title: 'Analytics',
       description: 'Gain deep insights into your sales performance with real-time data and custom reports.',
-      accentColor: '#EC4899',
+      accentColor: '#14B8A6',
     },
     {
       icon: '🚚',
       title: 'Shipping',
       description: 'Simplified fulfillment with discounted carrier rates and automated tracking for every order.',
-      accentColor: '#06B6D4',
+      accentColor: '#14B8A6',
     },
   ];
 
   return (
-    <section className="py-24 bg-[#0a0f1a]">
+    <section className="py-24 bg-[#0B0F14]">
       <div className="container mx-auto px-6">
         <div className="text-center max-w-3xl mx-auto mb-20">
           <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-6 tracking-tight leading-tight">
-            Everything you need to <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-400">start and grow</span>
+            Everything you need to <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#14B8A6] to-[#2DD4BF]">start and grow</span>
           </h2>
-          <p className="text-lg text-[#9CA3AF] max-w-2xl mx-auto leading-relaxed">
-            From first sale to full scale, Shopify handles every aspect of your business—so you can focus on building what you love.
+          <p className="text-lg text-gray-500 max-w-2xl mx-auto leading-relaxed">
+            From first sale to full scale, Storify handles every aspect of your business—so you can focus on building what you love.
           </p>
         </div>
 
@@ -60,7 +60,7 @@ const CardSection = () => {
               icon={card.icon}
               title={card.title}
               description={card.description}
-              accentColor={card.accentColor}
+              accentColor="#14B8A6"
             />
           ))}
         </div>

@@ -11,10 +11,10 @@ const StartSellingSection = () => {
   ];
 
   return (
-    <section className="bg-[#0a0f1a] py-20 overflow-hidden">
+    <section className="bg-[#0B0F14] py-20 overflow-hidden">
       <div className="container mx-auto px-6">
         <h2 className="text-4xl lg:text-6xl font-extrabold text-white mb-10 text-center tracking-tight leading-tight">
-          It's <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-400">easy</span> to start selling
+          It's <span className="text-transparent bg-clip-text bg-gradient-to-r from-storify-glow to-storify">easy</span> to start selling
         </h2>
 
         <div className="flex flex-col lg:flex-row items-center gap-16">
@@ -35,11 +35,11 @@ const StartSellingSection = () => {
             <div className="space-y-8">
               {steps.map((step, index) => (
                 <div key={index} className="group cursor-default">
-                  <div className="flex items-center gap-6 pb-6 border-b border-white/10">
-                    <span className="text-[#2dd4bf] text-xl font-normal opacity-70 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                  <div className="flex items-center gap-6 pb-6 border-b border-white/5">
+                    <span className="text-storify-glow text-xl font-bold opacity-50 group-hover:opacity-100 transition-opacity flex-shrink-0">
                       {step.number}
                     </span>
-                    <h3 className="text-2xl lg:text-4xl text-white font-extrabold tracking-tight hover:text-[#2dd4bf] transition-colors duration-300 leading-tight">
+                    <h3 className="text-2xl lg:text-4xl text-white font-extrabold tracking-tight group-hover:text-storify-glow transition-colors duration-300 leading-tight">
                       {step.title}
                     </h3>
                   </div>
@@ -50,19 +50,19 @@ const StartSellingSection = () => {
             <div className="pt-16 flex flex-col md:flex-row items-center justify-between gap-12">
               <Link
                 to="/login"
-                className="h-16 px-10 bg-white hover:bg-white/90 text-black rounded-full text-lg font-bold transition-all shadow-md active:scale-95 flex items-center justify-center"
+                className="h-16 px-10 teal-gradient text-white rounded-full text-lg font-bold transition-all shadow-xl active:scale-95 flex items-center justify-center teal-glow uppercase tracking-widest"
               >
                 Take your shot
               </Link>
-
+ 
               {/* Small Video Thumbnail Link */}
-              <div className="bg-white/5 backdrop-blur-xl p-3 border border-white/10 rounded-2xl flex items-center gap-4 shadow-2xl transition-transform hover:scale-105 cursor-pointer max-w-xs">
-                <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center flex-shrink-0">
-                  <svg className="w-4 h-4 text-black fill-current translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+              <div className="bg-[#111827] backdrop-blur-xl p-3 border border-white/5 rounded-2xl flex items-center gap-4 shadow-2xl transition-all hover:scale-105 hover:border-storify/30 cursor-pointer max-w-xs group">
+                <div className="w-10 h-10 rounded-full bg-storify flex items-center justify-center flex-shrink-0 shadow-lg">
+                  <svg className="w-4 h-4 text-white fill-current translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
                 </div>
                 <div className="flex flex-col">
-                   <span className="text-white text-xs font-bold leading-none mb-1">Why we build Shopify</span>
-                   <span className="text-gray-500 text-[10px]">Watch the story (2:30)</span>
+                   <span className="text-white text-xs font-bold leading-none mb-1 group-hover:text-storify-glow transition-colors">Why we build Storify</span>
+                   <span className="text-gray-500 text-[10px] font-bold tracking-tight uppercase">Watch the story (2:30)</span>
                 </div>
               </div>
             </div>

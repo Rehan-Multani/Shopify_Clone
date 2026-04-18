@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import logo from '../../../assets/storify-logo.png';
 
 const DashboardSidebar = ({ isOpen, setIsOpen }) => {
     const location = useLocation();
@@ -61,13 +62,10 @@ const DashboardSidebar = ({ isOpen, setIsOpen }) => {
                 onClick={() => setIsOpen(false)}
             />
 
-            <aside className={`w-64 bg-[#efeef1] border-r border-[#e3e3e3] flex flex-col h-screen fixed left-0 top-0 z-[70] overflow-y-auto transition-transform duration-300 transform ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} shadow-2xl lg:shadow-none`}>
-            <div className="p-4 mb-2">
-                <Link to="/dashboard" className="flex items-center gap-2">
-                    <svg className="w-8 h-8 text-black" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M11.516 11.233c.181-.07.368-.135.558-.198.544-.176 1.137-.291 1.764-.343.434-.035.881-.039 1.332-.01l1.836.14.331-1.12c.118-.403.228-.79.328-1.161h-6.265l-.348 1.16c-.19 1.144-.4 2.273-.611 3.385l-.234 1.258h1.228a4.912 4.912 0 0 0 .584 4.885c.66.907 1.625 1.481 2.715 1.616l.169.021.328.028c1.378.04 2.684-.526 3.593-1.554.764-.863 1.205-1.996 1.242-3.19.006-.153.003-.306-.01-.458l-.067-1.36h-4.3l.033.43c.01.127.013.255.008.384a1.234 1.234 0 0 1-.301.765c-.218.246-.532.383-.863.376l-.082-.006-.042-.008a.747.747 0 0 1-.652-.387c-.16-.22-.224-.5-.181-.784l.011-.073.456-2.45c-.254.067-.504.137-.75.21-.861.256-1.638.58-2.316.963l-1.576 6.366h-2.144l2.144-8.647zM4.1 4c-.11-.001-.22.003-.33.013a3.52 3.52 0 0 0-3.328 3.51V18.1a3.52 3.52 0 0 0 3.52 3.52h11.96a3.519 3.519 0 0 0 3.51-3.328c.01-.11.014-.22.013-.33V7.521a3.519 3.519 0 0 0-3.328-3.51c-.11-.01-.22-.014-.33-.013h-4.3l-.337 1.155a5.578 5.578 0 0 1-1.229 2.25l-.224.238 6.429.005-.23 1.258h-7.6l2.144-8.647h-2.144L6.9 14.22h-1.228l.23-1.258h.5l.45-6.366h-1.07V4z"/>
-                    </svg>
-                    <span className="font-black text-xl tracking-tight">shopify</span>
+            <aside className={`w-64 bg-[#0B0F14] border-r border-white/5 flex flex-col h-screen fixed left-0 top-0 z-[70] overflow-y-auto transition-transform duration-300 transform ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} shadow-2xl lg:shadow-none`}>
+            <div className="p-6 mb-2">
+                <Link to="/dashboard" className="flex items-center">
+                    <img src={logo} alt="Storify" className="h-8 w-auto" />
                 </Link>
             </div>
 
@@ -77,16 +75,16 @@ const DashboardSidebar = ({ isOpen, setIsOpen }) => {
                         <div key={item.id}>
                             <Link
                                 to={item.id === 'home' ? '/dashboard' : `/dashboard/${item.id}`}
-                                className={`flex items-center gap-3 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all group ${
+                                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-bold transition-all group ${
                                     isActive(item.id)
-                                        ? 'bg-[#ffffff] text-black shadow-sm'
-                                        : 'text-[#5c5f62] hover:bg-[#e4e3e6]'
+                                        ? 'bg-storify/10 text-storify-glow border border-storify/20 shadow-[0_0_15px_rgba(20,184,166,0.1)]'
+                                        : 'text-gray-400 hover:bg-white/5 hover:text-white'
                                 }`}
                             >
-                                <svg className={`w-5 h-5 ${
+                                <svg className={`w-5 h-5 transition-colors ${
                                     isActive(item.id)
-                                        ? 'text-black'
-                                        : 'text-[#5c5f62]'
+                                        ? 'text-storify-glow'
+                                        : 'text-gray-500 group-hover:text-white'
                                 }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
                                 </svg>
@@ -132,9 +130,9 @@ const DashboardSidebar = ({ isOpen, setIsOpen }) => {
 
                 <div className="mt-8">
                     <div className="px-3 mb-2 flex items-center justify-between group">
-                        <span className="text-xs font-bold text-[#5c5f62] tracking-wider uppercase">Sales channels</span>
-                        <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-[#e4e3e6] rounded transition-all">
-                            <svg className="w-4 h-4 text-[#5c5f62]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                        <span className="text-[10px] font-black text-gray-500 tracking-[0.2em] uppercase">Sales channels</span>
+                        <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/5 rounded transition-all text-gray-500">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
                         </button>
                     </div>
                     <div className="space-y-1">
@@ -142,7 +140,9 @@ const DashboardSidebar = ({ isOpen, setIsOpen }) => {
                             <Link
                                 key={item.id}
                                 to={`/dashboard/${item.id}`}
-                                className="flex items-center gap-3 px-3 py-1.5 rounded-lg text-sm font-semibold text-[#5c5f62] hover:bg-[#e4e3e6] transition-all"
+                                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-bold transition-all transition-all ${
+                                    isActive(item.id) ? 'bg-storify/10 text-storify-glow' : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                                }`}
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
@@ -169,21 +169,21 @@ const DashboardSidebar = ({ isOpen, setIsOpen }) => {
                 </div>
             </nav>
 
-            <div className="p-2 border-t border-[#e3e3e3] space-y-1">
-                <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-semibold text-[#5c5f62] hover:bg-[#e4e3e6] transition-all">
+            <div className="p-4 border-t border-white/5 space-y-1">
+                <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-bold text-gray-400 hover:bg-white/5 hover:text-white transition-all">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                     Settings
                 </button>
-                <div className="p-3 bg-black rounded-xl text-white mt-2 relative overflow-hidden group cursor-pointer hover:bg-zinc-800 transition-colors">
+                <div className="p-4 bg-[#111827] border border-white/5 rounded-2xl text-white mt-4 relative overflow-hidden group cursor-pointer hover:border-white/10 transition-all shadow-2xl teal-glow">
                     <div className="relative z-10">
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Trial ends in 3 days</p>
-                        <p className="text-xs font-bold mb-3">Subscribe for ₹20</p>
-                        <Link to="/dashboard/plan" className="w-full py-2 bg-white text-black text-xs font-bold rounded-lg hover:bg-gray-200 transition-colors block text-center">
+                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-1">Trial ends in 3 days</p>
+                        <p className="text-sm font-bold mb-4">Subscribe for <span className="text-storify-glow">₹20</span></p>
+                        <Link to="/dashboard/plan" className="w-full py-2.5 teal-gradient text-white text-xs font-black uppercase tracking-widest rounded-xl hover:opacity-90 transition-all block text-center shadow-lg active:scale-95">
                             Subscribe
                         </Link>
                     </div>
                     {/* Abstract background flare */}
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/20 blur-[40px] rounded-full -mr-12 -mt-12 group-hover:bg-purple-500/30 transition-all"></div>
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-storify/10 blur-[40px] rounded-full -mr-12 -mt-12 group-hover:bg-storify/20 transition-all"></div>
                 </div>
             </div>
         </aside>

@@ -2,11 +2,11 @@ import React from 'react';
 
 const SegmentsTab = () => {
     const segments = [
-        { id: 1, name: "Customers who have purchased at least once", percentage: "0%", activity: "Created at 4:33 pm", createdBy: "Shopify" },
-        { id: 2, name: "Email subscribers", percentage: "0%", activity: "Created at 4:33 pm", createdBy: "Shopify" },
-        { id: 3, name: "Abandoned checkouts in the last 30 days", percentage: "0%", activity: "Created at 4:33 pm", createdBy: "Shopify" },
-        { id: 4, name: "Customers who have purchased more than once", percentage: "0%", activity: "Created at 4:33 pm", createdBy: "Shopify" },
-        { id: 5, name: "Customers who haven't purchased", percentage: "0%", activity: "Created at 4:33 pm", createdBy: "Shopify" }
+        { id: 1, name: "Customers who have purchased at least once", percentage: "0%", activity: "Created at 4:33 pm", createdBy: "Storify" },
+        { id: 2, name: "Email subscribers", percentage: "0%", activity: "Created at 4:33 pm", createdBy: "Storify" },
+        { id: 3, name: "Abandoned checkouts in the last 30 days", percentage: "0%", activity: "Created at 4:33 pm", createdBy: "Storify" },
+        { id: 4, name: "Customers who have purchased more than once", percentage: "0%", activity: "Created at 4:33 pm", createdBy: "Storify" },
+        { id: 5, name: "Customers who haven't purchased", percentage: "0%", activity: "Created at 4:33 pm", createdBy: "Storify" }
     ];
 
     return (

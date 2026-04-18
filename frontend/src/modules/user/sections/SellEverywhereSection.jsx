@@ -4,25 +4,25 @@ import mockupBg from '../../../assets/platform-laptop.png';
 
 const SellEverywhereSection = () => {
   return (
-    <section className="bg-[#0a0f1a] pt-8 pb-24 overflow-hidden border-t border-white/5">
+    <section className="bg-[#0B0F14] pt-8 pb-24 overflow-hidden border-t border-white/5">
       <div className="container mx-auto px-6">
         {/* Text Header */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8 mb-16">
           <div className="max-w-2xl">
-            <p className="text-[#2dd4bf] font-bold text-sm uppercase tracking-widest mb-4">
+            <p className="text-storify-glow font-black text-[10px] uppercase tracking-[0.4em] mb-6">
               Online and in person
             </p>
             <h2 className="text-4xl lg:text-7xl font-extrabold text-white tracking-tight leading-tight lg:leading-[0.95]">
-              Sell here, there, and <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-400">everywhere</span>
+              Sell here, there, and <span className="text-transparent bg-clip-text bg-gradient-to-r from-storify-glow to-storify">everywhere</span>
             </h2>
           </div>
-          <p className="text-lg lg:text-xl text-white/70 max-w-sm lg:text-right font-normal leading-relaxed">
-            <Link to="/login" className="text-[#00c2c2] hover:underline cursor-pointer font-bold">Get a stunning store</Link> that's made to sell. Design fast with AI, choose a stylish theme, or build completely custom for full control.
+          <p className="text-lg lg:text-xl text-gray-500 max-w-sm lg:text-right font-normal leading-relaxed">
+            <Link to="/login" className="text-storify-glow hover:text-white transition-colors cursor-pointer font-black underline underline-offset-8 decoration-storify/30">Get a stunning store</Link> that's made to sell. Design fast with AI, choose a stylish theme, or build completely custom for full control.
           </p>
         </div>
 
         {/* Mockup Showcase */}
-        <div className="relative rounded-[40px] bg-[#001c1c] p-6 lg:p-12 overflow-hidden shadow-2xl border border-white/5 group">
+        <div className="relative rounded-[40px] bg-[#111827] p-6 lg:p-12 overflow-hidden shadow-2xl border border-white/5 group teal-glow">
           
           <div className="relative w-full aspect-[16/9] lg:aspect-[21/9] rounded-[30px] overflow-hidden flex flex-col lg:flex-row gap-8">
             
@@ -42,23 +42,23 @@ const SellEverywhereSection = () => {
                   </div>
 
                   <div>
-                     <div className="flex items-center gap-2 text-sm text-[#00c2c2] font-bold mb-4 cursor-pointer hover:text-white transition-colors">
+                     <div className="flex items-center gap-2 text-sm text-storify-glow font-black uppercase tracking-widest mb-4 cursor-pointer hover:text-white transition-colors">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
                         Add section
                      </div>
                   </div>
 
                   <div>
-                    <span className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-3">Template</span>
-                    <div className="flex items-center gap-2 p-2 text-sm text-gray-300 border border-white/10 rounded-lg bg-white/5">
-                       <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+                    <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest block mb-3">Template</span>
+                    <div className="flex items-center gap-2 p-3 text-sm text-gray-400 border border-white/5 rounded-xl bg-white/5">
+                       <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
                        Rich text
                     </div>
                   </div>
                </div>
 
                <div className="absolute top-6 -right-3">
-                  <div className="bg-[#00c2c2] text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-lg">Draft</div>
+                  <div className="teal-gradient text-white text-[9px] font-black tracking-widest uppercase px-3 py-1 rounded-md shadow-2xl">Draft</div>
                </div>
             </div>
 
@@ -87,7 +87,7 @@ const SellEverywhereSection = () => {
                     <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
                        <svg className="w-3 h-3 text-black fill-current translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
                     </div>
-                    <span className="text-white text-xs font-bold whitespace-nowrap">Why we build Shopify</span>
+                    <span className="text-white text-xs font-bold whitespace-nowrap">Why we build Storify</span>
                   </div>
                </div>
             </div>
@@ -95,8 +95,8 @@ const SellEverywhereSection = () => {
           </div>
 
           {/* Background Ambient Glow */}
-          <div className="absolute top-0 right-0 w-96 h-96 bg-[#00c2c2]/10 blur-[100px] rounded-full pointer-events-none"></div>
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#00c2c2]/5 blur-[80px] rounded-full pointer-events-none"></div>
+          <div className="absolute top-0 right-0 w-96 h-96 bg-storify/10 blur-[120px] rounded-full pointer-events-none"></div>
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-storify/5 blur-[100px] rounded-full pointer-events-none"></div>
         </div>
       </div>
     </section>

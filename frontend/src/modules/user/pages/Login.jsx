@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import logo from '../../../assets/storify-logo.png';
 
 const Login = () => {
   const [step, setStep] = useState('auth'); // 'auth' or 'onboarding'
@@ -45,7 +46,7 @@ const Login = () => {
     },
     3: {
       title: "Do you currently sell on other platforms?",
-      subtitle: "We make it easy to migrate to Shopify",
+      subtitle: "We make it easy to migrate to Storify",
       options: [
         { id: 'none', title: "No, I'm not using any platform", desc: "" },
         { id: 'amazon', title: "Amazon", icon: "amazon" },
@@ -148,9 +149,9 @@ const Login = () => {
   if (step === 'onboarding') {
     const currentStepData = steps[onboardingStep];
     const currentSelections = selections[onboardingStep] || [];
-
+ 
     return (
-      <div className="min-h-screen bg-[#0d1117] flex flex-col items-center justify-center px-6 py-12">
+      <div className="min-h-screen bg-[#0B0F14] flex flex-col items-center justify-center px-6 py-12">
         {/* Stacked Cards Visual Effect */}
         <div className="w-full max-w-4xl relative">
           {/* Decorative Back Layers */}
@@ -158,26 +159,26 @@ const Login = () => {
           <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-[96%] h-20 bg-white/10 rounded-t-[32px] z-[5]"></div>
           
           {/* Main Onboarding Card */}
-          <div className="relative bg-white rounded-[32px] p-8 lg:p-12 shadow-[0_20px_50px_rgba(0,0,0,0.5)] animate-in slide-in-from-right-8 fade-in duration-500 z-10 transition-all">
-             <div className="mb-10">
-                <h1 className="text-3xl lg:text-4xl font-bold text-[#202223] mb-3 tracking-tight leading-tight">
+          <div className="relative bg-[#111827] border border-white/5 rounded-[32px] p-8 lg:p-12 shadow-2xl animate-in slide-in-from-right-8 fade-in duration-500 z-10 transition-all">
+             <div className="mb-10 text-center md:text-left">
+                <h1 className="text-3xl lg:text-4xl font-bold text-white mb-3 tracking-tight leading-tight">
                   {currentStepData.title}
                 </h1>
-                <p className="text-gray-500 font-medium text-lg">
+                <p className="text-gray-400 font-medium text-lg leading-relaxed">
                   {currentStepData.subtitle}
                 </p>
              </div>
-
+ 
              {/* Options Grid or Input Field */}
              {currentStepData.type === 'input' ? (
                 <div className="mb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                  <div className="relative border-2 border-gray-200 rounded-xl overflow-hidden focus-within:border-shopify focus-within:ring-4 focus-within:ring-shopify/10 transition-all">
+                  <div className="relative border border-white/10 rounded-xl overflow-hidden focus-within:border-storify focus-within:ring-4 focus-within:ring-storify/10 transition-all">
                     <input 
                       type="text"
                       placeholder="Store name"
                       value={storeName}
                       onChange={(e) => setStoreName(e.target.value)}
-                      className="w-full py-4 px-6 text-lg font-medium text-[#202223] outline-none placeholder:text-gray-400"
+                      className="w-full bg-[#1F2937] py-4 px-6 text-lg font-medium text-white outline-none placeholder:text-gray-500"
                       autoFocus
                     />
                   </div>
@@ -192,40 +193,36 @@ const Login = () => {
                     <div 
                       key={option.id}
                       onClick={() => toggleSelection(onboardingStep, option.id)}
-                      className={`relative rounded-2xl border-2 cursor-pointer transition-all duration-300 flex justify-between items-center group overflow-hidden ${
+                      className={`relative rounded-2xl border transition-all duration-300 flex justify-between items-center group overflow-hidden ${
                         currentSelections.includes(option.id) 
-                          ? onboardingStep === 4 || onboardingStep === 2 || onboardingStep === 5
-                            ? 'border-[#1a1c23] bg-[#1a1c23] text-white shadow-xl'
-                            : 'border-shopify bg-shopify/[0.03]' 
-                          : 'border-transparent bg-gray-50 hover:bg-gray-100 text-[#202223]'
+                          ? 'border-storify bg-storify/10 teal-glow shadow-lg' 
+                          : 'border-white/5 bg-[#1F2937] hover:bg-[#2c3747] hover:border-white/10 text-white'
                       } ${onboardingStep === 3 ? 'py-4 px-5' : 'p-6'}`}
                     >
                       <div className="flex items-center gap-4 max-w-[85%]">
                          {option.icon && (
-                           <div className={`w-10 h-10 rounded-lg bg-white shadow-sm flex items-center justify-center border border-gray-100 transition-transform group-hover:scale-110 ${currentSelections.includes(option.id) ? 'border-shopify/30' : ''}`}>
+                           <div className={`w-10 h-10 rounded-lg bg-[#0B0F14] shadow-sm flex items-center justify-center border border-white/5 transition-transform group-hover:scale-110 ${currentSelections.includes(option.id) ? 'border-storify/30' : ''}`}>
                               {renderIcon(option.icon)}
                            </div>
                          )}
                          <div>
                             <h3 className={`font-bold text-sm lg:text-base transition-colors ${
                               currentSelections.includes(option.id) 
-                                ? onboardingStep === 4 || onboardingStep === 2 || onboardingStep === 5 ? 'text-white' : 'text-shopify' 
-                                : 'text-[#202223]'
+                                ? 'text-storify-glow' 
+                                : 'text-white'
                             }`}>{option.title}</h3>
-                            {option.desc && <p className={`text-xs mt-1 leading-relaxed font-medium transition-colors ${currentSelections.includes(option.id) ? 'text-gray-300' : 'text-gray-500'}`}>{option.desc}</p>}
+                            {option.desc && <p className="text-xs mt-1 leading-relaxed font-medium text-gray-400 group-hover:text-gray-300 transition-colors">{option.desc}</p>}
                          </div>
                       </div>
                       
                       {/* Selected Indicator */}
                       <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
                         currentSelections.includes(option.id)
-                          ? onboardingStep === 4 || onboardingStep === 2 || onboardingStep === 5
-                            ? 'bg-white border-white shadow-sm' 
-                            : 'bg-[#1a1c23] border-[#1a1c23] shadow-lg'
-                          : 'border-gray-300 group-hover:border-gray-400'
+                          ? 'bg-storify border-storify teal-glow'
+                          : 'border-gray-600 group-hover:border-gray-500'
                       }`}>
                         {currentSelections.includes(option.id) && (
-                          <svg className={`w-3 h-3 ${onboardingStep === 4 || onboardingStep === 2 || onboardingStep === 5 ? 'text-[#1a1c23]' : 'text-white'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
                           </svg>
                         )}
@@ -234,24 +231,24 @@ const Login = () => {
                   ))}
                </div>
              )}
-
+ 
              {/* Footer Navigation */}
-             <div className="flex items-center justify-between border-t border-gray-100 pt-8">
+             <div className="flex items-center justify-between border-t border-white/5 pt-8">
                 <button 
                   onClick={handleBack}
-                  className="px-6 py-2.5 text-[#202223] font-bold hover:bg-gray-50 rounded-lg transition-all flex items-center gap-2"
+                  className="px-6 py-2.5 text-gray-400 font-bold hover:text-white hover:bg-white/5 rounded-lg transition-all flex items-center gap-2"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
                   Back
                 </button>
-
+ 
                 <button 
                   onClick={handleNext}
                   disabled={onboardingStep !== 6 && currentSelections.length === 0}
-                  className={`px-10 py-3 font-bold rounded-lg transition-all flex items-center gap-2 shadow-lg ${
+                  className={`px-10 py-3 font-bold rounded-lg transition-all flex items-center gap-2 shadow-xl ${
                     onboardingStep === 6 || currentSelections.length > 0 
-                      ? 'bg-[#1a1c23] hover:bg-black text-white active:scale-95' 
-                      : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      ? 'teal-gradient text-white hover:opacity-90 active:scale-95 teal-glow' 
+                      : 'bg-[#1F2937] text-gray-500 cursor-not-allowed border border-white/5'
                   }`}
                 >
                   {onboardingStep === 6 ? (storeName ? 'Next' : "I'll do this later") : 'Next'}
@@ -260,12 +257,12 @@ const Login = () => {
              </div>
           </div>
         </div>
-
+ 
         {/* Global Skip Link */}
         <div className="mt-12">
            <button 
              onClick={() => window.location.href = '/'}
-             className="text-white/60 hover:text-white font-bold text-sm flex items-center gap-2 transition-all group"
+             className="text-white/40 hover:text-storify-glow font-bold text-sm flex items-center gap-2 transition-all group"
            >
               Skip customized setup
               <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
@@ -274,86 +271,85 @@ const Login = () => {
       </div>
     );
   }
-
+ 
   return (
-    <div className="min-h-screen bg-[#0d1117] flex flex-col items-center justify-center px-6 py-12">
+    <div className="min-h-screen bg-[#0B0F14] flex flex-col items-center justify-center px-6 py-12">
       
-      {/* Shopify Bag Logo */}
+      {/* Logo */}
       <div className="mb-10 animate-in fade-in slide-in-from-top-4 duration-1000">
-         <svg className="w-16 h-16 text-shopify" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M19.344 6.945c.106.012.21.037.308.075 1.406.536 2.348 1.886 2.348 3.38V18c0 1.657-1.343 3-3 3H5c-1.657 0-3-1.343-3-3v-7.6c0-1.494.942-2.844 2.348-3.38.098-.038.202-.063.308-.075V6c0-2.209 1.791-4 4-4h6c2.209 0 4 1.791 4 4v.945zM9 6h6v-.945c0-1.105-.895-2-2-2h-2c-1.105 0-2 .895-2 2V6zm10.308 2.075c-.098-.038-.202-.063-.308-.075V9h-1V8.045c-.106.012-.21.037-.308.075L12 10.308 6.308 8.12a2.981 2.981 0 00-.308-.075V9H5V8c-.106.012-.21.037-.308.075C3.768 8.428 3 9.471 3 10.658V18c0 .552.448 1 1 1h16c.552 0 1-.448 1-1v-7.342c0-1.187-.768-2.23-1.692-2.583z" />
-         </svg>
+         <img src={logo} alt="Storify" className="w-24 h-auto" />
       </div>
-
+ 
       {/* Header Texts */}
       <div className="text-center mb-10">
          <h1 className="text-3xl lg:text-4xl font-bold text-white mb-3 tracking-tight">
             Start your free trial
          </h1>
          <p className="text-gray-400 text-sm lg:text-base font-medium">
-            3 days free, then 3 months for ₹20/month
+            3 days free, then 3 months for <span className="text-storify-glow">₹20/month</span>
          </p>
       </div>
-
-      {/* Main White Card (Auth Step) */}
-      <div className="w-full max-w-md bg-white rounded-[32px] p-8 lg:p-10 shadow-2xl animate-in fade-in zoom-in duration-500">
+ 
+      {/* Main Card (Auth Step) */}
+      <div className="w-full max-w-md bg-[#111827] border border-white/5 rounded-[32px] p-8 lg:p-10 shadow-2xl animate-in fade-in zoom-in duration-500">
         <form className="space-y-6" onSubmit={handleContinue}>
           <div className="space-y-1">
-            <div className="relative border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-black focus-within:border-transparent transition-all">
+            <div className="relative border border-white/10 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-storify focus-within:border-transparent transition-all bg-[#1F2937]">
                <label className="absolute top-2 left-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Email address</label>
                <input 
                   type="email" 
                   autoFocus
                   required
-                  className="w-full bg-white pt-6 pb-2 px-4 text-[#202223] text-sm font-medium focus:outline-none"
+                  placeholder="name@company.com"
+                  className="w-full bg-transparent pt-6 pb-2 px-4 text-white text-sm font-medium focus:outline-none placeholder:text-gray-600"
                />
             </div>
           </div>
-
-          <button type="submit" className="w-full bg-[#1a1c23] text-white font-bold py-4 rounded-lg hover:bg-black active:scale-95 transition-all text-sm tracking-wide">
+ 
+          <button type="submit" className="w-full teal-gradient text-white font-bold py-4 rounded-lg hover:opacity-90 active:scale-95 transition-all text-sm tracking-wide shadow-lg teal-glow">
             Continue with email
           </button>
         </form>
-
+ 
         <div className="relative my-10 flex items-center">
-          <div className="flex-grow border-t border-gray-100"></div>
-          <span className="flex-shrink mx-4 text-xs font-bold text-gray-400 lowercase tracking-widest">or</span>
-          <div className="flex-grow border-t border-gray-100"></div>
+          <div className="flex-grow border-t border-white/5"></div>
+          <span className="flex-shrink mx-4 text-xs font-bold text-gray-500 lowercase tracking-widest">or</span>
+          <div className="flex-grow border-t border-white/5"></div>
         </div>
-
-        {/* Square Social Icons Box */}
+ 
+        {/* Social Buttons */}
         <div className="flex justify-center gap-4 mb-8">
-          <button onClick={handleContinue} className="w-12 h-12 border border-gray-200 rounded-lg flex items-center justify-center hover:bg-gray-50 transition-colors group">
-             <svg className="w-6 h-6 text-[#202223]" fill="currentColor" viewBox="0 0 24 24"><path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.51 12.09 1.011 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701z"/></svg>
+          <button onClick={handleContinue} className="w-12 h-12 bg-[#1F2937] border border-white/5 rounded-lg flex items-center justify-center hover:bg-[#2c3747] hover:border-white/10 transition-all group shadow-md">
+             <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.51 12.09 1.011 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701z"/></svg>
           </button>
-          <button onClick={handleContinue} className="w-12 h-12 border border-gray-200 rounded-lg flex items-center justify-center hover:bg-gray-50 transition-colors group">
+          <button onClick={handleContinue} className="w-12 h-12 bg-[#1F2937] border border-white/5 rounded-lg flex items-center justify-center hover:bg-[#2c3747] hover:border-white/10 transition-all group shadow-md">
              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.91 3.22-1.92 4.24-1.2 1.2-3.08 1.48-4.92 1.48-3.04 0-5.48-2.48-5.48-5.52s2.44-5.52 5.48-5.52c1.68 0 3.12.6 4.24 1.64l2.32-2.32c-1.88-1.76-4.36-2.84-7.56-2.84-6.4 0-11.64 5.24-11.64 11.64s5.24 11.64 11.64 11.64c3.48 0 6.12-1.16 8.16-3.28 2.08-2.08 2.72-5 2.72-7.44 0-.48-.04-.96-.12-1.44h-9.76z"/></svg>
           </button>
-          <button onClick={handleContinue} className="w-12 h-12 border border-gray-200 rounded-lg flex items-center justify-center hover:bg-gray-50 transition-colors group">
+          <button onClick={handleContinue} className="w-12 h-12 bg-[#1F2937] border border-white/5 rounded-lg flex items-center justify-center hover:bg-[#2c3747] hover:border-white/10 transition-all group shadow-md">
              <svg className="w-6 h-6 text-[#1877F2]" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953h-1.514c-1.491 0-1.95.925-1.95 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
           </button>
         </div>
-
-        {/* Card Footer Link */}
+ 
+        {/* Card Footer */}
         <div className="text-center">
-            <p className="text-gray-600 text-[13px] font-medium">
-                Already have a Shopify account? <Link to="/login" onClick={() => setStep('auth')} className="text-black font-bold hover:underline underline-offset-4 decoration-1">Log in</Link>
+            <p className="text-gray-500 text-[13px] font-medium leading-relaxed">
+                Already have a Storify account? <Link to="/login" onClick={() => setStep('auth')} className="text-white font-bold hover:text-storify-glow hover:underline underline-offset-4 decoration-1 transition-all">Log in</Link>
             </p>
         </div>
       </div>
-
+ 
       {/* Regional Selector Footer */}
-      <div className="mt-16 bg-[#1a1c23] border border-white/5 rounded-lg px-4 py-2 flex items-center gap-3 cursor-pointer hover:bg-white/5 transition-all group">
+      <div className="mt-16 bg-[#111827] border border-white/5 rounded-lg px-4 py-2 flex items-center gap-3 cursor-pointer hover:bg-[#1F2937] transition-all group shadow-sm">
           <span className="text-white text-xs font-bold">India</span>
-          <svg className="w-4 h-4 text-gray-500 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 text-gray-500 group-hover:text-storify-glow transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
       </div>
-
+ 
       {/* Page Links Footer */}
       <div className="mt-8 flex gap-8">
           {['Help', 'Privacy', 'Terms'].map((link) => (
-              <a key={link} href="#" className="text-gray-600 text-[11px] font-bold tracking-widest uppercase hover:text-white transition-colors">{link}</a>
+              <a key={link} href="#" className="text-gray-600 text-[11px] font-bold tracking-[0.2em] uppercase hover:text-white transition-colors">{link}</a>
           ))}
       </div>
     </div>

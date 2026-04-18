@@ -211,7 +211,7 @@ const AddProduct = () => {
                     {/* Variants Card */}
                     <div className="bg-white rounded-[12px] border border-[#e3e3e3] shadow-sm p-6 space-y-4">
                         <h2 className="text-sm font-medium text-[#202223]">Variants</h2>
-                        <button className="text-shopify text-sm font-bold flex items-center gap-2 hover:underline">
+                        <button className="text-storify text-sm font-bold flex items-center gap-2 hover:underline">
                             <span className="text-lg">+</span> Add options like size or color
                         </button>
                     </div>
@@ -220,7 +220,7 @@ const AddProduct = () => {
                     <div className="bg-white rounded-[12px] border border-[#e3e3e3] shadow-sm p-6 space-y-4">
                         <div className="flex items-center justify-between">
                             <h2 className="text-sm font-medium text-[#202223]">Search engine listing</h2>
-                            <button className="text-gray-400 hover:text-shopify">
+                            <button className="text-gray-400 hover:text-storify">
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                             </button>
                         </div>
@@ -254,7 +254,7 @@ const AddProduct = () => {
                                    <div className="w-2 h-2 rounded-full bg-[#008060]"></div>
                                    <span className="text-[#202223]">Online Store</span>
                                </div>
-                               <button className="text-gray-400 hover:text-shopify"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" strokeWidth="2"/></svg></button>
+                               <button className="text-gray-400 hover:text-storify"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" strokeWidth="2"/></svg></button>
                            </div>
                            <div className="flex items-center justify-between text-sm">
                                <div className="flex items-center gap-2">
