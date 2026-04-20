@@ -3,6 +3,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import HeroSection from '../sections/HeroSection';
 import PlatformSection from '../sections/PlatformSection';
+import EnterpriseSection from '../sections/EnterpriseSection';
 
 import ImageShowcaseSection from '../sections/ImageShowcaseSection';
 import SellEverywhereSection from '../sections/SellEverywhereSection';
@@ -49,6 +50,7 @@ const Home = () => {
           onWatchClick={() => setShowExternalModal(true)}
         />
         <PlatformSection />
+        <EnterpriseSection />
         <ImageShowcaseSection />
         <SellEverywhereSection />
         <StartSellingSection />
