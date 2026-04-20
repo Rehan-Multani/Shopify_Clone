@@ -167,7 +167,7 @@ const Dashboard = () => {
                             </button>
                         </div>
                     </div>
-                </div>v>
+                </div>
             </>
         );
     };

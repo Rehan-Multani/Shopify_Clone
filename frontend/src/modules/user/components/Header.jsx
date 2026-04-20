@@ -30,15 +30,17 @@ const Header = () => {
     >
       <div className="container mx-auto px-6 flex items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="flex items-center cursor-pointer">
-          <img src={logo} alt="Storify" className="h-9 w-auto" />
+        <Link to="/" className="flex items-center cursor-pointer group">
+          <img src={logo} alt="Storify" className="h-6 w-auto" />
+          <span className="ml-2 text-3xl font-black italic text-white tracking-tighter group-hover:text-storify-glow transition-colors">Storify</span>
         </Link>
  
         {/* Desktop Nav */}
-        <nav className={`hidden lg:flex items-center gap-8 font-medium text-[15px] transition-colors duration-300 ${isScrolled || activeMenu ? 'text-white/80' : 'text-white/70'}`}>
+        <nav className="hidden lg:flex items-center gap-8 font-medium text-[15px] text-white transition-colors duration-300">
           <div 
             className="flex items-center gap-1 hover:text-storify transition-colors h-full py-4 group cursor-pointer"
             onMouseEnter={() => setActiveMenu('why')}
+            onClick={() => setActiveMenu(activeMenu === 'why' ? null : 'why')}
           >
             Why Storify
             <svg className={`w-4 h-4 transition-transform duration-300 ${activeMenu === 'why' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
@@ -46,6 +48,7 @@ const Header = () => {
           <div 
             className="flex items-center gap-1 hover:text-storify transition-colors h-full py-4 group cursor-pointer"
             onMouseEnter={() => setActiveMenu('products')}
+            onClick={() => setActiveMenu(activeMenu === 'products' ? null : 'products')}
           >
             Products
             <svg className={`w-4 h-4 transition-transform duration-300 ${activeMenu === 'products' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
@@ -56,7 +59,7 @@ const Header = () => {
  
         {/* CTAs */}
         <div className="flex items-center gap-6">
-          <Link to="/login" className="hidden sm:block text-sm font-semibold text-white/70 hover:text-white transition-colors">Log in</Link>
+          <Link to="/login" className="hidden sm:block text-sm font-semibold text-white hover:text-white/80 transition-colors">Log in</Link>
           <Link to="/login" className="px-6 py-2.5 rounded-full text-sm font-bold transition-all teal-gradient text-white teal-glow active:scale-95 flex items-center justify-center hover:opacity-90">
             Start for free
           </Link>

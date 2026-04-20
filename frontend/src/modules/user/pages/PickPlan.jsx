@@ -82,7 +82,8 @@ const PickPlan = () => {
             <div className="max-w-7xl mx-auto w-full flex items-center justify-between mb-8">
                 <div className="flex items-center gap-2">
                     <img src={logo} alt="Storify" className="h-4 w-auto" />
-                    <span className="text-gray-600 font-normal mr-1">›</span>
+                    <span className="ml-1 text-base font-black italic text-storify tracking-tighter">Storify</span>
+                    <span className="text-gray-600 font-normal mx-1">›</span>
                     <span className="text-base text-white font-black uppercase tracking-widest">Pick your plan</span>
                 </div>
                 <button 

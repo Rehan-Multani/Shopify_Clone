@@ -6,6 +6,7 @@ import Enterprise from './modules/user/pages/Enterprise';
 import Login from './modules/user/pages/Login';
 import Dashboard from './modules/user/pages/Dashboard';
 import PickPlan from './modules/user/pages/PickPlan';
+import Signup from './modules/user/pages/Signup';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/dashboard/plan" element={<PickPlan />} />
         <Route path="/dashboard/:tab/*" element={<Dashboard />} />
+        <Route path="/signup" element={<Signup />} />
       </Routes>
     </Router>
   );

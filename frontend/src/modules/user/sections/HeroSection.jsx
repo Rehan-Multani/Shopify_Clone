@@ -11,16 +11,39 @@ import bgImg from '../../../assets/atmospheric-hero-bg.png';
 
 const videos = [video2, video3, video4, video5, video1];
 
+const phrases = [
+  "store they line up for",
+  "brand humans love",
+  "empire you envisioned",
+  "global success story",
+  "business that dominates"
+];
+
 const HeroSection = () => {
   const [activeBuffer, setActiveBuffer] = useState('A');
   const [indexA, setIndexA] = useState(0);
   const [indexB, setIndexB] = useState(1);
   const [isTransitioning, setIsTransitioning] = useState(false);
   
+  const [phraseIndex, setPhraseIndex] = useState(0);
+  const [fade, setFade] = useState(true);
+
   const videoRefA = useRef(null);
   const videoRefB = useRef(null);
 
   const speed = 2.5;
+
+  // Cycle phrases every 3 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setFade(false);
+      setTimeout(() => {
+        setPhraseIndex((prev) => (prev + 1) % phrases.length);
+        setFade(true);
+      }, 500);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
   const swapVideos = () => {
     if (isTransitioning) return;
@@ -95,31 +118,40 @@ const HeroSection = () => {
         />
 
         {/* Overlays */}
+        <div className="absolute inset-0 bg-black/40 z-10"></div>
         <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-transparent z-10"></div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10"></div>
       </div>
 
-      <div className="container mx-auto px-6 relative z-20 pb-28">
+      <div className="container mx-auto px-6 relative z-20 pb-52">
         <div className="max-w-4xl">
-          <h1 className="text-5xl lg:text-[80px] font-extrabold text-white mb-8 tracking-[-0.03em] leading-tight drop-shadow-2xl">
-            Be the <span className="text-transparent bg-clip-text bg-gradient-to-r from-storify-glow to-storify">next store</span><br />
-            they line up for
+          <h1 
+            className="text-5xl lg:text-[100px] font-thin text-white mb-8 tracking-[-0.03em] leading-[1.05] drop-shadow-2xl"
+            style={{ wordSpacing: '-0.14em' }}
+          >
+            Be the next <br />
+            <span 
+              className={`transition-all duration-500 block lg:text-[70px] text-[#14B8A6] font-semibold ${fade ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+              style={{ wordSpacing: '0.1em' }}
+            >
+              {phrases[phraseIndex]}
+            </span>
           </h1>
 
-          <p className="text-lg lg:text-xl text-white/90 mb-12 max-w-2xl leading-relaxed font-normal">
+          <p className="text-lg lg:text-xl text-white/90 mb-8 max-w-2xl leading-relaxed font-normal">
             Dream big, build fast, and grow far on Storify.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center gap-6">
             <Link
               to="/login"
-              className="h-16 px-10 teal-gradient text-white rounded-full text-lg font-bold transition-all teal-glow active:scale-95 flex items-center justify-center hover:opacity-90"
+              className="h-13 px-10 teal-gradient text-white rounded-full text-lg font-bold transition-all teal-glow active:scale-95 flex items-center justify-center hover:opacity-90"
             >
               Start for free
             </Link>
             <button 
               onClick={swapVideos}
-              className="h-16 px-8 bg-white/5 hover:bg-white/10 text-white rounded-full text-lg font-bold transition-all border border-white/20 backdrop-blur-sm flex items-center gap-3 active:scale-95 group"
+              className="h-13 px-8 bg-white/5 hover:bg-white/10 text-white rounded-full text-lg font-bold transition-all border border-white/20 backdrop-blur-sm flex items-center gap-3 active:scale-95 group"
             >
               <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center transition-transform group-hover:scale-110">
                 <svg className="w-4 h-4 text-black fill-current translate-x-0.5" viewBox="0 0 24 24">

@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import logo from '../../../assets/storify-logo.png';
 
 const DashboardSidebar = ({ isOpen, setIsOpen }) => {
     const location = useLocation();
@@ -63,11 +62,11 @@ const DashboardSidebar = ({ isOpen, setIsOpen }) => {
             />
 
             <aside className={`w-64 bg-[#0B0F14] border-r border-white/5 flex flex-col h-screen fixed left-0 top-0 z-[70] overflow-y-auto transition-transform duration-300 transform ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} shadow-2xl lg:shadow-none`}>
-            <div className="p-6 mb-2">
-                <Link to="/dashboard" className="flex items-center">
-                    <img src={logo} alt="Storify" className="h-8 w-auto" />
-                </Link>
-            </div>
+            {/* Brand Header — matches Login card style */}
+            <Link to="/dashboard" className="block relative overflow-hidden h-24 flex items-start justify-end p-6 bg-gradient-to-br from-[#0D2A26] via-[#051110] to-black mb-2 group flex-shrink-0">
+                <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_top_left,_var(--color-storify)_0%,transparent_60%)]"></div>
+                <span className="text-4xl font-black text-[#14B8A6] tracking-tighter select-none opacity-90 group-hover:opacity-100 transition-opacity relative z-10">Storify</span>
+            </Link>
 
             <nav className="flex-grow px-2 py-4">
                 <div className="space-y-1">
