@@ -1,13 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-const StickyVideo = ({ src, isVisible, onClose, speed = 1.0 }) => {
+const StickyVideo = ({ src, isVisible, onClose, speed = 1.0, showExternalModal = false }) => {
   const [isDismissed, setIsDismissed] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const videoRef = useRef(null);
   const modalVideoRef = useRef(null);
 
+  // Sync external modal state
+  useEffect(() => {
+    if (showExternalModal) {
+        setIsModalOpen(true);
+    }
+  }, [showExternalModal]);
+
   // If the user dismisses it once, don't show it again during this session/mount
-  if (isDismissed) return null;
+  if (isDismissed && !isModalOpen) return null;
 
   useEffect(() => {
     if (isVisible && videoRef.current && !isModalOpen) {
@@ -32,13 +39,14 @@ const StickyVideo = ({ src, isVisible, onClose, speed = 1.0 }) => {
   };
 
   const openModal = (e) => {
-    e.stopPropagation();
+    e?.stopPropagation();
     setIsModalOpen(true);
   };
 
   const closeModal = (e) => {
     e?.stopPropagation();
     setIsModalOpen(false);
+    onClose?.(); // Reset external state in parent
   };
 
   // Close modal on scroll
@@ -54,57 +62,59 @@ const StickyVideo = ({ src, isVisible, onClose, speed = 1.0 }) => {
 
   return (
     <>
-    <div 
-      onClick={openModal}
-      className={`fixed bottom-8 right-8 z-[100] w-64 aspect-video rounded-2xl overflow-hidden bg-black border border-white/10 shadow-2xl transition-all duration-700 transform cursor-pointer group ${
-        isVisible ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-20 opacity-0 scale-90 pointer-events-none'
-      }`}
-    >
-      {/* Video Content */}
-      <video
-        ref={videoRef}
-        src={src}
-        muted
-        loop
-        playsInline
-        className="w-full h-full object-cover"
-      />
-
-      {/* Overlays */}
-      <div className="absolute inset-0 bg-black/30 pointer-events-none"></div>
-      
-      {/* Label - Bottom Left (Hides on hover) */}
-      <div className="absolute bottom-4 left-4 flex items-center gap-2.5 z-10 pointer-events-none transition-opacity duration-300 group-hover:opacity-0">
-        <div className="w-6 h-6 rounded-full border border-white flex items-center justify-center">
-            <svg className="w-2.5 h-2.5 text-white fill-current translate-x-0.5" viewBox="0 0 24 24">
-                <path d="M5 4l14 8-14 8z" />
-            </svg>
-        </div>
-        <span className="text-sm font-bold text-white tracking-tight">Why we build Storify</span>
-      </div>
-
-      {/* Controls Overlay (Close button and Center Icon) */}
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center bg-black/20">
-        <button 
-          onClick={handleClose}
-          className="absolute top-3 right-3 w-6 h-6 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-md flex items-center justify-center transition-colors"
+    {!isDismissed && (
+        <div 
+        onClick={openModal}
+        className={`fixed bottom-8 right-8 z-[100] w-64 aspect-video rounded-2xl overflow-hidden bg-black border border-white/10 shadow-2xl transition-all duration-700 transform cursor-pointer group ${
+            isVisible ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-20 opacity-0 scale-90 pointer-events-none'
+        }`}
         >
-          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
+        {/* Video Content */}
+        <video
+            ref={videoRef}
+            src={src}
+            muted
+            loop
+            playsInline
+            className="w-full h-full object-cover"
+        />
 
-        {/* Center Expand Icon */}
-        <div className="p-2 rounded-lg bg-black/20 backdrop-blur-sm border border-white/20 transform transition-transform group-hover:scale-110">
-          <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M15 3h6v6" />
-            <path d="M9 21H3v-6" />
-            <path d="M21 3l-7 7" />
-            <path d="M3 21l7-7" />
-          </svg>
+        {/* Overlays */}
+        <div className="absolute inset-0 bg-black/30 pointer-events-none"></div>
+        
+        {/* Label - Bottom Left (Hides on hover) */}
+        <div className="absolute bottom-4 left-4 flex items-center gap-2.5 z-10 pointer-events-none transition-opacity duration-300 group-hover:opacity-0">
+            <div className="w-6 h-6 rounded-full border border-white flex items-center justify-center">
+                <svg className="w-2.5 h-2.5 text-white fill-current translate-x-0.5" viewBox="0 0 24 24">
+                    <path d="M5 4l14 8-14 8z" />
+                </svg>
+            </div>
+            <span className="text-sm font-bold text-white tracking-tight">Why we build Storify</span>
         </div>
-      </div>
-    </div>
+
+        {/* Controls Overlay (Close button and Center Icon) */}
+        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center bg-black/20">
+            <button 
+            onClick={handleClose}
+            className="absolute top-3 right-3 w-6 h-6 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-md flex items-center justify-center transition-colors"
+            >
+            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            </button>
+
+            {/* Center Expand Icon */}
+            <div className="p-2 rounded-lg bg-black/20 backdrop-blur-sm border border-white/20 transform transition-transform group-hover:scale-110">
+            <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 3h6v6" />
+                <path d="M9 21H3v-6" />
+                <path d="M21 3l-7 7" />
+                <path d="M3 21l7-7" />
+            </svg>
+            </div>
+        </div>
+        </div>
+    )}
 
     {/* Video Modal */}
     {isModalOpen && (
