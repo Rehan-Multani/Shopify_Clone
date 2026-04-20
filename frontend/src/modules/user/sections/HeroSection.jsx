@@ -19,7 +19,7 @@ const phrases = [
   "business that dominates"
 ];
 
-const HeroSection = React.forwardRef(({ onVideoChange }, ref) => {
+const HeroSection = React.forwardRef(({ onVideoChange, onWatchClick }, ref) => {
   const [activeBuffer, setActiveBuffer] = useState('A');
   const [indexA, setIndexA] = useState(0);
   const [indexB, setIndexB] = useState(1);
@@ -155,7 +155,7 @@ const HeroSection = React.forwardRef(({ onVideoChange }, ref) => {
               Start for free
             </Link>
             <button 
-              onClick={swapVideos}
+              onClick={onWatchClick}
               className="h-13 px-8 bg-white/5 hover:bg-white/10 text-white rounded-full text-lg font-bold transition-all border border-white/20 backdrop-blur-sm flex items-center gap-3 active:scale-95 group"
             >
               <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center transition-transform group-hover:scale-110">
@@ -163,7 +163,7 @@ const HeroSection = React.forwardRef(({ onVideoChange }, ref) => {
                   <path d="M5 4l14 8-14 8z" />
                 </svg>
               </div>
-              <span className="transition-colors group-hover:text-storify-glow">Next Showcase</span>
+              <span className="transition-colors group-hover:text-storify-glow">Why we build Storify</span>
             </button>
           </div>
         </div>

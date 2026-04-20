@@ -3,6 +3,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import HeroSection from '../sections/HeroSection';
 import PlatformSection from '../sections/PlatformSection';
+import EnterpriseSection from '../sections/EnterpriseSection';
 
 import ImageShowcaseSection from '../sections/ImageShowcaseSection';
 import SellEverywhereSection from '../sections/SellEverywhereSection';
@@ -13,6 +14,7 @@ import StickyVideo from '../components/StickyVideo';
 const Home = () => {
   const [isHeroVisible, setIsHeroVisible] = useState(true);
   const [currentVideo, setCurrentVideo] = useState({ src: null, speed: 1.0 });
+  const [showExternalModal, setShowExternalModal] = useState(false);
   const heroRef = useRef(null);
 
   useEffect(() => {
@@ -42,8 +44,13 @@ const Home = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-grow">
-        <HeroSection ref={heroRef} onVideoChange={handleVideoChange} />
+        <HeroSection 
+          ref={heroRef} 
+          onVideoChange={handleVideoChange} 
+          onWatchClick={() => setShowExternalModal(true)}
+        />
         <PlatformSection />
+        <EnterpriseSection />
         <ImageShowcaseSection />
         <SellEverywhereSection />
         <StartSellingSection />
@@ -53,6 +60,8 @@ const Home = () => {
         src={currentVideo.src} 
         speed={currentVideo.speed} 
         isVisible={!isHeroVisible && currentVideo.src} 
+        showExternalModal={showExternalModal}
+        onClose={() => setShowExternalModal(false)}
       />
       <Footer />
     </div>
