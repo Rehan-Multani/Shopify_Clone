@@ -7,6 +7,7 @@ import Login from './modules/user/pages/Login';
 import Dashboard from './modules/user/pages/Dashboard';
 import PickPlan from './modules/user/pages/PickPlan';
 import Signup from './modules/user/pages/Signup';
+import Subscribe from './modules/user/pages/Subscribe';
 
 function App() {
   return (
