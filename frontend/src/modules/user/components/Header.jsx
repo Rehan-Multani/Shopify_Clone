@@ -60,7 +60,7 @@ const Header = () => {
         {/* CTAs */}
         <div className="flex items-center gap-6">
           <Link to="/login" className="hidden sm:block text-sm font-semibold text-white hover:text-white/80 transition-colors">Log in</Link>
-          <Link to="/login" className="px-6 py-2.5 rounded-full text-sm font-bold transition-all teal-gradient text-white teal-glow active:scale-95 flex items-center justify-center hover:opacity-90">
+          <Link to="/signup" className="px-6 py-2.5 rounded-full text-sm font-bold transition-all teal-gradient text-white teal-glow active:scale-95 flex items-center justify-center hover:opacity-90">
             Start for free
           </Link>
           

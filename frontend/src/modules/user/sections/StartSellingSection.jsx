@@ -49,7 +49,7 @@ const StartSellingSection = () => {
 
             <div className="pt-16 flex flex-col md:flex-row items-center justify-between gap-12">
               <Link
-                to="/login"
+                to="/signup"
                 className="h-16 px-10 teal-gradient text-white rounded-full text-lg font-bold transition-all shadow-xl active:scale-95 flex items-center justify-center teal-glow uppercase tracking-widest"
               >
                 Take your shot

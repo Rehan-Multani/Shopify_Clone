@@ -149,7 +149,7 @@ const HeroSection = React.forwardRef(({ onVideoChange }, ref) => {
 
           <div className="flex flex-col sm:flex-row items-center gap-6">
             <Link
-              to="/login"
+              to="/signup"
               className="h-13 px-10 teal-gradient text-white rounded-full text-lg font-bold transition-all teal-glow active:scale-95 flex items-center justify-center hover:opacity-90"
             >
               Start for free
