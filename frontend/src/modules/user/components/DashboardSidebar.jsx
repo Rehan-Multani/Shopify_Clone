@@ -1,9 +1,9 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
-const DashboardSidebar = ({ isOpen, setIsOpen }) => {
+const DashboardSidebar = ({ isOpen, setIsOpen, isChatOpen, setIsChatOpen }) => {
     const location = useLocation();
-    
+
     const isActive = (id) => {
         if (id === 'home') {
             return location.pathname === '/dashboard' || location.pathname === '/dashboard/home';
@@ -13,18 +13,18 @@ const DashboardSidebar = ({ isOpen, setIsOpen }) => {
 
     const menuItems = [
         { id: 'home', label: 'Home', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
-        { 
-            id: 'orders', 
-            label: 'Orders', 
+        {
+            id: 'orders',
+            label: 'Orders',
             icon: 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z',
             subItems: [
                 { id: 'drafts', label: 'Drafts' },
                 { id: 'abandoned', label: 'Abandoned checkouts' }
             ]
         },
-        { 
-            id: 'products', 
-            label: 'Products', 
+        {
+            id: 'products',
+            label: 'Products',
             icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
             subItems: [
                 { id: 'collections', label: 'Collections' },
@@ -34,9 +34,9 @@ const DashboardSidebar = ({ isOpen, setIsOpen }) => {
                 { id: 'gift-cards', label: 'Gift cards' }
             ]
         },
-        { 
-            id: 'customers', 
-            label: 'Customers', 
+        {
+            id: 'customers',
+            label: 'Customers',
             icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
             subItems: [
                 { id: 'segments', label: 'Segments' },
@@ -56,137 +56,161 @@ const DashboardSidebar = ({ isOpen, setIsOpen }) => {
     return (
         <>
             {/* Mobile Backdrop */}
-            <div 
+            <div
                 className={`fixed inset-0 bg-black/60 z-[60] lg:hidden transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
                 onClick={() => setIsOpen(false)}
             />
 
-            <aside className={`w-64 bg-[#0B0F14] border-r border-white/5 flex flex-col h-screen fixed left-0 top-0 z-[70] overflow-y-auto transition-transform duration-300 transform ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} shadow-2xl lg:shadow-none`}>
-            {/* Brand Header — matches Login card style */}
-            <Link to="/dashboard" className="block relative overflow-hidden h-24 flex items-start justify-end p-6 bg-gradient-to-br from-[#0D2A26] via-[#051110] to-black mb-2 group flex-shrink-0">
-                <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_top_left,_var(--color-storify)_0%,transparent_60%)]"></div>
-                <span className="text-4xl font-black text-[#14B8A6] tracking-tighter select-none opacity-90 group-hover:opacity-100 transition-opacity relative z-10">Storify</span>
-            </Link>
-
-            <nav className="flex-grow px-2 py-4">
-                <div className="space-y-1">
-                    {menuItems.map((item) => (
-                        <div key={item.id}>
-                            <Link
-                                to={item.id === 'home' ? '/dashboard' : `/dashboard/${item.id}`}
-                                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-bold transition-all group ${
-                                    isActive(item.id)
-                                        ? 'bg-storify/10 text-storify-glow border border-storify/20 shadow-[0_0_15px_rgba(20,184,166,0.1)]'
-                                        : 'text-gray-400 hover:bg-white/5 hover:text-white'
-                                }`}
-                            >
-                                <svg className={`w-5 h-5 transition-colors ${
-                                    isActive(item.id)
-                                        ? 'text-storify-glow'
-                                        : 'text-gray-500 group-hover:text-white'
-                                }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
-                                </svg>
-                                {item.label}
-                            </Link>
-
-                            {/* Sub-items rendering */}
-                            {isActive(item.id) && item.subItems && (
-                                <div className="mt-1 ml-4 space-y-0.5 relative">
-                                    {/* Vertical line connecting all subitems */}
-                                    <div className="absolute left-[13px] top-[-10px] bottom-[18px] w-[1.5px] bg-[#d3d6d9] rounded-full"></div>
-                                    
-                                    {item.subItems.map((subItem, index) => {
-                                        const isSubActive = location.pathname.endsWith(`/${subItem.id}`);
-                                        return (
-                                            <div key={subItem.id} className="relative flex items-center group">
-                                                {/* L-connector arrow */}
-                                                <div className="ml-[13px] mr-2 flex-shrink-0">
-                                                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-[#d3d6d9]">
-                                                        <path d="M0 0V8C0 9.10457 0.89543 10 2 10H10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                                                        <path d="M8 7.5L10.5 10L8 12.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                                    </svg>
-                                                </div>
-                                                
-                                                <Link 
-                                                    to={`/dashboard/${item.id}/${subItem.id}`}
-                                                    className={`flex-grow py-1.5 px-2 text-sm transition-all rounded-md ${
-                                                        isSubActive
-                                                            ? 'text-black font-bold bg-[#ffffff] shadow-sm translate-x-1'
-                                                            : 'text-[#5c5f62] hover:text-black font-medium hover:translate-x-1'
-                                                    }`}
-                                                >
-                                                    {subItem.label}
-                                                </Link>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                        </div>
-                    ))}
+            <aside className={`w-64 bg-[#f1f1f1] border-r border-gray-200 flex flex-col h-screen fixed left-0 top-0 z-[70] overflow-y-auto transition-transform duration-300 transform ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} shadow-2xl lg:shadow-none`}>
+                <div className="p-6 mb-2">
+                    <Link
+                        to="/dashboard"
+                        onClick={() => setIsChatOpen(false)}
+                        className="flex items-center"
+                    >
+                        <img src={logo} alt="Storify" className="h-8 w-auto" />
+                    </Link>
                 </div>
 
-                <div className="mt-8">
-                    <div className="px-3 mb-2 flex items-center justify-between group">
-                        <span className="text-[10px] font-black text-gray-500 tracking-[0.2em] uppercase">Sales channels</span>
-                        <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/5 rounded transition-all text-gray-500">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-                        </button>
-                    </div>
+                <nav className="flex-grow px-2 py-4">
                     <div className="space-y-1">
-                        {salesChannels.map((item) => (
-                            <Link
-                                key={item.id}
-                                to={`/dashboard/${item.id}`}
-                                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-bold transition-all transition-all ${
-                                    isActive(item.id) ? 'bg-storify/10 text-storify-glow' : 'text-gray-400 hover:bg-white/5 hover:text-white'
-                                }`}
-                            >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
-                                </svg>
-                                {item.label}
-                            </Link>
+                        {menuItems.map((item) => (
+                            <div key={item.id}>
+                                <Link
+                                    to={item.id === 'home' ? '/dashboard' : `/dashboard/${item.id}`}
+                                    onClick={() => setIsChatOpen(false)}
+                                    className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-bold transition-all group ${isActive(item.id)
+                                            ? 'bg-white text-black shadow-sm'
+                                            : 'text-[#5c5f62] hover:bg-black/5 hover:text-black font-semibold'
+                                        }`}
+                                >
+                                    <svg className={`w-5 h-5 transition-colors ${isActive(item.id)
+                                            ? 'text-black'
+                                            : 'text-[#5c5f62] group-hover:text-black'
+                                        }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
+                                    </svg>
+                                    {item.label}
+                                </Link>
+
+                                {/* Sub-items rendering */}
+                                {isActive(item.id) && item.subItems && (
+                                    <div className="mt-1 ml-4 space-y-0.5 relative">
+                                        {/* Vertical line connecting all subitems */}
+                                        <div className="absolute left-[13px] top-[-10px] bottom-[18px] w-[1.5px] bg-[#d3d6d9] rounded-full"></div>
+
+                                        {item.subItems.map((subItem, index) => {
+                                            const isSubActive = location.pathname.endsWith(`/${subItem.id}`);
+                                            return (
+                                                <div key={subItem.id} className="relative flex items-center group">
+                                                    {/* L-connector arrow */}
+                                                    <div className="ml-[13px] mr-2 flex-shrink-0">
+                                                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-[#d3d6d9]">
+                                                            <path d="M0 0V8C0 9.10457 0.89543 10 2 10H10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                                            <path d="M8 7.5L10.5 10L8 12.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                                        </svg>
+                                                    </div>
+
+                                                    <Link
+                                                        to={`/dashboard/${item.id}/${subItem.id}`}
+                                                        className={`flex-grow py-1.5 px-2 text-sm transition-all rounded-md ${isSubActive
+                                                                ? 'text-black font-bold bg-[#ffffff] shadow-sm translate-x-1'
+                                                                : 'text-[#5c5f62] hover:text-black font-medium hover:translate-x-1'
+                                                            }`}
+                                                    >
+                                                        {subItem.label}
+                                                    </Link>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
                         ))}
                     </div>
-                </div>
 
-                <div className="mt-8">
-                    <div className="px-3 mb-2 flex items-center justify-between group">
-                        <span className="text-xs font-bold text-[#5c5f62] tracking-wider uppercase">Apps</span>
-                        <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-[#e4e3e6] rounded transition-all">
-                            <svg className="w-4 h-4 text-[#5c5f62]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                    <div className="mt-8">
+                        <div className="px-3 mb-2 flex items-center justify-between group">
+                            <span className="text-[10px] font-black text-gray-500 tracking-[0.2em] uppercase">Sales channels</span>
+                            <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/5 rounded transition-all text-gray-500">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                            </button>
+                        </div>
+                        <div className="space-y-1">
+                            {salesChannels.map((item) => (
+                                <Link
+                                    key={item.id}
+                                    to={`/dashboard/${item.id}`}
+                                    onClick={() => setIsChatOpen(false)}
+                                    className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-bold transition-all ${isActive(item.id) ? 'bg-white text-black shadow-sm' : 'text-[#5c5f62] hover:bg-black/5 hover:text-black'
+                                        }`}
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
+                                    </svg>
+                                    {item.label}
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="mt-8">
+                        <div className="px-3 mb-2 flex items-center justify-between group">
+                            <span className="text-xs font-bold text-[#5c5f62] tracking-wider uppercase">Apps</span>
+                            <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-[#e4e3e6] rounded transition-all">
+                                <svg className="w-4 h-4 text-[#5c5f62]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                            </button>
+                        </div>
+                        <button className="w-full flex items-center gap-3 px-3 py-1.5 rounded-lg text-sm font-semibold text-[#5c5f62] hover:bg-[#e4e3e6] transition-all">
+                            <div className="w-5 h-5 flex items-center justify-center bg-gray-200 rounded">
+                                <svg className="w-3 h-3 text-[#5c5f62]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" /></svg>
+                            </div>
+                            Add
                         </button>
                     </div>
-                    <button className="w-full flex items-center gap-3 px-3 py-1.5 rounded-lg text-sm font-semibold text-[#5c5f62] hover:bg-[#e4e3e6] transition-all">
-                        <div className="w-5 h-5 flex items-center justify-center bg-[#e4e3e6] rounded">
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" /></svg>
-                        </div>
-                        Add apps
-                    </button>
-                </div>
-            </nav>
+                </nav>
 
-            <div className="p-4 border-t border-white/5 space-y-1">
-                <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-bold text-gray-400 hover:bg-white/5 hover:text-white transition-all">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                    Settings
-                </button>
-                <div className="p-4 bg-[#111827] border border-white/5 rounded-2xl text-white mt-4 relative overflow-hidden group cursor-pointer hover:border-white/10 transition-all shadow-2xl teal-glow">
-                    <div className="relative z-10">
-                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-1">Trial ends in 3 days</p>
-                        <p className="text-sm font-bold mb-4">Subscribe for <span className="text-storify-glow">₹20</span></p>
-                        <Link to="/dashboard/plan" className="w-full py-2.5 teal-gradient text-white text-xs font-black uppercase tracking-widest rounded-xl hover:opacity-90 transition-all block text-center shadow-lg active:scale-95">
-                            Subscribe
-                        </Link>
+                <div className="p-4 border-t border-gray-200 space-y-4">
+                    <div className="space-y-1">
+                        <div className="px-3 mb-2 flex items-center justify-between group cursor-pointer">
+                            <span className="text-[10px] font-black text-gray-500 tracking-[0.2em] uppercase">Sidekick conversations</span>
+                            <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                        </div>
+                        <div className="space-y-0.5">
+                            <button
+                                onClick={() => setIsChatOpen(true)}
+                                className={`w-full flex items-center gap-3 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all ${isChatOpen ? 'bg-white text-black shadow-sm' : 'text-[#5c5f62] hover:bg-black/5'
+                                    }`}
+                            >
+                                Hello
+                            </button>
+                            <button
+                                onClick={() => setIsChatOpen(true)}
+                                className="w-full flex items-center gap-3 px-3 py-1.5 rounded-lg text-sm font-semibold text-[#5c5f62] hover:bg-black/5 text-left truncate"
+                            >
+                                Creating a memorable store na...
+                            </button>
+                        </div>
                     </div>
-                    {/* Abstract background flare */}
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-storify/10 blur-[40px] rounded-full -mr-12 -mt-12 group-hover:bg-storify/20 transition-all"></div>
+
+                    <div className="space-y-1">
+                        <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-bold text-[#5c5f62] hover:bg-black/5 hover:text-black transition-all">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                            Settings
+                        </button>
+                    </div>
+                    <div className="p-4 bg-[#0B0F14] rounded-xl text-white mt-4 relative overflow-hidden group transition-all shadow-xl">
+                        <div className="relative z-10">
+                            <p className="text-[10px] font-black text-white/50 uppercase tracking-[0.2em] mb-1">Ends soon</p>
+                            <p className="text-sm font-bold mb-4">Subscribe for ₹20</p>
+                            <Link to="/dashboard/plan" className="w-full py-2 bg-white text-black text-xs font-black uppercase tracking-widest rounded-lg hover:bg-gray-100 transition-all block text-center shadow-lg active:scale-95">
+                                Subscribe
+                            </Link>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </aside>
-      </>
+            </aside>
+        </>
     );
 };
 
