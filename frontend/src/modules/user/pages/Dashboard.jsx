@@ -17,6 +17,7 @@ import CompaniesTab from '../components/dashboard/CompaniesTab';
 import CustomersTab from '../components/dashboard/CustomersTab';
 import AddProduct from '../components/dashboard/AddProduct';
 import AddCustomer from '../components/dashboard/AddCustomer';
+import AddCompany from '../components/dashboard/AddCompany';
 import SidekickChat from '../components/dashboard/SidekickChat';
 import CSVImportModal from '../components/dashboard/CSVImportModal';
 import ThemesTab from '../components/dashboard/ThemesTab';
@@ -26,6 +27,17 @@ import CreateTransfer from '../components/dashboard/CreateTransfer';
 import CreateGiftCard from '../components/dashboard/CreateGiftCard';
 import CreateGiftCardProduct from '../components/dashboard/CreateGiftCardProduct';
 import CreateSegment from '../components/dashboard/CreateSegment';
+import CampaignsTab from '../components/dashboard/CampaignsTab';
+import AttributionTab from '../components/dashboard/AttributionTab';
+import AutomationsTab from '../components/dashboard/AutomationsTab';
+import MarketingOverview from '../components/dashboard/MarketingOverview';
+import CreateCampaign from '../components/dashboard/CreateCampaign';
+import DiscountsTab from '../components/dashboard/DiscountsTab';
+import CreateDiscount from '../components/dashboard/CreateDiscount';
+import MetaobjectsTab from '../components/dashboard/MetaobjectsTab';
+import FilesTab from '../components/dashboard/FilesTab';
+import MenusTab from '../components/dashboard/MenusTab';
+import BlogPostsTab from '../components/dashboard/BlogPostsTab';
 
 const Dashboard = () => {
     const { tab } = useParams();
@@ -74,8 +86,30 @@ const Dashboard = () => {
             if (location.pathname.endsWith('/customers/new')) return <AddCustomer />;
             if (location.pathname.endsWith('/segments/new')) return <CreateSegment />;
             if (location.pathname.endsWith('/segments')) return <SegmentsTab />;
+            if (location.pathname.endsWith('/companies/new')) return <AddCompany />;
             if (location.pathname.endsWith('/companies')) return <CompaniesTab />;
             return <CustomersTab />;
+        }
+
+        if (tab === 'marketing') {
+            if (location.pathname.endsWith('/marketing/campaigns/new')) return <CreateCampaign />;
+            if (location.pathname.endsWith('/marketing/campaigns')) return <CampaignsTab />;
+            if (location.pathname.endsWith('/marketing/attribution')) return <AttributionTab />;
+            if (location.pathname.endsWith('/marketing/automations')) return <AutomationsTab />;
+            return <MarketingOverview />; // Default to Overview
+        }
+
+        if (tab === 'discounts') {
+            if (location.pathname.includes('/discounts/new')) return <CreateDiscount />;
+            return <DiscountsTab />;
+        }
+
+        if (tab === 'content') {
+            if (location.pathname.endsWith('/content/metaobjects')) return <MetaobjectsTab />;
+            if (location.pathname.endsWith('/content/files')) return <FilesTab />;
+            if (location.pathname.endsWith('/content/menus')) return <MenusTab />;
+            if (location.pathname.endsWith('/content/blog-posts')) return <BlogPostsTab />;
+            return <MetaobjectsTab />; // Default to first child
         }
 
         if (tab === 'online-store') {

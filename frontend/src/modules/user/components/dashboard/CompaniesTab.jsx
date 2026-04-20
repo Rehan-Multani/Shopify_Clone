@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const CompaniesTab = () => {
     return (
@@ -8,9 +9,12 @@ const CompaniesTab = () => {
                 <div className="flex items-center gap-2">
                     <h1 className="text-xl font-bold text-[#202223]">Companies</h1>
                 </div>
-                <button className="flex items-center gap-2 px-3 py-1.5 bg-[#1a1c23] border border-[#1a1c23] rounded-lg text-sm font-semibold text-white hover:bg-black transition-all shadow-sm active:scale-95">
+                <Link 
+                    to="/dashboard/customers/companies/new"
+                    className="flex items-center gap-2 px-3 py-1.5 bg-[#1a1c23] border border-[#1a1c23] rounded-lg text-sm font-semibold text-white hover:bg-black transition-all shadow-sm active:scale-95"
+                >
                     Add company
-                </button>
+                </Link>
             </div>
 
             {/* Main Content Card */}
@@ -39,9 +43,12 @@ const CompaniesTab = () => {
                         </p>
                     </div>
 
-                    <button className="bg-[#1a1c23] text-white px-6 py-2 rounded-lg font-bold text-sm hover:bg-black transition-all shadow-sm active:scale-95">
+                    <Link 
+                        to="/dashboard/customers/companies/new"
+                        className="bg-[#1a1c23] text-white px-6 py-2 rounded-lg font-bold text-sm hover:bg-black transition-all shadow-sm active:scale-95"
+                    >
                         Add company
-                    </button>
+                    </Link>
                 </div>
 
                 {/* Footer link */}
