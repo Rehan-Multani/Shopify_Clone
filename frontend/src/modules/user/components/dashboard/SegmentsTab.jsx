@@ -1,6 +1,20 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 
 const SegmentsTab = () => {
+    const [activeSegmentId, setActiveSegmentId] = useState(null);
+    const dropdownRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setActiveSegmentId(null);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
     const segments = [
         { id: 1, name: "Customers who have purchased at least once", percentage: "0%", activity: "Created at 4:33 pm", createdBy: "Storify" },
         { id: 2, name: "Email subscribers", percentage: "0%", activity: "Created at 4:33 pm", createdBy: "Storify" },
@@ -17,9 +31,12 @@ const SegmentsTab = () => {
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
                     <h1 className="text-xl font-bold">Segments</h1>
                 </div>
-                <button className="flex items-center gap-2 px-3 py-1.5 bg-[#1a1c23] border border-[#1a1c23] rounded-lg text-sm font-semibold text-white hover:bg-black transition-all shadow-sm active:scale-95">
+                <Link 
+                    to="/dashboard/customers/segments/new"
+                    className="flex items-center gap-2 px-3 py-1.5 bg-[#1a1c23] border border-[#1a1c23] rounded-lg text-sm font-semibold text-white hover:bg-black transition-all shadow-sm active:scale-95"
+                >
                     Create segment
-                </button>
+                </Link>
             </div>
 
             {/* Main Content Card */}
@@ -35,7 +52,7 @@ const SegmentsTab = () => {
                 </div>
 
                 {/* Table */}
-                <div className="overflow-x-auto flex-1">
+                <div className="overflow-x-auto flex-1 pb-48">
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-white border-b border-gray-100">
@@ -71,10 +88,42 @@ const SegmentsTab = () => {
                                             {segment.createdBy}
                                         </div>
                                     </td>
-                                    <td className="p-4 text-center">
-                                        <button className="text-gray-400 hover:text-gray-600 p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <td className="p-4 text-center relative">
+                                        <button 
+                                            onClick={() => setActiveSegmentId(activeSegmentId === segment.id ? null : segment.id)}
+                                            className="text-gray-400 hover:text-gray-600 p-1 transition-opacity"
+                                        >
                                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" /></svg>
                                         </button>
+
+                                        {activeSegmentId === segment.id && (
+                                            <div 
+                                                ref={dropdownRef}
+                                                className="absolute right-4 top-12 w-48 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 z-50 animate-in fade-in zoom-in-95 duration-100"
+                                            >
+                                                <button className="w-full px-4 py-2 text-left text-sm text-[#202223] font-medium hover:bg-gray-50 flex items-center gap-3">
+                                                    <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                                    Use segment
+                                                </button>
+                                                <button className="w-full px-4 py-2 text-left text-sm text-[#202223] font-medium hover:bg-gray-50 flex items-center gap-3">
+                                                    <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" /></svg>
+                                                    Duplicate
+                                                </button>
+                                                <button className="w-full px-4 py-2 text-left text-sm text-[#202223] font-medium hover:bg-gray-50 flex items-center gap-3">
+                                                    <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                                                    Export
+                                                </button>
+                                                <button className="w-full px-4 py-2 text-left text-sm text-[#202223] font-medium hover:bg-gray-50 flex items-center gap-3">
+                                                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                                    Rename
+                                                </button>
+                                                <div className="h-px bg-gray-100 my-1 mx-2"></div>
+                                                <button className="w-full px-4 py-2 text-left text-sm text-red-600 font-bold hover:bg-red-50 flex items-center gap-3">
+                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        )}
                                     </td>
                                 </tr>
                             ))}

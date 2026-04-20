@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const CollectionsTab = () => {
     return (
@@ -8,9 +9,12 @@ const CollectionsTab = () => {
                 <div className="flex items-center gap-2">
                     <h1 className="text-xl font-bold text-[#202223]">Collections</h1>
                 </div>
-                <button className="flex items-center gap-2 px-3 py-1.5 bg-[#1a1c23] border border-[#1a1c23] rounded-lg text-sm font-semibold text-white hover:bg-black transition-all shadow-sm active:scale-95">
+                <Link 
+                    to="/dashboard/products/collections/new"
+                    className="flex items-center gap-2 px-4 py-2 bg-[#1a1c23] border border-[#1a1c23] rounded-lg text-sm font-bold text-white hover:bg-black transition-all shadow-lg active:scale-95"
+                >
                     Add collection
-                </button>
+                </Link>
             </div>
 
             {/* Main Content Card */}

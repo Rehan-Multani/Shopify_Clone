@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const GiftCardsTab = () => {
     return (
@@ -36,12 +37,18 @@ const GiftCardsTab = () => {
                     </div>
 
                     <div className="flex flex-wrap items-center justify-center gap-3">
-                        <button className="bg-white text-[#202223] border border-[#d3d3d3] px-6 py-2 rounded-lg font-bold text-sm hover:bg-gray-50 transition-all shadow-sm active:scale-95">
+                        <Link 
+                            to="/dashboard/products/gift-cards/new"
+                            className="bg-white text-[#202223] border border-[#d3d3d3] px-6 py-2 rounded-lg font-bold text-sm hover:bg-gray-50 transition-all shadow-sm active:scale-95 text-center"
+                        >
                             Create gift card
-                        </button>
-                        <button className="bg-[#1a1c23] text-white px-6 py-2 rounded-lg font-bold text-sm hover:bg-black transition-all shadow-sm active:scale-95">
+                        </Link>
+                        <Link 
+                            to="/dashboard/products/gift-cards/product/new"
+                            className="bg-[#1a1c23] text-white px-6 py-2 rounded-lg font-bold text-sm hover:bg-black transition-all shadow-sm active:scale-95 text-center"
+                        >
                             Add gift card product
-                        </button>
+                        </Link>
                     </div>
 
                     <p className="text-xs text-[#5c5f62]">

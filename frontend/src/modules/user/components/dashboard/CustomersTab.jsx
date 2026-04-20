@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import CSVImportModal from './CSVImportModal';
 
 const CustomersTab = () => {
+    const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     return (
         <div className="space-y-6">
             {/* Header section */}
@@ -23,10 +26,16 @@ const CustomersTab = () => {
                             </p>
                         </div>
                         <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 pt-2">
-                            <button className="bg-[#1a1c23] text-white px-5 py-2 rounded-lg font-bold text-sm hover:bg-black transition-all shadow-md active:scale-95">
-                                Add customer
-                            </button>
-                            <button className="bg-white text-[#202223] border border-[#d3d3d3] px-5 py-2 rounded-lg font-bold text-sm hover:bg-gray-50 transition-all shadow-sm active:scale-95">
+                        <Link 
+                            to="/dashboard/customers/new"
+                            className="bg-[#1a1c23] text-white px-5 py-2 rounded-lg font-bold text-sm hover:bg-black transition-all shadow-md active:scale-95 text-center"
+                        >
+                            Add customer
+                        </Link>
+                            <button 
+                                onClick={() => setIsImportModalOpen(true)}
+                                className="bg-white text-[#202223] border border-[#d3d3d3] px-5 py-2 rounded-lg font-bold text-sm hover:bg-gray-50 transition-all shadow-sm active:scale-95"
+                            >
                                 Import customers
                             </button>
                         </div>
@@ -75,6 +84,13 @@ const CustomersTab = () => {
                     Learn more about customers
                 </button>
             </div>
+
+            <CSVImportModal 
+                isOpen={isImportModalOpen} 
+                onClose={() => setIsImportModalOpen(false)}
+                title="Import customers by CSV"
+                buttonText="Import customers"
+            />
         </div>
     );
 };

@@ -16,7 +16,16 @@ import SegmentsTab from '../components/dashboard/SegmentsTab';
 import CompaniesTab from '../components/dashboard/CompaniesTab';
 import CustomersTab from '../components/dashboard/CustomersTab';
 import AddProduct from '../components/dashboard/AddProduct';
+import AddCustomer from '../components/dashboard/AddCustomer';
 import SidekickChat from '../components/dashboard/SidekickChat';
+import CSVImportModal from '../components/dashboard/CSVImportModal';
+import ThemesTab from '../components/dashboard/ThemesTab';
+import AddCollection from '../components/dashboard/AddCollection';
+import CreatePurchaseOrder from '../components/dashboard/CreatePurchaseOrder';
+import CreateTransfer from '../components/dashboard/CreateTransfer';
+import CreateGiftCard from '../components/dashboard/CreateGiftCard';
+import CreateGiftCardProduct from '../components/dashboard/CreateGiftCardProduct';
+import CreateSegment from '../components/dashboard/CreateSegment';
 
 const Dashboard = () => {
     const { tab } = useParams();
@@ -25,7 +34,18 @@ const Dashboard = () => {
     const [isChatOpen, setIsChatOpen] = React.useState(false);
     const [initialChatMessage, setInitialChatMessage] = React.useState('');
     const [homeInput, setHomeInput] = React.useState('');
-    const storeName = localStorage.getItem('shopStoreName') || 'My Store';
+    const [storeName, setStoreName] = React.useState(localStorage.getItem('shopStoreName') || 'My Store');
+    const [isEditingStoreName, setIsEditingStoreName] = React.useState(false);
+    const [isCSVModalOpen, setIsCSVModalOpen] = React.useState(false);
+    const [editValue, setEditValue] = React.useState('');
+
+    const handleSaveStoreName = () => {
+        if (editValue.trim()) {
+            localStorage.setItem('shopStoreName', editValue.trim());
+            setStoreName(editValue.trim());
+        }
+        setIsEditingStoreName(false);
+    };
 
     const renderContent = () => {
         if (tab === 'orders') {
@@ -36,19 +56,31 @@ const Dashboard = () => {
         }
 
         if (tab === 'products') {
+            if (location.pathname.endsWith('/collections/new')) return <AddCollection />;
             if (location.pathname.endsWith('/collections')) return <CollectionsTab />;
             if (location.pathname.endsWith('/inventory')) return <InventoryTab />;
+            if (location.pathname.endsWith('/purchase-orders/new')) return <CreatePurchaseOrder />;
             if (location.pathname.endsWith('/purchase-orders')) return <PurchaseOrdersTab />;
+            if (location.pathname.endsWith('/transfers/new')) return <CreateTransfer />;
             if (location.pathname.endsWith('/transfers')) return <TransfersTab />;
+            if (location.pathname.endsWith('/gift-cards/product/new')) return <CreateGiftCardProduct />;
+            if (location.pathname.endsWith('/gift-cards/new')) return <CreateGiftCard />;
             if (location.pathname.endsWith('/gift-cards')) return <GiftCardsTab />;
             if (location.pathname.endsWith('/new')) return <AddProduct />;
             return <ProductsTab />;
         }
 
         if (tab === 'customers') {
+            if (location.pathname.endsWith('/customers/new')) return <AddCustomer />;
+            if (location.pathname.endsWith('/segments/new')) return <CreateSegment />;
             if (location.pathname.endsWith('/segments')) return <SegmentsTab />;
             if (location.pathname.endsWith('/companies')) return <CompaniesTab />;
             return <CustomersTab />;
+        }
+
+        if (tab === 'online-store') {
+            if (location.pathname.endsWith('/themes')) return <ThemesTab />;
+            return <ThemesTab />;
         }
 
         // Default: Home View
@@ -121,10 +153,49 @@ const Dashboard = () => {
                 <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                     <div className="p-4 lg:p-6 border-b border-gray-100 flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <h2 className="font-bold text-[#202223] text-sm lg:text-base tracking-tight">Add store name</h2>
-                             <button className="p-1.5 hover:bg-gray-100 rounded-lg transition-all text-[#5c5f62]">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                            </button>
+                            {isEditingStoreName ? (
+                                <div className="flex items-center gap-2">
+                                    <input 
+                                        type="text" 
+                                        value={editValue} 
+                                        onChange={(e) => setEditValue(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') handleSaveStoreName();
+                                            if (e.key === 'Escape') setIsEditingStoreName(false);
+                                        }}
+                                        className="border border-gray-300 rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 w-48 sm:w-64"
+                                        autoFocus
+                                        placeholder="Enter store name"
+                                    />
+                                    <button 
+                                        onClick={handleSaveStoreName}
+                                        className="bg-black text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-black/80 transition-all shadow-sm"
+                                    >
+                                        Save
+                                    </button>
+                                    <button 
+                                        onClick={() => setIsEditingStoreName(false)}
+                                        className="text-[#5c5f62] text-xs font-bold hover:text-black transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            ) : (
+                                <>
+                                    <h2 className="font-bold text-[#202223] text-sm lg:text-base tracking-tight">
+                                        {storeName !== 'My Store' ? storeName : 'Add store name'}
+                                    </h2>
+                                    <button 
+                                        onClick={() => {
+                                            setEditValue(storeName === 'My Store' ? '' : storeName);
+                                            setIsEditingStoreName(true);
+                                        }}
+                                        className="p-1.5 hover:bg-gray-100 rounded-lg transition-all text-[#5c5f62]"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                    </button>
+                                </>
+                            )}
                         </div>
                     </div>
  
@@ -146,7 +217,10 @@ const Dashboard = () => {
                             <h3 className="font-bold text-base lg:text-lg mb-2 text-[#202223] transition-colors">Import your products from Amazon</h3>
                             <p className="text-xs lg:text-sm text-[#5c5f62] mb-4 lg:mb-6 flex-grow leading-relaxed">Not ready to import? <span className="text-blue-600 underline">Add a product manually</span> to get started</p>
                             <div className="flex items-center gap-2 lg:gap-3">
-                                <button className="bg-[#1a1c23] text-white px-6 py-2 rounded-lg font-bold text-xs lg:text-sm hover:bg-black transition-all shadow-md active:scale-95">
+                                <button 
+                                    onClick={() => setIsCSVModalOpen(true)}
+                                    className="bg-[#1a1c23] text-white px-6 py-2 rounded-lg font-bold text-xs lg:text-sm hover:bg-black transition-all shadow-md active:scale-95"
+                                >
                                     Import products
                                 </button>
                             </div>
@@ -163,9 +237,12 @@ const Dashboard = () => {
                             </div>
                             <h3 className="font-bold text-lg mb-2 text-[#202223] transition-colors">Customize your online store</h3>
                             <p className="text-sm text-[#5c5f62] mb-6 flex-grow leading-relaxed">Choose or generate a custom theme, then add your logo, colors, and images.</p>
-                            <button className="w-fit bg-white text-[#202223] border border-gray-200 px-6 py-2 rounded-lg font-extrabold text-sm hover:bg-gray-50 transition-all shadow-sm active:scale-95">
+                            <Link 
+                                to="/dashboard/online-store/themes"
+                                className="w-fit bg-white text-[#202223] border border-gray-200 px-6 py-2 rounded-lg font-extrabold text-sm hover:bg-gray-50 transition-all shadow-sm active:scale-95 text-center"
+                            >
                                 Customize theme
-                            </button>
+                            </Link>
                         </div>
                     </div>
                 </div>
@@ -183,7 +260,7 @@ const Dashboard = () => {
             />
             
             <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 relative ${isSidebarOpen ? 'lg:ml-64' : 'ml-0'}`}>
-                <DashboardHeader isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+                <DashboardHeader isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} storeName={storeName} />
                 
                 {isChatOpen ? (
                    <div className="mt-14 h-[calc(100vh-3.5rem)] flex flex-col">
@@ -199,6 +276,11 @@ const Dashboard = () => {
                     </main>
                 )}
             </div>
+
+            <CSVImportModal 
+                isOpen={isCSVModalOpen} 
+                onClose={() => setIsCSVModalOpen(false)} 
+            />
         </div>
     );
 };

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const PurchaseOrdersTab = () => {
     return (
@@ -37,9 +38,12 @@ const PurchaseOrdersTab = () => {
                         </p>
                     </div>
 
-                    <button className="bg-[#1a1c23] text-white px-6 py-2 rounded-lg font-bold text-sm hover:bg-black transition-all shadow-sm active:scale-95">
+                    <Link 
+                        to="/dashboard/products/purchase-orders/new"
+                        className="bg-[#1a1c23] text-white px-6 py-2 rounded-lg font-bold text-sm hover:bg-black transition-all shadow-lg active:scale-95 inline-block"
+                    >
                         Create purchase order
-                    </button>
+                    </Link>
                 </div>
 
                 {/* Footer link */}

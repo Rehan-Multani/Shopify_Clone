@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import logo from '../../../assets/storify-logo.png';
 
 const DashboardSidebar = ({ isOpen, setIsOpen, isChatOpen, setIsChatOpen }) => {
     const location = useLocation();
@@ -50,7 +51,16 @@ const DashboardSidebar = ({ isOpen, setIsOpen, isChatOpen, setIsChatOpen }) => {
     ];
 
     const salesChannels = [
-        { id: 'online-store', label: 'Online Store', icon: 'M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9' },
+        { 
+            id: 'online-store', 
+            label: 'Online Store', 
+            icon: 'M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9',
+            subItems: [
+                { id: 'themes', label: 'Themes' },
+                { id: 'pages', label: 'Pages' },
+                { id: 'preferences', label: 'Preferences' }
+            ]
+        },
     ];
 
     return (
@@ -100,7 +110,7 @@ const DashboardSidebar = ({ isOpen, setIsOpen, isChatOpen, setIsChatOpen }) => {
                                         <div className="absolute left-[13px] top-[-10px] bottom-[18px] w-[1.5px] bg-[#d3d6d9] rounded-full"></div>
 
                                         {item.subItems.map((subItem, index) => {
-                                            const isSubActive = location.pathname.endsWith(`/${subItem.id}`);
+                                            const isSubActive = location.pathname.includes(`/dashboard/${item.id}/${subItem.id}`);
                                             return (
                                                 <div key={subItem.id} className="relative flex items-center group">
                                                     {/* L-connector arrow */}
@@ -138,18 +148,53 @@ const DashboardSidebar = ({ isOpen, setIsOpen, isChatOpen, setIsChatOpen }) => {
                         </div>
                         <div className="space-y-1">
                             {salesChannels.map((item) => (
-                                <Link
-                                    key={item.id}
-                                    to={`/dashboard/${item.id}`}
-                                    onClick={() => setIsChatOpen(false)}
-                                    className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-bold transition-all ${isActive(item.id) ? 'bg-white text-black shadow-sm' : 'text-[#5c5f62] hover:bg-black/5 hover:text-black'
-                                        }`}
-                                >
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
-                                    </svg>
-                                    {item.label}
-                                </Link>
+                                <div key={item.id}>
+                                    <Link
+                                        to={`/dashboard/${item.id}/${item.subItems ? item.subItems[0].id : ''}`}
+                                        onClick={() => setIsChatOpen(false)}
+                                        className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-bold transition-all group ${isActive(item.id)
+                                                ? 'bg-white text-black shadow-sm'
+                                                : 'text-[#5c5f62] hover:bg-black/5 hover:text-black font-semibold'
+                                            }`}
+                                    >
+                                        <svg className={`w-5 h-5 transition-colors ${isActive(item.id)
+                                                ? 'text-black'
+                                                : 'text-[#5c5f62] group-hover:text-black'
+                                            }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
+                                        </svg>
+                                        {item.label}
+                                    </Link>
+
+                                    {/* Sub-items rendering for sales channels */}
+                                    {isActive(item.id) && item.subItems && (
+                                        <div className="mt-1 ml-4 space-y-0.5 relative">
+                                            <div className="absolute left-[13px] top-[-10px] bottom-[18px] w-[1.5px] bg-[#d3d6d9] rounded-full"></div>
+                                            {item.subItems.map((subItem) => {
+                                                const isSubActive = location.pathname.includes(`/dashboard/${item.id}/${subItem.id}`);
+                                                return (
+                                                    <div key={subItem.id} className="relative flex items-center group">
+                                                        <div className="ml-[13px] mr-2 flex-shrink-0">
+                                                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-[#d3d6d9]">
+                                                                <path d="M0 0V8C0 9.10457 0.89543 10 2 10H10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                                                <path d="M8 7.5L10.5 10L8 12.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                                            </svg>
+                                                        </div>
+                                                        <Link
+                                                            to={`/dashboard/${item.id}/${subItem.id}`}
+                                                            className={`flex-grow py-1.5 px-2 text-sm transition-all rounded-md ${isSubActive
+                                                                    ? 'text-black font-bold bg-[#ffffff] shadow-sm translate-x-1'
+                                                                    : 'text-[#5c5f62] hover:text-black font-medium hover:translate-x-1'
+                                                                }`}
+                                                        >
+                                                            {subItem.label}
+                                                        </Link>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
                             ))}
                         </div>
                     </div>

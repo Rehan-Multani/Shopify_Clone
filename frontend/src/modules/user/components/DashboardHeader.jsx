@@ -1,7 +1,7 @@
 import React from 'react';
 
-const DashboardHeader = ({ isOpen, setIsOpen }) => {
-    const storeName = localStorage.getItem('shopStoreName') || 'My Store';
+const DashboardHeader = ({ isOpen, setIsOpen, storeName: propStoreName }) => {
+    const storeName = propStoreName || localStorage.getItem('shopStoreName') || 'My Store';
     const storeInitials = storeName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
 
     return (
