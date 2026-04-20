@@ -19,7 +19,7 @@ const phrases = [
   "business that dominates"
 ];
 
-const HeroSection = () => {
+const HeroSection = React.forwardRef(({ onVideoChange }, ref) => {
   const [activeBuffer, setActiveBuffer] = useState('A');
   const [indexA, setIndexA] = useState(0);
   const [indexB, setIndexB] = useState(1);
@@ -32,6 +32,11 @@ const HeroSection = () => {
   const videoRefB = useRef(null);
 
   const speed = 2.5;
+
+  // Report video source to parent for sticky player
+  useEffect(() => {
+    onVideoChange?.(videos[activeBuffer === 'A' ? indexA : indexB], speed);
+  }, [activeBuffer, indexA, indexB, speed, onVideoChange]);
 
   // Cycle phrases every 3 seconds
   useEffect(() => {
@@ -90,7 +95,7 @@ const HeroSection = () => {
   }, []);
 
   return (
-    <section className="relative h-screen min-h-[850px] flex items-end overflow-hidden bg-black">
+    <section ref={ref} className="relative h-screen min-h-[850px] flex items-end overflow-hidden bg-black">
       {/* Dual Video Background Buffers */}
       <div className="absolute inset-0 z-0">
         {/* Buffer A */}
@@ -168,6 +173,6 @@ const HeroSection = () => {
       <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-black to-transparent opacity-100 z-30"></div>
     </section>
   );
-};
+});
 
 export default HeroSection;
