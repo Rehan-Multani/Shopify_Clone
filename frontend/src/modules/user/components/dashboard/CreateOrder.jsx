@@ -27,7 +27,7 @@ const CreateOrder = () => {
                     <div className="bg-white rounded-xl border border-[#e3e3e3] shadow-sm p-4 lg:p-6 space-y-4">
                         <h2 className="font-bold text-sm text-[#202223]">Products</h2>
                         <div className="flex flex-col sm:flex-row gap-3">
-                            <div className="flex-grow relative">
+                            <div className="flex-grow max-w-xl relative">
                                 <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
                                     <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -36,15 +36,17 @@ const CreateOrder = () => {
                                 <input 
                                     type="text" 
                                     placeholder="Search products" 
-                                    className="w-full pl-10 pr-4 py-1.5 bg-white border border-[#d3d3d3] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#008060] transition-all"
+                                    className="w-full pl-10 pr-4 py-1.5 bg-white border border-[#d3d3d3] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#008060] transition-all placeholder:text-gray-500"
                                 />
                             </div>
-                            <button className="px-4 py-1.5 bg-white border border-[#d3d3d3] rounded-lg text-sm font-semibold text-[#202223] hover:bg-gray-50 transition-all shadow-sm">
-                                Browse
-                            </button>
-                            <button className="px-4 py-1.5 bg-white border border-[#d3d3d3] rounded-lg text-sm font-semibold text-[#202223] hover:bg-gray-50 transition-all shadow-sm">
-                                Add custom item
-                            </button>
+                            <div className="flex gap-2">
+                                <button className="px-4 py-1.5 bg-white border border-[#d3d3d3] rounded-lg text-sm font-semibold text-[#202223] hover:bg-gray-50 transition-all shadow-sm">
+                                    Browse
+                                </button>
+                                <button className="px-4 py-1.5 bg-white border border-[#d3d3d3] rounded-lg text-sm font-semibold text-[#202223] hover:bg-gray-50 transition-all shadow-sm">
+                                    Add custom item
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -96,7 +98,7 @@ const CreateOrder = () => {
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                             </button>
                         </div>
-                        <p className="text-sm text-gray-500">No notes</p>
+                        <p className="text-sm text-gray-500 italic">No notes</p>
                     </div>
 
                     {/* Customer Card */}
@@ -155,7 +157,8 @@ const CreateOrder = () => {
                         </div>
                         <input 
                             type="text" 
-                            className="w-full bg-white border border-[#d3d3d3] rounded-lg py-1.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#008060] transition-all"
+                            placeholder="Add tags"
+                            className="w-full bg-white border border-[#d3d3d3] rounded-lg py-1.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#008060] transition-all placeholder:text-gray-500"
                         />
                     </div>
                 </div>

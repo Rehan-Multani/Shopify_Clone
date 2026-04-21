@@ -278,8 +278,9 @@ const Login = () => {
     <div className="min-h-screen bg-[#0B0D11] flex flex-col items-center justify-center px-6 py-10">
 
       {/* Logo */}
-      <div className="mb-8 flex flex-col items-center">
-        <img src={logo} alt="Storify" className="h-20 w-auto" />
+      <div className="mb-8 flex items-center gap-3">
+        <img src={logo} alt="Storify" className="h-12 w-auto" />
+        <span className="text-4xl brand-text leading-none">storify</span>
       </div>
 
       {/* Login Card */}

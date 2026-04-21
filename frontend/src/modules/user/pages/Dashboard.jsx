@@ -38,6 +38,7 @@ import MetaobjectsTab from '../components/dashboard/MetaobjectsTab';
 import FilesTab from '../components/dashboard/FilesTab';
 import MenusTab from '../components/dashboard/MenusTab';
 import BlogPostsTab from '../components/dashboard/BlogPostsTab';
+import CreateMetaobjectDefinition from '../components/dashboard/CreateMetaobjectDefinition';
 
 const Dashboard = () => {
     const { tab } = useParams();
@@ -105,6 +106,7 @@ const Dashboard = () => {
         }
 
         if (tab === 'content') {
+            if (location.pathname.endsWith('/content/metaobjects/new')) return <CreateMetaobjectDefinition />;
             if (location.pathname.endsWith('/content/metaobjects')) return <MetaobjectsTab />;
             if (location.pathname.endsWith('/content/files')) return <FilesTab />;
             if (location.pathname.endsWith('/content/menus')) return <MenusTab />;
@@ -284,16 +286,20 @@ const Dashboard = () => {
         );
     };
 
+    const isFullFocusPage = location.pathname.endsWith('/content/metaobjects/new');
+
     return (
-        <div className="min-h-screen bg-[#f6f6f7] flex overflow-x-hidden relative">
-            <DashboardSidebar 
-                isOpen={isSidebarOpen} 
-                setIsOpen={setIsSidebarOpen} 
-                isChatOpen={isChatOpen}
-                setIsChatOpen={setIsChatOpen}
-            />
+        <div className="min-h-screen bg-[#f6f6f7] flex overflow-x-hidden relative text-[#202223]">
+            {!isFullFocusPage && (
+                <DashboardSidebar 
+                    isOpen={isSidebarOpen} 
+                    setIsOpen={setIsSidebarOpen} 
+                    isChatOpen={isChatOpen}
+                    setIsChatOpen={setIsChatOpen}
+                />
+            )}
             
-            <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 relative ${isSidebarOpen ? 'lg:ml-64' : 'ml-0'}`}>
+            <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 relative ${isSidebarOpen && !isFullFocusPage ? 'lg:ml-64' : 'ml-0'}`}>
                 <DashboardHeader isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} storeName={storeName} />
                 
                 {isChatOpen ? (
@@ -305,7 +311,7 @@ const Dashboard = () => {
                         />
                    </div>
                 ) : (
-                    <main className="mt-14 p-4 lg:p-8 max-w-5xl mx-auto w-full space-y-6 relative z-10 bg-[#f6f6f7]">
+                    <main className={`mt-14 p-4 lg:p-8 w-full space-y-6 relative z-10 bg-[#f6f6f7] ${location.pathname.includes('/new') ? 'max-w-[1248px] mx-auto' : 'max-w-5xl mx-auto'}`}>
                         {renderContent()}
                     </main>
                 )}

@@ -38,7 +38,7 @@ const CreateDiscount = () => {
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
                 </Link>
                 <div className="flex items-center gap-2">
-                    <span className="text-gray-300 font-bold text-xl">›</span>
+                    <span className="text-gray-400 font-bold text-xl">›</span>
                     <h1 className="text-xl font-bold text-[#202223]">{config.title}</h1>
                 </div>
             </div>
@@ -286,7 +286,7 @@ const CreateDiscount = () => {
                     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 space-y-6">
                         <div className="space-y-1">
                             <h3 className="font-bold text-[#202223] text-sm">Summary</h3>
-                            <p className="text-xs text-gray-400">No discount code yet</p>
+                            <p className="text-xs text-gray-500 font-medium">No discount code yet</p>
                         </div>
                         
                         <div className="space-y-4">
@@ -300,7 +300,7 @@ const CreateDiscount = () => {
                             </div>
 
                             <div className="space-y-3">
-                                <p className="text-xs font-bold text-[#202223] uppercase tracking-wider text-gray-400">Details</p>
+                                <p className="text-xs font-bold text-[#202223] uppercase tracking-wider text-gray-500">Details</p>
                                 <ul className="text-xs text-[#5c5f62] space-y-2 list-disc pl-4">
                                     <li>All customers</li>
                                     <li>For Online Store</li>

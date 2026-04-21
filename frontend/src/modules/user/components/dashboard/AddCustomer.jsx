@@ -77,11 +77,11 @@ const AddCustomer = () => {
                         <div className="space-y-4 pt-2">
                             <label className="flex items-start gap-3 group cursor-pointer">
                                 <input type="checkbox" className="mt-1 w-4 h-4 rounded border-gray-300 text-black focus:ring-black" />
-                                <span className="text-sm font-medium text-gray-300">Customer agreed to receive marketing emails.</span>
+                                <span className="text-sm font-medium text-[#202223]">Customer agreed to receive marketing emails.</span>
                             </label>
                             <label className="flex items-start gap-3 group cursor-pointer">
                                 <input type="checkbox" className="mt-1 w-4 h-4 rounded border-gray-300 text-black focus:ring-black" />
-                                <span className="text-sm font-medium text-gray-300">Customer agreed to receive SMS marketing text messages.</span>
+                                <span className="text-sm font-medium text-[#202223]">Customer agreed to receive SMS marketing text messages.</span>
                             </label>
                         </div>
 

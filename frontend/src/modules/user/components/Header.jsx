@@ -30,9 +30,9 @@ const Header = () => {
     >
       <div className="container mx-auto px-6 flex items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="flex items-center cursor-pointer group">
-          <img src={logo} alt="Storify" className="h-6 w-auto" />
-          <span className="ml-2 text-3xl font-black italic text-white tracking-tighter group-hover:text-storify-glow transition-colors">Storify</span>
+        <Link to="/" className="flex items-center cursor-pointer group gap-1.5">
+          <img src={logo} alt="Storify" className="h-8 w-auto flex-shrink-0" />
+          <span className="text-3xl brand-text leading-none">storify</span>
         </Link>
  
         {/* Desktop Nav */}

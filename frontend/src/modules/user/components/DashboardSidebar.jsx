@@ -95,9 +95,10 @@ const DashboardSidebar = ({ isOpen, setIsOpen, isChatOpen, setIsChatOpen }) => {
                     <Link
                         to="/dashboard"
                         onClick={() => setIsChatOpen(false)}
-                        className="flex items-center"
+                        className="flex items-center gap-2 group"
                     >
-                        <img src={logo} alt="Storify" className="h-8 w-auto" />
+                        <img src={logo} alt="Storify" className="h-8 w-auto flex-shrink-0" />
+                        <span className="text-2xl brand-text leading-none">storify</span>
                     </Link>
                 </div>
 
@@ -106,11 +107,11 @@ const DashboardSidebar = ({ isOpen, setIsOpen, isChatOpen, setIsChatOpen }) => {
                         {menuItems.map((item) => (
                             <div key={item.id}>
                                 <Link
-                                    to={item.id === 'home' ? '/dashboard' : `/dashboard/${item.id}`}
+                                    to={item.id === 'content' ? '/dashboard/content/metaobjects' : (item.id === 'home' ? '/dashboard' : `/dashboard/${item.id}`)}
                                     onClick={() => setIsChatOpen(false)}
-                                    className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-bold transition-all group ${isActive(item.id)
+                                    className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-bold transition-all group ${isActive(item.id) && !item.subItems?.some(subItem => location.pathname.includes(`/dashboard/${item.id}/${subItem.id}`))
                                             ? 'bg-white text-black shadow-sm'
-                                            : 'text-[#5c5f62] hover:bg-black/5 hover:text-black font-semibold'
+                                            : isActive(item.id) ? 'text-black font-bold' : 'text-[#5c5f62] hover:bg-black/5 hover:text-black font-semibold'
                                         }`}
                                 >
                                     <svg className={`w-5 h-5 transition-colors ${isActive(item.id)
