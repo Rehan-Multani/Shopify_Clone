@@ -305,7 +305,7 @@ const Dashboard = () => {
                 />
             )}
             
-            <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 relative ${isSidebarOpen && !isFullFocusPage ? 'lg:ml-64' : 'ml-0'}`}>
+            <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 relative ${!isFullFocusPage ? 'lg:ml-64' : 'ml-0'}`}>
                 <DashboardHeader isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} storeName={storeName} />
                 
                 {isChatOpen ? (

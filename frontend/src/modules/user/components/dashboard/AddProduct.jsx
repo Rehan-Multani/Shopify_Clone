@@ -305,7 +305,7 @@ const AddProduct = () => {
             </div>
 
             {/* Sticky Save Bar */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#e3e3e3] py-4 px-6 z-50 flex justify-end gap-3 shadow-[0_-4px_10px_rgba(0,0,0,0.03)]">
+            <div className="fixed bottom-0 left-0 lg:left-64 right-0 bg-white border-t border-[#e3e3e3] py-4 px-6 z-50 flex justify-end gap-3 shadow-[0_-4px_10px_rgba(0,0,0,0.03)] transition-all duration-300">
                 <button 
                   onClick={() => navigate('/dashboard/products')}
                   className="px-4 py-2 text-sm font-bold text-[#202223] hover:bg-gray-100 rounded-lg transition-all"
