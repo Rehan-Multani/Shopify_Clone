@@ -253,6 +253,12 @@ const Dashboard = () => {
                             <h3 className="font-bold text-base lg:text-lg mb-2 text-[#202223] transition-colors">Import your products from Amazon</h3>
                             <p className="text-xs lg:text-sm text-[#5c5f62] mb-4 lg:mb-6 flex-grow leading-relaxed">Not ready to import? <span className="text-blue-600 underline">Add a product manually</span> to get started</p>
                             <div className="flex items-center gap-2 lg:gap-3">
+                                <Link 
+                                    to="/dashboard/products/new"
+                                    className="bg-white text-black border border-gray-200 px-6 py-2 rounded-lg font-bold text-xs lg:text-sm hover:bg-gray-50 transition-all shadow-sm active:scale-95"
+                                >
+                                    Add product
+                                </Link>
                                 <button 
                                     onClick={() => setIsCSVModalOpen(true)}
                                     className="bg-[#1a1c23] text-white px-6 py-2 rounded-lg font-bold text-xs lg:text-sm hover:bg-black transition-all shadow-md active:scale-95"
