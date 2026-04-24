@@ -305,11 +305,11 @@ const Dashboard = () => {
                 />
             )}
             
-            <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 relative ${!isFullFocusPage ? 'lg:ml-64' : 'ml-0'}`}>
+            <div className="flex-1 flex flex-col min-w-0 transition-all duration-300 relative">
                 <DashboardHeader isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} storeName={storeName} />
                 
                 {isChatOpen ? (
-                   <div className="mt-14 h-[calc(100vh-3.5rem)] flex flex-col">
+                   <div className="h-[calc(100vh-3.5rem)] flex flex-col">
                         <SidekickChat 
                             isOpen={isChatOpen} 
                             onClose={() => setIsChatOpen(false)} 
@@ -317,7 +317,7 @@ const Dashboard = () => {
                         />
                    </div>
                 ) : (
-                    <main className={`mt-14 p-4 lg:p-8 w-full space-y-6 relative z-10 bg-[#f6f6f7] ${location.pathname.includes('/new') ? 'max-w-[1248px] mx-auto' : 'max-w-5xl mx-auto'}`}>
+                    <main className={`p-4 lg:p-8 w-full space-y-6 relative z-10 bg-[#f6f6f7] ${location.pathname.includes('/new') ? 'max-w-[1248px] mx-auto' : 'max-w-5xl mx-auto'}`}>
                         {renderContent()}
                     </main>
                 )}

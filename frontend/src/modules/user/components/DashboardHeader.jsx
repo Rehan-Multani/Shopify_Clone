@@ -5,7 +5,7 @@ const DashboardHeader = ({ isOpen, setIsOpen, storeName: propStoreName }) => {
     const storeInitials = storeName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
 
     return (
-        <header className="h-14 bg-[#1a1c23] border-b border-white/5 flex items-center justify-between px-4 fixed top-0 right-0 left-0 lg:left-64 z-[40] transition-all duration-300 shadow-xl">
+        <header className="h-14 bg-[#1a1c23] border-b border-white/5 flex items-center justify-between px-4 sticky top-0 z-[40] transition-all duration-300 shadow-xl">
             {/* Mobile Menu Toggle */}
             <button 
                 onClick={() => setIsOpen(!isOpen)}
