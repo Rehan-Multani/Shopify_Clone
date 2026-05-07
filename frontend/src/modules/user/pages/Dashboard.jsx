@@ -295,17 +295,17 @@ const Dashboard = () => {
     const isFullFocusPage = location.pathname.endsWith('/content/metaobjects/new');
 
     return (
-        <div className="min-h-screen bg-[#f6f6f7] flex overflow-x-hidden relative text-[#202223]">
+        <div style={{ height: '100vh', display: 'flex', overflow: 'hidden' }} className="bg-[#f6f6f7] text-[#202223] relative">
             {!isFullFocusPage && (
-                <DashboardSidebar 
-                    isOpen={isSidebarOpen} 
-                    setIsOpen={setIsSidebarOpen} 
+                <DashboardSidebar
+                    isOpen={isSidebarOpen}
+                    setIsOpen={setIsSidebarOpen}
                     isChatOpen={isChatOpen}
                     setIsChatOpen={setIsChatOpen}
                 />
             )}
-            
-            <div className="flex-1 flex flex-col min-w-0 transition-all duration-300 relative">
+
+            <div className="flex-1 flex flex-col min-w-0 transition-all duration-300 relative overflow-y-auto">
                 <DashboardHeader isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} storeName={storeName} />
                 
                 {isChatOpen ? (

@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\AnkitAhirwar\\\\OneDrive\\\\Desktop\\\\shopify\" -Force)",
+      "Bash(Select-Object Name, FullName)"
+    ]
+  }
+}

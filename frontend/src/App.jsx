@@ -8,6 +8,7 @@ import Dashboard from './modules/user/pages/Dashboard';
 import PickPlan from './modules/user/pages/PickPlan';
 import Signup from './modules/user/pages/Signup';
 import Subscribe from './modules/user/pages/Subscribe';
+import MasterAdminPage from './modules/masterAdmin/pages/MasterAdminPage';
 
 function App() {
   return (
@@ -22,6 +23,8 @@ function App() {
         <Route path="/dashboard/plan/subscribe" element={<Subscribe />} />
         <Route path="/dashboard/:tab/*" element={<Dashboard />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/master-admin" element={<MasterAdminPage />} />
+        <Route path="/master-admin/:tab" element={<MasterAdminPage />} />
       </Routes>
     </Router>
   );

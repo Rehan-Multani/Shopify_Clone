@@ -90,7 +90,13 @@ const DashboardSidebar = ({ isOpen, setIsOpen, isChatOpen, setIsChatOpen }) => {
                 onClick={() => setIsOpen(false)}
             />
 
-            <aside className={`w-64 bg-[#f1f1f1] border-r border-gray-200 flex flex-col h-screen fixed lg:sticky left-0 top-0 z-[70] overflow-y-auto transition-transform duration-300 transform ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0 lg:transform-none'} shadow-2xl lg:shadow-none`}>
+            <aside className={`
+                fixed inset-y-0 left-0 z-[70] w-64
+                lg:relative lg:inset-auto lg:z-auto lg:h-full
+                transform transition-transform duration-300
+                ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+                bg-[#f1f1f1] border-r border-gray-200 flex flex-col overflow-y-auto shadow-2xl lg:shadow-none
+            `}>
                 <div className="p-6 mb-2">
                     <Link
                         to="/dashboard"
