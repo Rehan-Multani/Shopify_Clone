@@ -2,7 +2,13 @@
   "permissions": {
     "allow": [
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\AnkitAhirwar\\\\OneDrive\\\\Desktop\\\\shopify\" -Force)",
-      "Bash(Select-Object Name, FullName)"
+      "Bash(Select-Object Name, FullName)",
+      "Bash(npm install *)",
+      "Bash(node -e \"import\\('./src/app.js'\\).then\\(\\(\\)=>console.log\\('app loaded ok'\\)\\).catch\\(e=>{console.error\\('FAIL',e.message\\);process.exit\\(1\\)}\\)\")",
+      "Bash(cmd /c \"tree /F /A src\")",
+      "Bash(cd /c \"C:\\\\Users\\\\AnkitAhirwar\\\\OneDrive\\\\Desktop\\\\shopify\\\\backend\")",
+      "Bash(cmd //c \"tree /F /A src\")",
+      "Bash(node *)"
     ]
   }
 }
