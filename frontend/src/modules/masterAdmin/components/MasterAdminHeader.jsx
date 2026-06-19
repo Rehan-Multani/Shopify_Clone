@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const notifications = [
     { id: 1, text: 'New store registration: ArtisanCrafts Brazil', time: '2m ago', urgent: false },
@@ -24,8 +24,15 @@ const pageTitles = {
 
 const MasterAdminHeader = ({ isOpen, setIsOpen }) => {
     const location = useLocation();
+    const navigate = useNavigate();
     const [showNotifications, setShowNotifications] = useState(false);
+    const [showProfileMenu, setShowProfileMenu] = useState(false);
     const [searchValue, setSearchValue] = useState('');
+
+    const handleLogout = () => {
+        localStorage.clear();
+        navigate('/superadmin/login');
+    };
 
     const currentTab = location.pathname.split('/')[2] || 'overview';
     const pageTitle = pageTitles[currentTab] || 'Master Admin';
@@ -126,19 +133,80 @@ const MasterAdminHeader = ({ isOpen, setIsOpen }) => {
 
                 <div className="w-px h-6 mx-1" style={{ background: 'rgba(255,255,255,0.08)' }}></div>
 
-                {/* Admin profile */}
-                <button className="flex items-center gap-2 px-2 py-1 rounded-lg transition-all group"
-                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
-                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                >
-                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black text-white flex-shrink-0" style={{ background: 'linear-gradient(135deg, #14B8A6, #0F766E)' }}>
-                        MA
-                    </div>
-                    <span className="text-sm font-semibold text-white hidden sm:block">Master Admin</span>
-                    <svg className="w-4 h-4 text-gray-500 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                </button>
+                {/* Admin profile & Dropdown */}
+                <div className="relative">
+                    <button 
+                        onClick={() => setShowProfileMenu(v => !v)}
+                        className="flex items-center gap-2 px-2 py-1 rounded-lg transition-all group"
+                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                    >
+                        <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black text-white flex-shrink-0" style={{ background: 'linear-gradient(135deg, #14B8A6, #0F766E)' }}>
+                            MA
+                        </div>
+                        <span className="text-sm font-semibold text-white hidden sm:block">Master Admin</span>
+                        <svg className={`w-4 h-4 text-gray-500 group-hover:text-white transition-all ${showProfileMenu ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+
+                    {showProfileMenu && (
+                        <>
+                            <div className="fixed inset-0 z-40" onClick={() => setShowProfileMenu(false)} />
+                            <div className="absolute right-0 top-full mt-2 w-48 rounded-xl shadow-2xl z-50 overflow-hidden" style={{ background: '#1e2028', border: '1px solid rgba(255,255,255,0.08)' }}>
+                                <div className="px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                                    <p className="text-sm font-bold text-white">Master Admin</p>
+                                    <p className="text-xs text-gray-400 mt-0.5">admin@storify.com</p>
+                                </div>
+                                <div className="p-1.5 space-y-0.5">
+                                    <button 
+                                        onClick={() => {
+                                            setShowProfileMenu(false);
+                                            navigate('/superadmin/settings');
+                                        }}
+                                        className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:text-white rounded-lg transition-all flex items-center gap-2"
+                                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+                                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                                    >
+                                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </svg>
+                                        Settings
+                                    </button>
+                                    <button 
+                                        onClick={() => {
+                                            setShowProfileMenu(false);
+                                            setShowNotifications(true);
+                                        }}
+                                        className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:text-white rounded-lg transition-all flex items-center gap-2"
+                                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+                                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                                    >
+                                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                                        </svg>
+                                        Notifications
+                                    </button>
+                                    <div className="h-px w-full my-1" style={{ background: 'rgba(255,255,255,0.06)' }}></div>
+                                    <button 
+                                        onClick={() => {
+                                            setShowProfileMenu(false);
+                                            handleLogout();
+                                        }}
+                                        className="w-full text-left px-3 py-2 text-sm text-red-400 hover:text-red-300 rounded-lg transition-all flex items-center gap-2"
+                                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,0,0,0.1)'}
+                                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                        </svg>
+                                        Log Out
+                                    </button>
+                                </div>
+                            </div>
+                        </>
+                    )}
+                </div>
             </div>
         </header>
     );

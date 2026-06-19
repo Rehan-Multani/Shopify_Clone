@@ -39,6 +39,14 @@ import FilesTab from '../components/dashboard/FilesTab';
 import MenusTab from '../components/dashboard/MenusTab';
 import BlogPostsTab from '../components/dashboard/BlogPostsTab';
 import CreateMetaobjectDefinition from '../components/dashboard/CreateMetaobjectDefinition';
+import ReportsTab from '../components/dashboard/ReportsTab';
+import ProfileTab from '../components/dashboard/ProfileTab';
+import CategoryTab from '../components/dashboard/CategoryTab';
+import AddCategorySingle from '../components/dashboard/AddCategory';
+import SingleVendorProductsTab from '../components/dashboard/SingleVendorProductsTab';
+import AddSingleVendorProduct from '../components/dashboard/AddSingleVendorProduct';
+import CouponsTab from '../components/dashboard/CouponsTab';
+import CreateCouponSingle from '../components/dashboard/CreateCouponSingle';
 
 const Dashboard = () => {
     const { tab } = useParams();
@@ -51,6 +59,7 @@ const Dashboard = () => {
     const [isEditingStoreName, setIsEditingStoreName] = React.useState(false);
     const [isCSVModalOpen, setIsCSVModalOpen] = React.useState(false);
     const [editValue, setEditValue] = React.useState('');
+    const panelMode = localStorage.getItem('adminPanelType') || 'single';
 
     const handleSaveStoreName = () => {
         if (editValue.trim()) {
@@ -61,6 +70,48 @@ const Dashboard = () => {
     };
 
     const renderContent = () => {
+        if (tab === 'category') {
+            if (panelMode === 'single') {
+                if (location.pathname.endsWith('/new')) return <AddCategorySingle />;
+                return <CategoryTab />;
+            }
+            if (location.pathname.endsWith('/new')) return <AddCollection />;
+            return <CollectionsTab />;
+        }
+
+        if (tab === 'coupons') {
+            if (panelMode === 'single') {
+                if (location.pathname.endsWith('/new')) return <CreateCouponSingle />;
+                return <CouponsTab />;
+            }
+            if (location.pathname.endsWith('/new')) return <CreateDiscount />;
+            return <DiscountsTab />;
+        }
+
+        if (tab === 'analytics') {
+            return <MarketingOverview />;
+        }
+
+        if (tab === 'reports') {
+            return <ReportsTab />;
+        }
+
+        if (tab === 'pages') {
+            return <MenusTab />;
+        }
+
+        if (tab === 'websites') {
+            return <ThemesTab />;
+        }
+
+        if (tab === 'profile') {
+            return <ProfileTab />;
+        }
+
+        if (tab === 'inventory') {
+            return <InventoryTab />;
+        }
+
         if (tab === 'orders') {
             if (location.pathname.endsWith('/drafts')) return <DraftsTab />;
             if (location.pathname.endsWith('/abandoned')) return <AbandonedTab />;
@@ -69,6 +120,12 @@ const Dashboard = () => {
         }
 
         if (tab === 'products') {
+            if (panelMode === 'single') {
+                if (location.pathname.endsWith('/new')) return <AddSingleVendorProduct />;
+                if (location.pathname.endsWith('/inventory')) return <InventoryTab />;
+                if (location.pathname.endsWith('/purchase-orders')) return <PurchaseOrdersTab />;
+                return <SingleVendorProductsTab />;
+            }
             if (location.pathname.endsWith('/collections/new')) return <AddCollection />;
             if (location.pathname.endsWith('/collections')) return <CollectionsTab />;
             if (location.pathname.endsWith('/inventory')) return <InventoryTab />;

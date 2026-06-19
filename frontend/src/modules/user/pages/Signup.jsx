@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import logo from '../../../assets/storify-logo.png';
 
 const Signup = () => {
   const [email, setEmail] = useState('');
 
+  const navigate = useNavigate();
+
   const handleContinue = (e) => {
     e?.preventDefault();
-    window.location.href = '/login';
+    navigate('/admin/login');
   };
 
   return (
@@ -104,7 +106,7 @@ const Signup = () => {
         {/* Login link */}
         <p className="text-center text-sm text-gray-400 pt-1">
           Already have a Storify account?{' '}
-          <Link to="/login" className="text-gray-600 font-semibold underline hover:text-gray-900 transition-colors">
+          <Link to="/admin/login" className="text-gray-600 font-semibold underline hover:text-gray-900 transition-colors">
             Log in
           </Link>
         </p>

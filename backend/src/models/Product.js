@@ -1,68 +1,97 @@
 import mongoose from 'mongoose';
 import slugify from 'slugify';
 
-const variantSchema = new mongoose.Schema(
-  {
-    sku: { type: String, trim: true },
-    title: { type: String, trim: true },
-    option1: String,
-    option2: String,
-    option3: String,
-    price: { type: Number, required: true, min: 0 },
-    compareAtPrice: { type: Number, min: 0 },
-    costPerItem: { type: Number, min: 0 },
-    stock: { type: Number, default: 0, min: 0 },
-    weight: { type: Number, min: 0 },
-    image: { url: String, publicId: String },
-  },
-  { _id: true, timestamps: true }
-);
-
-const productSchema = new mongoose.Schema(
-  {
-    store: { type: mongoose.Schema.Types.ObjectId, ref: 'Store', required: true, index: true },
-    title: { type: String, required: true, trim: true, maxlength: 200 },
-    slug: { type: String, index: true },
-    description: { type: String },
-    category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },
-    tags: { type: [String], default: [] },
-    vendor: String,
-    productType: String,
-    images: [{ url: String, publicId: String, alt: String }],
-    price: { type: Number, required: true, min: 0 },
-    compareAtPrice: { type: Number, min: 0 },
-    sku: { type: String, trim: true },
-    barcode: String,
-    stock: { type: Number, default: 0, min: 0 },
-    trackInventory: { type: Boolean, default: true },
-    allowBackorder: { type: Boolean, default: false },
-    weight: { type: Number, min: 0 },
-    options: [{ name: String, values: [String] }],
-    variants: [variantSchema],
-    status: {
-      type: String,
-      enum: ['draft', 'active', 'archived'],
-      default: 'draft',
-      index: true,
+const productSchema = new mongoose.Schema({
+    merchant: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Merchant',
+        required: [true, 'Product must belong to a merchant']
     },
-    seo: {
-      title: String,
-      description: String,
+    name: {
+        type: String,
+        required: [true, 'Please add a product name'],
+        trim: true,
+        maxlength: [200, 'Product name cannot exceed 200 characters']
     },
-    ratingsAvg: { type: Number, default: 0, min: 0, max: 5 },
-    ratingsCount: { type: Number, default: 0 },
-  },
-  { timestamps: true }
-);
-
-productSchema.index({ store: 1, slug: 1 }, { unique: true });
-productSchema.index({ store: 1, title: 'text', description: 'text', tags: 'text' });
-
-productSchema.pre('validate', function (next) {
-  if (this.isModified('title') || !this.slug) {
-    this.slug = slugify(this.title, { lower: true, strict: true });
-  }
-  next();
+    images: {
+        type: [String],
+        validate: {
+            validator: function (v) {
+                return v.length <= 5;
+            },
+            message: 'A product can have a maximum of 5 images'
+        },
+        default: []
+    },
+    description: {
+        type: String,
+        default: '',
+        maxlength: [2000, 'Description cannot exceed 2000 characters']
+    },
+    brandName: {
+        type: String,
+        default: '',
+        trim: true
+    },
+    sku: {
+        type: String,
+        default: '',
+        trim: true,
+        uppercase: true
+    },
+    actualPrice: {
+        type: Number,
+        required: [true, 'Please add the actual price'],
+        min: [0, 'Price cannot be negative']
+    },
+    sellingPrice: {
+        type: Number,
+        required: [true, 'Please add the selling price'],
+        min: [0, 'Price cannot be negative']
+    },
+    category: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Category',
+        default: null
+    },
+    stock: {
+        type: Number,
+        default: 0,
+        min: [0, 'Stock cannot be negative']
+    },
+    isActive: {
+        type: Boolean,
+        default: true
+    },
+    tags: {
+        type: [String],
+        default: []
+    },
+    weight: {
+        type: String,
+        default: ''
+    },
+    slug: {
+        type: String
+    }
+}, {
+    timestamps: true
 });
 
-export default mongoose.model('Product', productSchema);
+// Generate slug from name before saving
+productSchema.pre('save', function (next) {
+    if (this.isModified('name')) {
+        this.slug = slugify(this.name, { lower: true, strict: true });
+    }
+    next();
+});
+
+// Compound index: SKU unique per merchant (only if SKU is provided)
+productSchema.index(
+    { merchant: 1, sku: 1 },
+    { unique: true, partialFilterExpression: { sku: { $ne: '' } } }
+);
+
+const Product = mongoose.model('Product', productSchema);
+
+export default Product;

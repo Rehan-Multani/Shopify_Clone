@@ -1,5 +1,4 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './modules/user/pages/Home';
 import Pricing from './modules/user/pages/Pricing';
 import Enterprise from './modules/user/pages/Enterprise';
@@ -9,6 +8,11 @@ import PickPlan from './modules/user/pages/PickPlan';
 import Signup from './modules/user/pages/Signup';
 import Subscribe from './modules/user/pages/Subscribe';
 import MasterAdminPage from './modules/masterAdmin/pages/MasterAdminPage';
+import MasterAdminLogin from './modules/masterAdmin/pages/MasterAdminLogin';
+import ProtectedRoute from './modules/masterAdmin/components/ProtectedRoute';
+import MerchantProtectedRoute from './modules/user/components/MerchantProtectedRoute';
+import ForgotPassword from './modules/user/pages/ForgotPassword';
+
 
 function App() {
   return (
@@ -17,14 +21,41 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/enterprise" element={<Enterprise />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/dashboard/plan" element={<PickPlan />} />
-        <Route path="/dashboard/plan/subscribe" element={<Subscribe />} />
-        <Route path="/dashboard/:tab/*" element={<Dashboard />} />
+        <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
+        <Route path="/admin/login" element={<Login />} />
+        <Route path="/dashboard" element={
+          <MerchantProtectedRoute>
+            <Dashboard />
+          </MerchantProtectedRoute>
+        } />
+        <Route path="/dashboard/plan" element={
+          <MerchantProtectedRoute>
+            <PickPlan />
+          </MerchantProtectedRoute>
+        } />
+        <Route path="/dashboard/plan/subscribe" element={
+          <MerchantProtectedRoute>
+            <Subscribe />
+          </MerchantProtectedRoute>
+        } />
+        <Route path="/dashboard/:tab/*" element={
+          <MerchantProtectedRoute>
+            <Dashboard />
+          </MerchantProtectedRoute>
+        } />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/master-admin" element={<MasterAdminPage />} />
-        <Route path="/master-admin/:tab" element={<MasterAdminPage />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/superadmin/login" element={<MasterAdminLogin />} />
+        <Route path="/superadmin" element={
+          <ProtectedRoute>
+            <Navigate to="/superadmin/overview" replace />
+          </ProtectedRoute>
+        } />
+        <Route path="/superadmin/:tab" element={
+          <ProtectedRoute>
+            <MasterAdminPage />
+          </ProtectedRoute>
+        } />
       </Routes>
     </Router>
   );
