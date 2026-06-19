@@ -1,9 +1,18 @@
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import logo from '../../../assets/storify-logo.png';
 
 const DashboardSidebar = ({ isOpen, setIsOpen, isChatOpen, setIsChatOpen }) => {
     const location = useLocation();
+    const navigate = useNavigate();
+    const [panelMode, setPanelMode] = useState(localStorage.getItem('adminPanelType') || 'single');
+
+    const handlePanelModeChange = (mode) => {
+        localStorage.setItem('adminPanelType', mode);
+        setPanelMode(mode);
+        // Redirect to dashboard root to reload properly
+        navigate('/dashboard');
+    };
 
     const isActive = (id) => {
         if (id === 'home') {
@@ -12,7 +21,22 @@ const DashboardSidebar = ({ isOpen, setIsOpen, isChatOpen, setIsChatOpen }) => {
         return location.pathname.startsWith(`/dashboard/${id}`);
     };
 
-    const menuItems = [
+    const singleVendorMenuItems = [
+        { id: 'home', label: 'Dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
+        { id: 'orders', label: 'Orders', icon: 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z' },
+        { id: 'products', label: 'Products', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
+        { id: 'category', label: 'Category', icon: 'M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2zm2 2h14v2H5V9zm0 4h14v4H5v-4z' },
+        { id: 'inventory', label: 'Inventory', icon: 'M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4' },
+        { id: 'customers', label: 'Customers', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
+        { id: 'coupons', label: 'Coupons', icon: 'M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z' },
+        { id: 'analytics', label: 'Analytics', icon: 'M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z' },
+        { id: 'reports', label: 'Reports', icon: 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
+        { id: 'pages', label: 'Pages', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
+        { id: 'websites', label: 'Websites', icon: 'M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9' },
+        { id: 'profile', label: 'Profile', icon: 'M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z' }
+    ];
+
+    const multiVendorMenuItems = [
         { id: 'home', label: 'Home', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
         {
             id: 'orders',
@@ -82,6 +106,8 @@ const DashboardSidebar = ({ isOpen, setIsOpen, isChatOpen, setIsChatOpen }) => {
         },
     ];
 
+    const menuItems = panelMode === 'single' ? singleVendorMenuItems : multiVendorMenuItems;
+
     return (
         <>
             {/* Mobile Backdrop */}
@@ -97,7 +123,7 @@ const DashboardSidebar = ({ isOpen, setIsOpen, isChatOpen, setIsChatOpen }) => {
                 ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
                 bg-[#f1f1f1] border-r border-gray-200 flex flex-col overflow-y-auto shadow-2xl lg:shadow-none
             `}>
-                <div className="p-6 mb-2">
+                <div className="p-6 pb-2">
                     <Link
                         to="/dashboard"
                         onClick={() => setIsChatOpen(false)}
@@ -108,7 +134,13 @@ const DashboardSidebar = ({ isOpen, setIsOpen, isChatOpen, setIsChatOpen }) => {
                     </Link>
                 </div>
 
-                <nav className="flex-grow px-2 py-4">
+                <div className="px-6 mb-4">
+                    <div className="w-full px-3 py-2 bg-white/60 border border-gray-200 rounded-lg text-xs font-black text-[#202223] tracking-wide text-center">
+                        {panelMode === 'multi' ? 'Multi Vendor Admin' : 'Single Vendor Admin'}
+                    </div>
+                </div>
+
+                <nav className="flex-grow px-2 py-2">
                     <div className="space-y-1">
                         {menuItems.map((item) => (
                             <div key={item.id}>
@@ -165,80 +197,84 @@ const DashboardSidebar = ({ isOpen, setIsOpen, isChatOpen, setIsChatOpen }) => {
                         ))}
                     </div>
 
-                    <div className="mt-8">
-                        <div className="px-3 mb-2 flex items-center justify-between group">
-                            <span className="text-[10px] font-black text-gray-500 tracking-[0.2em] uppercase">Sales channels</span>
-                            <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/5 rounded transition-all text-gray-500">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-                            </button>
-                        </div>
-                        <div className="space-y-1">
-                            {salesChannels.map((item) => (
-                                <div key={item.id}>
-                                    <Link
-                                        to={`/dashboard/${item.id}/${item.subItems ? item.subItems[0].id : ''}`}
-                                        onClick={() => setIsChatOpen(false)}
-                                        className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-bold transition-all group ${isActive(item.id)
-                                                ? 'bg-white text-black shadow-sm'
-                                                : 'text-[#5c5f62] hover:bg-black/5 hover:text-black font-semibold'
-                                            }`}
-                                    >
-                                        <svg className={`w-5 h-5 transition-colors ${isActive(item.id)
-                                                ? 'text-black'
-                                                : 'text-[#5c5f62] group-hover:text-black'
-                                            }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
-                                        </svg>
-                                        {item.label}
-                                    </Link>
-
-                                    {/* Sub-items rendering for sales channels */}
-                                    {isActive(item.id) && item.subItems && (
-                                        <div className="mt-1 ml-4 space-y-0.5 relative">
-                                            <div className="absolute left-[13px] top-[-10px] bottom-[18px] w-[1.5px] bg-[#d3d6d9] rounded-full"></div>
-                                            {item.subItems.map((subItem) => {
-                                                const isSubActive = location.pathname.includes(`/dashboard/${item.id}/${subItem.id}`);
-                                                return (
-                                                    <div key={subItem.id} className="relative flex items-center group">
-                                                        <div className="ml-[13px] mr-2 flex-shrink-0">
-                                                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-[#d3d6d9]">
-                                                                <path d="M0 0V8C0 9.10457 0.89543 10 2 10H10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                                                                <path d="M8 7.5L10.5 10L8 12.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                                            </svg>
-                                                        </div>
-                                                        <Link
-                                                            to={`/dashboard/${item.id}/${subItem.id}`}
-                                                            className={`flex-grow py-1.5 px-2 text-sm transition-all rounded-md ${isSubActive
-                                                                    ? 'text-black font-bold bg-[#ffffff] shadow-sm translate-x-1'
-                                                                    : 'text-[#5c5f62] hover:text-black font-medium hover:translate-x-1'
-                                                                }`}
-                                                        >
-                                                            {subItem.label}
-                                                        </Link>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    )}
+                    {panelMode === 'multi' && (
+                        <>
+                            <div className="mt-8">
+                                <div className="px-3 mb-2 flex items-center justify-between group">
+                                    <span className="text-[10px] font-black text-gray-500 tracking-[0.2em] uppercase">Sales channels</span>
+                                    <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/5 rounded transition-all text-gray-500">
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                                    </button>
                                 </div>
-                            ))}
-                        </div>
-                    </div>
+                                <div className="space-y-1">
+                                    {salesChannels.map((item) => (
+                                        <div key={item.id}>
+                                            <Link
+                                                to={`/dashboard/${item.id}/${item.subItems ? item.subItems[0].id : ''}`}
+                                                onClick={() => setIsChatOpen(false)}
+                                                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-bold transition-all group ${isActive(item.id)
+                                                        ? 'bg-white text-black shadow-sm'
+                                                        : 'text-[#5c5f62] hover:bg-black/5 hover:text-black font-semibold'
+                                                    }`}
+                                            >
+                                                <svg className={`w-5 h-5 transition-colors ${isActive(item.id)
+                                                        ? 'text-black'
+                                                        : 'text-[#5c5f62] group-hover:text-black'
+                                                    }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
+                                                </svg>
+                                                {item.label}
+                                            </Link>
 
-                    <div className="mt-8">
-                        <div className="px-3 mb-2 flex items-center justify-between group">
-                            <span className="text-xs font-bold text-[#5c5f62] tracking-wider uppercase">Apps</span>
-                            <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-[#e4e3e6] rounded transition-all">
-                                <svg className="w-4 h-4 text-[#5c5f62]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-                            </button>
-                        </div>
-                        <button className="w-full flex items-center gap-3 px-3 py-1.5 rounded-lg text-sm font-semibold text-[#5c5f62] hover:bg-[#e4e3e6] transition-all">
-                            <div className="w-5 h-5 flex items-center justify-center bg-gray-200 rounded">
-                                <svg className="w-3 h-3 text-[#5c5f62]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" /></svg>
+                                            {/* Sub-items rendering for sales channels */}
+                                            {isActive(item.id) && item.subItems && (
+                                                <div className="mt-1 ml-4 space-y-0.5 relative">
+                                                    <div className="absolute left-[13px] top-[-10px] bottom-[18px] w-[1.5px] bg-[#d3d6d9] rounded-full"></div>
+                                                    {item.subItems.map((subItem) => {
+                                                        const isSubActive = location.pathname.includes(`/dashboard/${item.id}/${subItem.id}`);
+                                                        return (
+                                                            <div key={subItem.id} className="relative flex items-center group">
+                                                                <div className="ml-[13px] mr-2 flex-shrink-0">
+                                                                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-[#d3d6d9]">
+                                                                        <path d="M0 0V8C0 9.10457 0.89543 10 2 10H10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                                                        <path d="M8 7.5L10.5 10L8 12.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                                                    </svg>
+                                                                </div>
+                                                                <Link
+                                                                    to={`/dashboard/${item.id}/${subItem.id}`}
+                                                                    className={`flex-grow py-1.5 px-2 text-sm transition-all rounded-md ${isSubActive
+                                                                            ? 'text-black font-bold bg-[#ffffff] shadow-sm translate-x-1'
+                                                                            : 'text-[#5c5f62] hover:text-black font-medium hover:translate-x-1'
+                                                                        }`}
+                                                                >
+                                                                    {subItem.label}
+                                                                </Link>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
-                            Add
-                        </button>
-                    </div>
+
+                            <div className="mt-8">
+                                <div className="px-3 mb-2 flex items-center justify-between group">
+                                    <span className="text-xs font-bold text-[#5c5f62] tracking-wider uppercase">Apps</span>
+                                    <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-[#e4e3e6] rounded transition-all">
+                                        <svg className="w-4 h-4 text-[#5c5f62]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                                    </button>
+                                </div>
+                                <button className="w-full flex items-center gap-3 px-3 py-1.5 rounded-lg text-sm font-semibold text-[#5c5f62] hover:bg-[#e4e3e6] transition-all">
+                                    <div className="w-5 h-5 flex items-center justify-center bg-gray-200 rounded">
+                                        <svg className="w-3 h-3 text-[#5c5f62]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" /></svg>
+                                    </div>
+                                    Add
+                                </button>
+                            </div>
+                        </>
+                    )}
                 </nav>
 
                 <div className="p-4 border-t border-gray-200 space-y-4">
@@ -268,6 +304,14 @@ const DashboardSidebar = ({ isOpen, setIsOpen, isChatOpen, setIsChatOpen }) => {
                         <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-bold text-[#5c5f62] hover:bg-black/5 hover:text-black transition-all">
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                             Settings
+                        </button>
+                        <button onClick={() => {
+                            localStorage.removeItem('merchantInfo');
+                            localStorage.removeItem('shopStoreName');
+                            navigate('/admin/login');
+                        }} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-bold text-red-500 hover:bg-red-50 transition-all mt-1">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                            Logout
                         </button>
                     </div>
                     <div className="p-4 bg-[#0B0F14] rounded-xl text-white mt-4 relative overflow-hidden group transition-all shadow-xl">

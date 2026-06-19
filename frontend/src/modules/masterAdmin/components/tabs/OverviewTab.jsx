@@ -126,9 +126,9 @@ const OverviewTab = () => {
             {/* Quick Stats Row */}
             <div className="grid grid-cols-3 gap-4">
                 {[
-                    { label: 'Open Tickets', value: '8', link: '/master-admin/support', color: '#ef4444' },
-                    { label: 'Apps Pending Review', value: '3', link: '/master-admin/apps', color: '#F59E0B' },
-                    { label: 'Trial Stores Expiring (7d)', value: '14', link: '/master-admin/stores', color: '#3B82F6' },
+                    { label: 'Open Tickets', value: '8', link: '/superadmin/support', color: '#ef4444' },
+                    { label: 'Apps Pending Review', value: '3', link: '/superadmin/apps', color: '#F59E0B' },
+                    { label: 'Trial Stores Expiring (7d)', value: '14', link: '/superadmin/stores', color: '#3B82F6' },
                 ].map(q => (
                     <Link key={q.label} to={q.link} className={`${card} p-4 flex items-center justify-between hover:shadow-md transition-all group`}>
                         <span className="text-sm font-semibold text-[#5c5f62] group-hover:text-[#202223] transition-colors">{q.label}</span>
@@ -168,7 +168,7 @@ const OverviewTab = () => {
                     </div>
                     <div className="mt-4 pt-4 border-t border-[#f0f0f0] flex items-center justify-between text-xs text-[#9CA3AF]">
                         <span>Peak day: <strong className="text-[#202223]">Friday — $487K</strong></span>
-                        <Link to="/master-admin/analytics" className="font-semibold hover:opacity-80 transition-opacity" style={{ color: '#14B8A6' }}>Full analytics →</Link>
+                        <Link to="/superadmin/analytics" className="font-semibold hover:opacity-80 transition-opacity" style={{ color: '#14B8A6' }}>Full analytics →</Link>
                     </div>
                 </div>
 
@@ -203,7 +203,7 @@ const OverviewTab = () => {
                 <div className={`${card} p-6`}>
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-sm font-bold text-[#202223]">Recent Signups</h2>
-                        <Link to="/master-admin/stores" className="text-xs font-semibold hover:opacity-80" style={{ color: '#14B8A6' }}>View all</Link>
+                        <Link to="/superadmin/stores" className="text-xs font-semibold hover:opacity-80" style={{ color: '#14B8A6' }}>View all</Link>
                     </div>
                     <div className="space-y-3">
                         {recentStores.map((s, i) => (
@@ -247,7 +247,7 @@ const OverviewTab = () => {
                 <div className={`${card} p-6`}>
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-sm font-bold text-[#202223]">Platform Health</h2>
-                        <Link to="/master-admin/settings" className="text-xs font-semibold hover:opacity-80" style={{ color: '#14B8A6' }}>Details</Link>
+                        <Link to="/superadmin/settings" className="text-xs font-semibold hover:opacity-80" style={{ color: '#14B8A6' }}>Details</Link>
                     </div>
                     <div className="space-y-3">
                         {healthChecks.map((h, i) => (

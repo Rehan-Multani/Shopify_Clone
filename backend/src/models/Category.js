@@ -1,26 +1,50 @@
 import mongoose from 'mongoose';
 import slugify from 'slugify';
 
-const categorySchema = new mongoose.Schema(
-  {
-    store: { type: mongoose.Schema.Types.ObjectId, ref: 'Store', required: true, index: true },
-    name: { type: String, required: true, trim: true },
-    slug: { type: String, index: true },
-    description: String,
-    image: { url: String, publicId: String },
-    parent: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', default: null },
-    isActive: { type: Boolean, default: true },
-  },
-  { timestamps: true }
-);
-
-categorySchema.index({ store: 1, slug: 1 }, { unique: true });
-
-categorySchema.pre('validate', function (next) {
-  if (this.isModified('name') || !this.slug) {
-    this.slug = slugify(this.name, { lower: true, strict: true });
-  }
-  next();
+const categorySchema = new mongoose.Schema({
+    merchant: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Merchant',
+        required: [true, 'Category must belong to a merchant']
+    },
+    name: {
+        type: String,
+        required: [true, 'Please add a category name'],
+        trim: true,
+        maxlength: [100, 'Category name cannot exceed 100 characters']
+    },
+    image: {
+        type: String,
+        default: ''
+    },
+    description: {
+        type: String,
+        default: '',
+        maxlength: [500, 'Description cannot exceed 500 characters']
+    },
+    isActive: {
+        type: Boolean,
+        default: true
+    },
+    slug: {
+        type: String,
+        unique: false
+    }
+}, {
+    timestamps: true
 });
 
-export default mongoose.model('Category', categorySchema);
+// Generate slug from name before saving
+categorySchema.pre('save', function (next) {
+    if (this.isModified('name')) {
+        this.slug = slugify(this.name, { lower: true, strict: true });
+    }
+    next();
+});
+
+// Compound index: slug unique per merchant
+categorySchema.index({ merchant: 1, slug: 1 }, { unique: true });
+
+const Category = mongoose.model('Category', categorySchema);
+
+export default Category;
