@@ -52,9 +52,7 @@ const PickPlan = () => {
                     name: plan.planName,
                     price: plan.planPrice,
                     features: plan.features,
-                    planType: plan.planType,
-                    productsCount: plan.productsCount,
-                    vendorsLimit: plan.vendorsLimit
+                    planType: plan.planType
                 }
             }
         });
@@ -141,9 +139,6 @@ const PickPlan = () => {
                                         <div className="flex items-baseline gap-1">
                                             <span className="text-4xl font-black text-[#202223]">₹{plan.planPrice.toLocaleString()}</span>
                                             <span className="text-[10px] text-[#202223] font-black uppercase tracking-widest">INR/mo</span>
-                                        </div>
-                                        <div className="text-[9px] text-[#5c5f62] font-black uppercase tracking-[0.1em] mt-1">
-                                            {plan.productsCount > 0 ? `Up to ${plan.productsCount} products` : 'Unlimited products'}
                                         </div>
                                     </div>
                                 </div>

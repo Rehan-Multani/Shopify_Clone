@@ -17,16 +17,6 @@ const planSchema = new mongoose.Schema({
     features: [{
         type: String,
     }],
-    productsCount: {
-        type: Number,
-        required: true,
-        default: 0
-    },
-    vendorsLimit: {
-        type: Number,
-        required: true,
-        default: 1
-    },
     isPopular: {
         type: Boolean,
         default: false

@@ -40,13 +40,11 @@ const PlanForm = ({ plan, onSave, onCancel, isNew, isSaving }) => {
         planPrice: plan.planPrice,
         description: plan.description || '',
         features: plan.features || [''],
-        productsCount: plan.productsCount || 0,
-        vendorsLimit: plan.vendorsLimit || 1,
         isPopular: plan.isPopular || false,
         isRecommended: plan.isRecommended || false,
         planType: plan.planType || 'Single Vendor'
     } : {
-        planName: '', planPrice: 0, description: '', features: [''], productsCount: 0, vendorsLimit: 1, isPopular: false, isRecommended: false, planType: 'Single Vendor'
+        planName: '', planPrice: 0, description: '', features: [''], isPopular: false, isRecommended: false, planType: 'Single Vendor'
     });
 
     const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
@@ -87,7 +85,7 @@ const PlanForm = ({ plan, onSave, onCancel, isNew, isSaving }) => {
                     value={form.planType} 
                     onChange={e => {
                         const newType = e.target.value;
-                        setForm(p => ({ ...p, planType: newType, vendorsLimit: newType === 'Single Vendor' ? 1 : p.vendorsLimit }));
+                        setForm(p => ({ ...p, planType: newType }));
                     }}
                     className="w-full px-3 py-2 border border-[#d3d3d3] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30 appearance-none bg-white cursor-pointer"
                     style={{ backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239CA3AF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.4-12.8z%22%2F%3E%3C%2Fsvg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.7rem top 50%', backgroundSize: '0.65rem auto' }}
@@ -103,20 +101,7 @@ const PlanForm = ({ plan, onSave, onCancel, isNew, isSaving }) => {
                     placeholder="Short description of the plan" className="w-full px-3 py-2 border border-[#d3d3d3] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30" />
             </div>
 
-            <div className={`grid ${form.planType === 'Multi Vendor' ? 'grid-cols-2' : 'grid-cols-1'} gap-4`}>
-                <div>
-                    <label className="text-xs font-semibold text-[#5c5f62] block mb-1.5">Products Count</label>
-                    <input type="number" value={form.productsCount} onChange={e => set('productsCount', Number(e.target.value))}
-                        placeholder="100" className="w-full px-3 py-2 border border-[#d3d3d3] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30" />
-                </div>
-                {form.planType === 'Multi Vendor' && (
-                    <div>
-                        <label className="text-xs font-semibold text-[#5c5f62] block mb-1.5">Vendors Limit</label>
-                        <input type="number" value={form.vendorsLimit} onChange={e => set('vendorsLimit', Number(e.target.value))}
-                            placeholder="1" className="w-full px-3 py-2 border border-[#d3d3d3] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30" />
-                    </div>
-                )}
-            </div>
+
 
             <div>
                 <label className="text-xs font-semibold text-[#5c5f62] block mb-1.5">Features</label>
@@ -176,6 +161,12 @@ const PlansTab = () => {
     const [deletingPlan, setDeletingPlan] = useState(null);
     const [showCreate, setShowCreate] = useState(false);
     const [toast, setToast] = useState(null);
+    const [filter, setFilter] = useState('All');
+
+    const getPlanCount = (type) => {
+        if (type === 'All') return plans.length;
+        return plans.filter(p => p.planType === type).length;
+    };
 
     const getAuthHeaders = () => {
         const info = JSON.parse(localStorage.getItem('masterAdminInfo') || '{}');
@@ -273,20 +264,56 @@ const PlansTab = () => {
         }
     };
 
+    const filteredPlans = plans.filter(plan => {
+        if (filter === 'All') return true;
+        return plan.planType === filter;
+    });
+
     return (
         <div className="space-y-8">
             {toast && <Toast msg={toast.msg} type={toast.type} onDone={() => setToast(null)} />}
 
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-xl font-bold text-[#202223]">Plans Configuration</h1>
+                    <h1 className="text-xl font-bold text-[#202223]">Stores Plans Configuration</h1>
                     <p className="text-sm text-[#5c5f62] mt-0.5">Manage subscription tiers for your platform.</p>
                 </div>
                 <button onClick={() => setShowCreate(true)}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold text-white shadow-sm hover:opacity-90 active:scale-95 transition-all" style={{ background: '#1a1c23' }}>
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold text-white shadow-sm hover:opacity-90 active:scale-95 transition-all self-start sm:self-auto" style={{ background: '#1a1c23' }}>
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
                     Create Plan
                 </button>
+            </div>
+
+            {/* Filter Tabs */}
+            <div className="flex border-b border-[#e3e3e3] gap-6">
+                {[
+                    { id: 'All', label: 'All Plans' },
+                    { id: 'Single Vendor', label: 'Single Vendor' },
+                    { id: 'Multi Vendor', label: 'Multi Vendor' }
+                ].map(t => {
+                    const count = getPlanCount(t.id);
+                    const isActive = filter === t.id;
+                    return (
+                        <button
+                            key={t.id}
+                            onClick={() => setFilter(t.id)}
+                            className={`pb-3 text-sm font-semibold transition-all relative flex items-center gap-2 ${
+                                isActive ? 'text-[#1a1c23]' : 'text-[#5c5f62] hover:text-[#202223]'
+                            }`}
+                        >
+                            <span>{t.label}</span>
+                            <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full transition-all ${
+                                isActive ? 'bg-[#1a1c23] text-white' : 'bg-gray-100 text-gray-500'
+                            }`}>
+                                {count}
+                            </span>
+                            {isActive && (
+                                <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#14B8A6] rounded-full" />
+                            )}
+                        </button>
+                    );
+                })}
             </div>
 
             {isLoading ? (
@@ -328,13 +355,13 @@ const PlansTab = () => {
                         </div>
                     ))}
                 </div>
-            ) : plans.length === 0 ? (
+            ) : filteredPlans.length === 0 ? (
                 <div className="py-20 text-center border-2 border-dashed border-gray-200 rounded-xl bg-gray-50">
-                    <p className="text-gray-500 font-medium">No plans found. Create your first plan.</p>
+                    <p className="text-gray-500 font-medium">No plans found in this category.</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {plans.map(plan => (
+                    {filteredPlans.map(plan => (
                         <div key={plan._id} className={`${card} p-5 relative flex flex-col hover:-translate-y-1 hover:shadow-lg transition-all duration-300 ${plan.isRecommended ? 'ring-2 ring-blue-500 border-transparent bg-blue-50/10' : ''}`}>
                             {plan.isPopular && (
                                 <div className="absolute top-0 right-4 -translate-y-1/2 text-[10px] font-black px-2.5 py-1 rounded-full text-white bg-[#14B8A6] tracking-wider z-10 shadow-sm">POPULAR</div>
@@ -365,17 +392,7 @@ const PlansTab = () => {
                                 <span className="text-sm font-semibold text-[#9CA3AF] ml-1 mb-0.5">/mo</span>
                             </div>
 
-                            {/* Limits */}
-                            <div className="space-y-2 mb-4 bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
-                                <div className="flex items-center justify-between text-xs font-semibold">
-                                    <span className="text-gray-500">Products</span>
-                                    <span className="text-[#202223] bg-gray-100 px-2 py-0.5 rounded-md">{plan.productsCount === 0 ? 'Unlimited' : plan.productsCount}</span>
-                                </div>
-                                <div className="flex items-center justify-between text-xs font-semibold">
-                                    <span className="text-gray-500">Vendors</span>
-                                    <span className="text-[#202223] bg-gray-100 px-2 py-0.5 rounded-md">{plan.vendorsLimit === 0 ? 'Unlimited' : plan.vendorsLimit}</span>
-                                </div>
-                            </div>
+
 
                             {/* Features */}
                             <div className="space-y-2 mb-5 flex-grow">

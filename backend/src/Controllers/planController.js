@@ -17,15 +17,13 @@ export const getPlans = async (req, res) => {
 // @access  Private/MasterAdmin
 export const createPlan = async (req, res) => {
     try {
-        const { planName, planPrice, description, features, productsCount, vendorsLimit, isPopular, isRecommended, planType } = req.body;
+        const { planName, planPrice, description, features, isPopular, isRecommended, planType } = req.body;
 
         const plan = new Plan({
             planName,
             planPrice,
             description,
             features,
-            productsCount,
-            vendorsLimit,
             isPopular,
             isRecommended,
             planType
@@ -43,7 +41,7 @@ export const createPlan = async (req, res) => {
 // @access  Private/MasterAdmin
 export const updatePlan = async (req, res) => {
     try {
-        const { planName, planPrice, description, features, productsCount, vendorsLimit, isPopular, isRecommended, planType } = req.body;
+        const { planName, planPrice, description, features, isPopular, isRecommended, planType } = req.body;
 
         const plan = await Plan.findById(req.params.id);
 
@@ -52,8 +50,6 @@ export const updatePlan = async (req, res) => {
             plan.planPrice = planPrice !== undefined ? planPrice : plan.planPrice;
             plan.description = description !== undefined ? description : plan.description;
             plan.features = features !== undefined ? features : plan.features;
-            plan.productsCount = productsCount !== undefined ? productsCount : plan.productsCount;
-            plan.vendorsLimit = vendorsLimit !== undefined ? vendorsLimit : plan.vendorsLimit;
             plan.isPopular = isPopular !== undefined ? isPopular : plan.isPopular;
             plan.isRecommended = isRecommended !== undefined ? isRecommended : plan.isRecommended;
             plan.planType = planType !== undefined ? planType : plan.planType;
