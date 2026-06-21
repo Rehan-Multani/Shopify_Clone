@@ -17,9 +17,10 @@ const SingleVendorProductsTab = () => {
 
     const fetchData = async () => {
         try {
+            const storeId = localStorage.getItem('activeStoreId') || '';
             const [productsRes, categoriesRes] = await Promise.all([
-                fetch(`${API_URL}/products`, { headers: { 'Authorization': `Bearer ${token}` } }),
-                fetch(`${API_URL}/categories`, { headers: { 'Authorization': `Bearer ${token}` } })
+                fetch(`${API_URL}/products`, { headers: { 'Authorization': `Bearer ${token}`, 'x-store-id': storeId } }),
+                fetch(`${API_URL}/categories`, { headers: { 'Authorization': `Bearer ${token}`, 'x-store-id': storeId } })
             ]);
             const productsData = await productsRes.json();
             const categoriesData = await categoriesRes.json();
@@ -41,9 +42,14 @@ const SingleVendorProductsTab = () => {
 
     const handleToggleStatus = async (id, currentStatus) => {
         try {
+            const storeId = localStorage.getItem('activeStoreId') || '';
             const res = await fetch(`${API_URL}/products/${id}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'Authorization': `Bearer ${token}`,
+                    'x-store-id': storeId
+                },
                 body: JSON.stringify({ isActive: !currentStatus })
             });
             if (res.ok) {
@@ -57,9 +63,10 @@ const SingleVendorProductsTab = () => {
 
     const handleDelete = async () => {
         try {
+            const storeId = localStorage.getItem('activeStoreId') || '';
             const res = await fetch(`${API_URL}/products/${deleteModal.id}`, {
                 method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: { 'Authorization': `Bearer ${token}`, 'x-store-id': storeId }
             });
             if (res.ok) {
                 setProducts(prev => prev.filter(p => p._id !== deleteModal.id));

@@ -8,7 +8,11 @@ import fs from 'fs';
 // @access  Private/Merchant
 export const getCategories = async (req, res) => {
     try {
-        const categories = await Category.find({ merchant: req.merchant._id }).sort({ createdAt: -1 });
+        const storeId = req.headers['x-store-id'];
+        if (!storeId) {
+            return res.status(400).json({ message: 'Store ID header (x-store-id) is required' });
+        }
+        const categories = await Category.find({ merchant: req.merchant._id, store: storeId }).sort({ createdAt: -1 });
         res.json(categories);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -20,20 +24,25 @@ export const getCategories = async (req, res) => {
 // @access  Private/Merchant
 export const createCategory = async (req, res) => {
     try {
+        const storeId = req.headers['x-store-id'];
+        if (!storeId) {
+            return res.status(400).json({ message: 'Store ID header (x-store-id) is required' });
+        }
         const { name, image, description, isActive } = req.body;
 
         if (!name || !name.trim()) {
             return res.status(400).json({ message: 'Category name is required' });
         }
 
-        // Check for duplicate name within this merchant
-        const existing = await Category.findOne({ merchant: req.merchant._id, name: name.trim() });
+        // Check for duplicate name within this store
+        const existing = await Category.findOne({ store: storeId, name: name.trim() });
         if (existing) {
             return res.status(400).json({ message: 'A category with this name already exists' });
         }
 
         const category = await Category.create({
             merchant: req.merchant._id,
+            store: storeId,
             name: name.trim(),
             image: image || '',
             description: description || '',
@@ -51,7 +60,11 @@ export const createCategory = async (req, res) => {
 // @access  Private/Merchant
 export const updateCategory = async (req, res) => {
     try {
-        const category = await Category.findOne({ _id: req.params.id, merchant: req.merchant._id });
+        const storeId = req.headers['x-store-id'];
+        if (!storeId) {
+            return res.status(400).json({ message: 'Store ID header (x-store-id) is required' });
+        }
+        const category = await Category.findOne({ _id: req.params.id, merchant: req.merchant._id, store: storeId });
 
         if (!category) {
             return res.status(404).json({ message: 'Category not found' });
@@ -62,7 +75,7 @@ export const updateCategory = async (req, res) => {
         // If name is changing, check for duplicates
         if (name && name.trim() !== category.name) {
             const existing = await Category.findOne({
-                merchant: req.merchant._id,
+                store: storeId,
                 name: name.trim(),
                 _id: { $ne: category._id }
             });
@@ -88,7 +101,11 @@ export const updateCategory = async (req, res) => {
 // @access  Private/Merchant
 export const deleteCategory = async (req, res) => {
     try {
-        const category = await Category.findOne({ _id: req.params.id, merchant: req.merchant._id });
+        const storeId = req.headers['x-store-id'];
+        if (!storeId) {
+            return res.status(400).json({ message: 'Store ID header (x-store-id) is required' });
+        }
+        const category = await Category.findOne({ _id: req.params.id, merchant: req.merchant._id, store: storeId });
 
         if (!category) {
             return res.status(404).json({ message: 'Category not found' });

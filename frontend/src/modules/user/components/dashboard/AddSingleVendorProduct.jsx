@@ -32,8 +32,9 @@ const AddSingleVendorProduct = () => {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
+                const storeId = localStorage.getItem('activeStoreId') || '';
                 const res = await fetch(`${API_URL}/categories`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: { 'Authorization': `Bearer ${token}`, 'x-store-id': storeId }
                 });
                 const data = await res.json();
                 if (res.ok) setCategories(data.filter(c => c.isActive));
@@ -106,9 +107,10 @@ const AddSingleVendorProduct = () => {
             if (imageFiles.length > 0) {
                 const formData = new FormData();
                 imageFiles.forEach(file => formData.append('images', file));
+                const storeId = localStorage.getItem('activeStoreId') || '';
                 const uploadRes = await fetch(`${API_URL}/products/upload`, {
                     method: 'POST',
-                    headers: { 'Authorization': `Bearer ${token}` },
+                    headers: { 'Authorization': `Bearer ${token}`, 'x-store-id': storeId },
                     body: formData
                 });
                 const uploadData = await uploadRes.json();
@@ -135,9 +137,14 @@ const AddSingleVendorProduct = () => {
                 isActive: form.isActive
             };
 
+            const storeId = localStorage.getItem('activeStoreId') || '';
             const res = await fetch(`${API_URL}/products`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'Authorization': `Bearer ${token}`,
+                    'x-store-id': storeId
+                },
                 body: JSON.stringify(payload)
             });
             const data = await res.json();

@@ -15,8 +15,9 @@ const CategoryTab = () => {
 
     const fetchCategories = async () => {
         try {
+            const storeId = localStorage.getItem('activeStoreId') || '';
             const res = await fetch(`${API_URL}/categories`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: { 'Authorization': `Bearer ${token}`, 'x-store-id': storeId }
             });
             const data = await res.json();
             if (res.ok) setCategories(data);
@@ -36,9 +37,14 @@ const CategoryTab = () => {
 
     const handleToggleStatus = async (id, currentStatus) => {
         try {
+            const storeId = localStorage.getItem('activeStoreId') || '';
             const res = await fetch(`${API_URL}/categories/${id}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'Authorization': `Bearer ${token}`,
+                    'x-store-id': storeId
+                },
                 body: JSON.stringify({ isActive: !currentStatus })
             });
             if (res.ok) {
@@ -52,9 +58,10 @@ const CategoryTab = () => {
 
     const handleDelete = async () => {
         try {
+            const storeId = localStorage.getItem('activeStoreId') || '';
             const res = await fetch(`${API_URL}/categories/${deleteModal.id}`, {
                 method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: { 'Authorization': `Bearer ${token}`, 'x-store-id': storeId }
             });
             if (res.ok) {
                 setCategories(prev => prev.filter(c => c._id !== deleteModal.id));

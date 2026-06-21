@@ -1,5 +1,5 @@
 import express from 'express';
-import { getMerchants, createMerchant, updateMerchant, deleteMerchant, uploadMerchantProfile, merchantLogin, merchantForgotPassword } from '../Controllers/merchantController.js';
+import { getMerchants, createMerchant, updateMerchant, deleteMerchant, uploadMerchantProfile, merchantLogin, merchantForgotPassword, merchantVerifyOtp, merchantResetPassword } from '../Controllers/merchantController.js';
 import { protectAdmin } from '../Helpers/authMiddleware.js';
 import { uploadMerchantProfileMiddleware } from '../Helpers/uploadMiddleware.js';
 
@@ -7,6 +7,8 @@ const router = express.Router();
 
 router.post('/login', merchantLogin);
 router.post('/forgot-password', merchantForgotPassword);
+router.post('/verify-otp', merchantVerifyOtp);
+router.post('/reset-password', merchantResetPassword);
 router.post('/upload', protectAdmin, uploadMerchantProfileMiddleware, uploadMerchantProfile);
 
 router.route('/')

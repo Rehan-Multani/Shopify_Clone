@@ -52,6 +52,12 @@ const merchantSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Please add a password'],
         default: 'password123'
+    },
+    resetPasswordOTP: {
+        type: String
+    },
+    resetPasswordExpire: {
+        type: Date
     }
 }, {
     timestamps: true

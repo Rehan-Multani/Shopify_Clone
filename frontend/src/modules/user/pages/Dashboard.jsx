@@ -38,6 +38,8 @@ import MetaobjectsTab from '../components/dashboard/MetaobjectsTab';
 import FilesTab from '../components/dashboard/FilesTab';
 import MenusTab from '../components/dashboard/MenusTab';
 import BlogPostsTab from '../components/dashboard/BlogPostsTab';
+import PagesTab from '../components/dashboard/PagesTab';
+import EditPageTab from '../components/dashboard/EditPageTab';
 import CreateMetaobjectDefinition from '../components/dashboard/CreateMetaobjectDefinition';
 import ReportsTab from '../components/dashboard/ReportsTab';
 import ProfileTab from '../components/dashboard/ProfileTab';
@@ -47,6 +49,8 @@ import SingleVendorProductsTab from '../components/dashboard/SingleVendorProduct
 import AddSingleVendorProduct from '../components/dashboard/AddSingleVendorProduct';
 import CouponsTab from '../components/dashboard/CouponsTab';
 import CreateCouponSingle from '../components/dashboard/CreateCouponSingle';
+import StoresTabSingle from '../components/dashboard/StoresTabSingle';
+import AddStoreSingle from '../components/dashboard/AddStoreSingle';
 
 const Dashboard = () => {
     const { tab } = useParams();
@@ -88,6 +92,13 @@ const Dashboard = () => {
             return <DiscountsTab />;
         }
 
+        if (tab === 'stores') {
+            if (panelMode === 'single') {
+                if (location.pathname.endsWith('/new')) return <AddStoreSingle />;
+                return <StoresTabSingle />;
+            }
+        }
+
         if (tab === 'analytics') {
             return <MarketingOverview />;
         }
@@ -97,7 +108,8 @@ const Dashboard = () => {
         }
 
         if (tab === 'pages') {
-            return <MenusTab />;
+            if (location.pathname.includes('/edit/')) return <EditPageTab />;
+            return <PagesTab />;
         }
 
         if (tab === 'websites') {
@@ -173,6 +185,8 @@ const Dashboard = () => {
 
         if (tab === 'online-store') {
             if (location.pathname.endsWith('/themes')) return <ThemesTab />;
+            if (location.pathname.includes('/pages/edit/')) return <EditPageTab />;
+            if (location.pathname.endsWith('/pages')) return <PagesTab />;
             return <ThemesTab />;
         }
 

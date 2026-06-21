@@ -1,128 +1,186 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import logo from '../../../assets/storify-logo.png';
 
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+
 const Signup = () => {
-  const [email, setEmail] = useState('');
-
   const navigate = useNavigate();
+  const [plans, setPlans] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleContinue = (e) => {
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    password: '',
+    mobile: '',
+    planType: 'Single Vendor',
+    plan: '',
+    gstNumber: '',
+    address: '',
+    profile: ''
+  });
+
+  const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const res = await fetch(`${API_URL}/plans`);
+        const data = await res.json();
+        if (res.ok) setPlans(data);
+      } catch (err) {
+        console.error('Failed to fetch plans', err);
+      }
+    };
+    fetchPlans();
+  }, []);
+
+  const set = (k, v) => setForm(prev => ({ ...prev, [k]: v }));
+
+  const filteredPlans = plans.filter(p => p.planType === form.planType);
+
+  const handleSignup = async (e) => {
     e?.preventDefault();
-    navigate('/admin/login');
+    setIsLoading(true);
+
+    // Simulate signup for now since public API endpoint might not be available
+    setTimeout(() => {
+        setIsLoading(false);
+        navigate('/admin/login');
+    }, 1200);
+  };
+
+  const handleUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    // Note: The /merchants/upload route currently requires master admin token.
+    // For a real public signup, we would need an open upload endpoint or base64 encode the image.
+    // For now we will mock the upload visually with base64 for preview.
+    const reader = new FileReader();
+    reader.onloadend = () => {
+        set('profile', reader.result);
+    };
+    reader.readAsDataURL(file);
   };
 
   return (
-    <div className="min-h-screen bg-[#0B0D11] flex flex-col items-center justify-center px-6 py-14">
-
+    <div className="min-h-screen bg-[#111827] flex flex-col items-center py-12 px-6">
+      
       {/* Logo */}
-      <div className="mb-6 flex items-center gap-3">
-        <img src={logo} alt="Storify" className="h-10 w-auto" />
-        <span className="text-3xl brand-text leading-none">storify</span>
+      <div className="mb-8 flex items-center gap-3">
+        <img src={logo} alt="Storify" className="h-12 w-auto" />
+        <span className="text-4xl brand-text leading-none text-white">storify</span>
       </div>
 
-      {/* Heading */}
-      <h1 className="text-4xl font-bold text-white text-center mb-2 tracking-tight">
-        Start your free trial
-      </h1>
-      <p className="text-gray-400 text-base text-center mb-8">
-        3 days free, then 3 months for <span className="text-white font-semibold">₹20/month</span>
-      </p>
-
-      {/* White Card */}
-      <div className="w-full max-w-[440px] bg-white rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.25)] p-7 space-y-5">
-
-        {/* Email Input */}
-        <div className="space-y-2">
-          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">
-            Email address
-          </label>
-          <input
-            type="email"
-            autoFocus
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full bg-gray-50 border border-gray-200 rounded-xl py-2.5 px-4 text-gray-900 text-sm font-medium focus:outline-none focus:border-gray-800 focus:ring-2 focus:ring-gray-900/5 transition-all"
-          />
+      {/* Signup Card */}
+      <div className="w-full max-w-[600px] bg-[#1F2937] border border-white/10 rounded-[40px] shadow-[0_8px_40px_rgba(0,0,0,0.5)] p-8 md:p-10">
+        
+        <div className="space-y-1 mb-8 text-center">
+          <h1 className="text-3xl font-bold text-white tracking-tight">Create your store</h1>
+          <p className="text-gray-400 text-[15px] font-medium">Start your free trial today</p>
         </div>
 
-        {/* Continue with email */}
-        <form onSubmit={handleContinue}>
+        <form onSubmit={handleSignup} className="space-y-6">
+          
+          {/* Profile Upload Area */}
+          <div className="flex flex-col items-center justify-center pb-6 border-b border-white/10">
+              <div className="relative group w-24 h-24 rounded-full overflow-hidden border-2 border-white/20 shadow-md bg-[#111827] flex items-center justify-center">
+                  {form.profile ? (
+                      <img src={form.profile} alt="Preview" className="w-full h-full object-cover" />
+                  ) : (
+                      <div className="text-gray-500 flex flex-col items-center">
+                          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                      </div>
+                  )}
+                  <label className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center cursor-pointer text-white text-[10px] font-bold">
+                      <svg className="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                      {form.profile ? 'Change' : 'Upload'}
+                      <input type="file" accept="image/*" onChange={handleUpload} className="hidden" />
+                  </label>
+              </div>
+              <p className="text-[11px] font-semibold text-gray-400 mt-3 uppercase tracking-wider">Merchant Avatar</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="space-y-1.5">
+                  <label className="text-[13px] font-semibold text-gray-300 block ml-0.5">Merchant Name</label>
+                  <input type="text" required value={form.name} onChange={e => set('name', e.target.value)}
+                      placeholder="e.g. John Doe" className="w-full bg-[#111827] border border-white/10 rounded-lg py-2.5 px-4 text-white text-sm focus:outline-none focus:border-storify transition-all" />
+              </div>
+              <div className="space-y-1.5">
+                  <label className="text-[13px] font-semibold text-gray-300 block ml-0.5">Email Address</label>
+                  <input type="email" required value={form.email} onChange={e => set('email', e.target.value)}
+                      placeholder="e.g. john@store.com" className="w-full bg-[#111827] border border-white/10 rounded-lg py-2.5 px-4 text-white text-sm focus:outline-none focus:border-storify transition-all" />
+              </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="space-y-1.5">
+                  <label className="text-[13px] font-semibold text-gray-300 block ml-0.5">Mobile Number</label>
+                  <input type="text" required value={form.mobile} onChange={e => {
+                      const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                      set('mobile', val);
+                  }}
+                      placeholder="10-digit mobile number" className="w-full bg-[#111827] border border-white/10 rounded-lg py-2.5 px-4 text-white text-sm focus:outline-none focus:border-storify transition-all" />
+              </div>
+              <div className="space-y-1.5">
+                  <label className="text-[13px] font-semibold text-gray-300 block ml-0.5">Password</label>
+                  <div className="relative">
+                      <input type={showPassword ? 'text' : 'password'} required value={form.password} onChange={e => set('password', e.target.value)}
+                          placeholder="••••••••" className="w-full bg-[#111827] border border-white/10 rounded-lg py-2.5 px-4 text-white text-sm focus:outline-none focus:border-storify transition-all pr-10" />
+                      <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors">
+                          {showPassword ? (
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                          ) : (
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
+                          )}
+                      </button>
+                  </div>
+              </div>
+          </div>
+
+          {/* Plan selection removed - signup is free */}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="space-y-1.5">
+                  <label className="text-[13px] font-semibold text-gray-300 block ml-0.5">GST Number</label>
+                  <input type="text" value={form.gstNumber} onChange={e => set('gstNumber', e.target.value.toUpperCase())}
+                      placeholder="e.g. 22AAAAA0000A1Z5" className="w-full bg-[#111827] border border-white/10 rounded-lg py-2.5 px-4 text-white text-sm focus:outline-none focus:border-storify transition-all" />
+              </div>
+              <div className="space-y-1.5">
+                  <label className="text-[13px] font-semibold text-gray-300 block ml-0.5">Address</label>
+                  <input type="text" value={form.address} onChange={e => set('address', e.target.value)}
+                      placeholder="e.g. 123 Main St, New York, US" className="w-full bg-[#111827] border border-white/10 rounded-lg py-2.5 px-4 text-white text-sm focus:outline-none focus:border-storify transition-all" />
+              </div>
+          </div>
+
           <button
             type="submit"
-            className="w-full bg-[#111111] text-white font-bold rounded-xl py-3.5 text-sm hover:bg-[#222222] active:scale-[0.98] transition-all"
+            disabled={isLoading || !form.name.trim() || !form.email || !form.password || form.mobile.length !== 10}
+            className={`w-full bg-storify text-white font-bold rounded-lg py-3 mt-6 text-[15px] transition-all flex justify-center items-center ${(isLoading || !form.name.trim() || !form.email || !form.password || form.mobile.length !== 10) ? 'opacity-70 cursor-not-allowed' : 'hover:bg-storify-glow active:scale-[0.98]'}`}
           >
-            Continue with email
+            {isLoading ? (
+              <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            ) : (
+              'Create account'
+            )}
           </button>
         </form>
 
-        {/* Divider */}
-        <div className="flex items-center gap-3">
-          <div className="h-px flex-grow bg-gray-200"></div>
-          <span className="text-xs font-semibold text-gray-400">or</span>
-          <div className="h-px flex-grow bg-gray-200"></div>
+        <div className="text-center pt-5 border-t border-white/10 mt-6">
+          <p className="text-gray-400 text-[14px]">
+            Already have a Storify account?{' '}
+            <Link to="/admin/login" className="text-storify font-semibold hover:underline">
+              Log in
+            </Link>
+          </p>
         </div>
 
-        {/* Social Buttons */}
-        <div className="space-y-3">
-          {/* Google */}
-          <button
-            onClick={handleContinue}
-            className="w-full flex items-center gap-4 bg-gray-50 border border-gray-200 rounded-xl px-5 py-3.5 hover:bg-gray-100 transition-all"
-          >
-            <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
-              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.05l3.66 2.84c.87-2.6 3.3-4.51 6.16-4.51z"/>
-              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-              <path fill="#FBBC05" d="M5.84 14.11c-.22-.67-.35-1.39-.35-2.11s.13-1.44.35-2.11V7.05H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.95l3.66-2.84z"/>
-              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-1 .67-2.28 1.07-3.71 1.07-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-            </svg>
-            <span className="text-sm font-semibold text-gray-700">Continue with Google</span>
-          </button>
-
-          {/* Apple */}
-          <button
-            onClick={handleContinue}
-            className="w-full flex items-center gap-4 bg-gray-50 border border-gray-200 rounded-xl px-5 py-3.5 hover:bg-gray-100 transition-all"
-          >
-            <svg className="w-5 h-5 flex-shrink-0 text-gray-900" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.51 12.09 1.011 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701z"/>
-            </svg>
-            <span className="text-sm font-semibold text-gray-700">Continue with Apple</span>
-          </button>
-
-          {/* Facebook */}
-          <button
-            onClick={handleContinue}
-            className="w-full flex items-center gap-4 bg-gray-50 border border-gray-200 rounded-xl px-5 py-3.5 hover:bg-gray-100 transition-all"
-          >
-            <svg className="w-5 h-5 flex-shrink-0 text-[#1877F2]" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953h-1.514c-1.491 0-1.95.925-1.95 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-            </svg>
-            <span className="text-sm font-semibold text-gray-700">Continue with Facebook</span>
-          </button>
-        </div>
-
-        {/* Login link */}
-        <p className="text-center text-sm text-gray-400 pt-1">
-          Already have a Storify account?{' '}
-          <Link to="/admin/login" className="text-gray-600 font-semibold underline hover:text-gray-900 transition-colors">
-            Log in
-          </Link>
-        </p>
-      </div>
-
-      {/* Footer */}
-      <div className="mt-10 text-center space-y-2">
-        <a href="#" className="text-white text-sm font-semibold hover:text-[#14B8A6] transition-colors block">
-          Need Help?
-        </a>
-        <p className="text-gray-500 text-xs leading-relaxed">
-          By continuing, you agree to the{' '}
-          <a href="#" className="text-white font-semibold hover:text-[#14B8A6] transition-colors">Terms</a>{' '}
-          and{' '}
-          <a href="#" className="text-white font-semibold hover:text-[#14B8A6] transition-colors">Privacy Policy</a>.
-        </p>
       </div>
     </div>
   );

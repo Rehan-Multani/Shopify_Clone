@@ -7,6 +7,11 @@ const categorySchema = new mongoose.Schema({
         ref: 'Merchant',
         required: [true, 'Category must belong to a merchant']
     },
+    store: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Store',
+        required: [true, 'Category must belong to a store']
+    },
     name: {
         type: String,
         required: [true, 'Please add a category name'],
@@ -42,8 +47,8 @@ categorySchema.pre('save', function (next) {
     next();
 });
 
-// Compound index: slug unique per merchant
-categorySchema.index({ merchant: 1, slug: 1 }, { unique: true });
+// Compound index: slug unique per store
+categorySchema.index({ store: 1, slug: 1 }, { unique: true });
 
 const Category = mongoose.model('Category', categorySchema);
 

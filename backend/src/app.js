@@ -11,6 +11,9 @@ import merchantRouter from './Routers/merchantRouter.js';
 import categoryRouter from './Routers/categoryRouter.js';
 import productRouter from './Routers/productRouter.js';
 import couponRouter from './Routers/couponRouter.js';
+import storePageRouter from './Routers/StorePageRouter.js';
+import storeRouter from './Routers/storeRouter.js';
+import paymentRouter from './Routers/paymentRouter.js';
 import path from 'path';
 
 const app = express();
@@ -47,6 +50,9 @@ app.use('/api/merchants', merchantRouter);
 app.use('/api/categories', categoryRouter);
 app.use('/api/products', productRouter);
 app.use('/api/coupons', couponRouter);
+app.use('/api/store-pages', storePageRouter);
+app.use('/api/stores', storeRouter);
+app.use('/api/payments', paymentRouter);
 
 // Basic health check
 app.get('/api/health', (req, res) => {

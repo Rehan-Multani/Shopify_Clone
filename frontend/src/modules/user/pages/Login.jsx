@@ -11,7 +11,7 @@ const Login = () => {
   const [selections, setSelections] = useState({}); // { 1: [ids], 2: [ids] }
   const [storeName, setStoreName] = useState('');
   const [email, setEmail] = useState('mrmmultani@gmail.com');
-  const [password, setPassword] = useState('password123');
+  const [password, setPassword] = useState('1234');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -46,6 +46,7 @@ const Login = () => {
       setIsLoading(false);
     }
   };
+  
 
   const toggleSelection = (stepId, itemId) => {
     const currentSelections = selections[stepId] || [];

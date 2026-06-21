@@ -7,6 +7,11 @@ const productSchema = new mongoose.Schema({
         ref: 'Merchant',
         required: [true, 'Product must belong to a merchant']
     },
+    store: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Store',
+        required: [true, 'Product must belong to a store']
+    },
     name: {
         type: String,
         required: [true, 'Please add a product name'],
@@ -86,9 +91,9 @@ productSchema.pre('save', function (next) {
     next();
 });
 
-// Compound index: SKU unique per merchant (only if SKU is provided)
+// Compound index: SKU unique per store (only if SKU is provided)
 productSchema.index(
-    { merchant: 1, sku: 1 },
+    { store: 1, sku: 1 },
     { unique: true, partialFilterExpression: { sku: { $ne: '' } } }
 );
 

@@ -57,9 +57,10 @@ const AddCategory = () => {
             if (imageFile) {
                 const formData = new FormData();
                 formData.append('image', imageFile);
+                const storeId = localStorage.getItem('activeStoreId') || '';
                 const uploadRes = await fetch(`${API_URL}/categories/upload`, {
                     method: 'POST',
-                    headers: { 'Authorization': `Bearer ${token}` },
+                    headers: { 'Authorization': `Bearer ${token}`, 'x-store-id': storeId },
                     body: formData
                 });
                 const uploadData = await uploadRes.json();
@@ -71,9 +72,14 @@ const AddCategory = () => {
             }
 
             // Create category
+            const storeId = localStorage.getItem('activeStoreId') || '';
             const res = await fetch(`${API_URL}/categories`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'Authorization': `Bearer ${token}`,
+                    'x-store-id': storeId
+                },
                 body: JSON.stringify({ ...form, image: imageUrl })
             });
             const data = await res.json();

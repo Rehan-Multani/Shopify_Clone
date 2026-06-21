@@ -8,7 +8,11 @@ import fs from 'fs';
 // @access  Private/Merchant
 export const getProducts = async (req, res) => {
     try {
-        const products = await Product.find({ merchant: req.merchant._id })
+        const storeId = req.headers['x-store-id'];
+        if (!storeId) {
+            return res.status(400).json({ message: 'Store ID header (x-store-id) is required' });
+        }
+        const products = await Product.find({ merchant: req.merchant._id, store: storeId })
             .populate('category', 'name')
             .sort({ createdAt: -1 });
         res.json(products);
@@ -22,7 +26,11 @@ export const getProducts = async (req, res) => {
 // @access  Private/Merchant
 export const getProduct = async (req, res) => {
     try {
-        const product = await Product.findOne({ _id: req.params.id, merchant: req.merchant._id })
+        const storeId = req.headers['x-store-id'];
+        if (!storeId) {
+            return res.status(400).json({ message: 'Store ID header (x-store-id) is required' });
+        }
+        const product = await Product.findOne({ _id: req.params.id, merchant: req.merchant._id, store: storeId })
             .populate('category', 'name');
 
         if (!product) {
@@ -40,6 +48,10 @@ export const getProduct = async (req, res) => {
 // @access  Private/Merchant
 export const createProduct = async (req, res) => {
     try {
+        const storeId = req.headers['x-store-id'];
+        if (!storeId) {
+            return res.status(400).json({ message: 'Store ID header (x-store-id) is required' });
+        }
         const { name, images, description, brandName, sku, actualPrice, sellingPrice, category, stock, isActive, tags, weight } = req.body;
 
         if (!name || !name.trim()) {
@@ -50,9 +62,9 @@ export const createProduct = async (req, res) => {
             return res.status(400).json({ message: 'Both actual price and selling price are required' });
         }
 
-        // Check for duplicate SKU within this merchant (if SKU is provided)
+        // Check for duplicate SKU within this store (if SKU is provided)
         if (sku && sku.trim()) {
-            const existingSku = await Product.findOne({ merchant: req.merchant._id, sku: sku.trim().toUpperCase() });
+            const existingSku = await Product.findOne({ store: storeId, sku: sku.trim().toUpperCase() });
             if (existingSku) {
                 return res.status(400).json({ message: 'A product with this SKU already exists' });
             }
@@ -60,6 +72,7 @@ export const createProduct = async (req, res) => {
 
         const product = await Product.create({
             merchant: req.merchant._id,
+            store: storeId,
             name: name.trim(),
             images: images || [],
             description: description || '',
@@ -86,7 +99,11 @@ export const createProduct = async (req, res) => {
 // @access  Private/Merchant
 export const updateProduct = async (req, res) => {
     try {
-        const product = await Product.findOne({ _id: req.params.id, merchant: req.merchant._id });
+        const storeId = req.headers['x-store-id'];
+        if (!storeId) {
+            return res.status(400).json({ message: 'Store ID header (x-store-id) is required' });
+        }
+        const product = await Product.findOne({ _id: req.params.id, merchant: req.merchant._id, store: storeId });
 
         if (!product) {
             return res.status(404).json({ message: 'Product not found' });
@@ -97,7 +114,7 @@ export const updateProduct = async (req, res) => {
         // Check for duplicate SKU (if SKU changed)
         if (sku && sku.trim() && sku.trim().toUpperCase() !== product.sku) {
             const existingSku = await Product.findOne({
-                merchant: req.merchant._id,
+                store: storeId,
                 sku: sku.trim().toUpperCase(),
                 _id: { $ne: product._id }
             });
@@ -132,7 +149,11 @@ export const updateProduct = async (req, res) => {
 // @access  Private/Merchant
 export const deleteProduct = async (req, res) => {
     try {
-        const product = await Product.findOne({ _id: req.params.id, merchant: req.merchant._id });
+        const storeId = req.headers['x-store-id'];
+        if (!storeId) {
+            return res.status(400).json({ message: 'Store ID header (x-store-id) is required' });
+        }
+        const product = await Product.findOne({ _id: req.params.id, merchant: req.merchant._id, store: storeId });
 
         if (!product) {
             return res.status(404).json({ message: 'Product not found' });

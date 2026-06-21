@@ -6,6 +6,11 @@ const subscriptionSchema = new mongoose.Schema({
         ref: 'Merchant',
         required: [true, 'Subscription must belong to a merchant']
     },
+    store: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Store',
+        required: [true, 'Subscription must belong to a store']
+    },
     plan: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Plan',
@@ -24,6 +29,22 @@ const subscriptionSchema = new mongoose.Schema({
         type: String,
         enum: ['active', 'inactive', 'expired'],
         default: 'active'
+    },
+    paymentId: {
+        type: String,
+        default: ''
+    },
+    orderId: {
+        type: String,
+        default: ''
+    },
+    amount: {
+        type: Number,
+        default: 0
+    },
+    autoRenew: {
+        type: Boolean,
+        default: false
     }
 }, {
     timestamps: true
