@@ -22,8 +22,8 @@ const Login = () => {
     setError('');
 
     try {
-      const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
-      const response = await fetch(`${API_URL}/merchants/login`, {
+      const AUTH_API_URL = import.meta.env.VITE_AUTH_API_URL || 'http://localhost:5001/api/auth';
+      const response = await fetch(`${AUTH_API_URL}/merchant/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),

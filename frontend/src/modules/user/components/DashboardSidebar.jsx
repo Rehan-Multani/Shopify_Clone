@@ -23,81 +23,24 @@ const DashboardSidebar = ({ isOpen, setIsOpen, isChatOpen, setIsChatOpen }) => {
 
     const singleVendorMenuItems = [
         { id: 'home', label: 'Dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
-        { id: 'orders', label: 'Orders', icon: 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z' },
-        { id: 'products', label: 'Products', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
-        { id: 'category', label: 'Category', icon: 'M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2zm2 2h14v2H5V9zm0 4h14v4H5v-4z' },
-        { id: 'inventory', label: 'Inventory', icon: 'M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4' },
-        { id: 'customers', label: 'Customers', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
-        { id: 'coupons', label: 'Coupons', icon: 'M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z' },
         { id: 'stores', label: 'Stores', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
         { id: 'analytics', label: 'Analytics', icon: 'M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z' },
-        { id: 'reports', label: 'Reports', icon: 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
-        { id: 'pages', label: 'Pages', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
-        { id: 'websites', label: 'Websites', icon: 'M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9' },
-        { id: 'profile', label: 'Profile', icon: 'M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z' }
+        { id: 'support', label: 'Support', icon: 'M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z' },
+        { id: 'profile', label: 'Profiles', icon: 'M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z' }
     ];
 
     const multiVendorMenuItems = [
-        { id: 'home', label: 'Home', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
-        {
-            id: 'orders',
-            label: 'Orders',
-            icon: 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z',
-            subItems: [
-                { id: 'drafts', label: 'Drafts' },
-                { id: 'abandoned', label: 'Abandoned checkouts' }
-            ]
-        },
-        {
-            id: 'products',
-            label: 'Products',
-            icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
-            subItems: [
-                { id: 'collections', label: 'Collections' },
-                { id: 'inventory', label: 'Inventory' },
-                { id: 'purchase-orders', label: 'Purchase orders' },
-                { id: 'transfers', label: 'Transfers' },
-                { id: 'gift-cards', label: 'Gift cards' }
-            ]
-        },
-        {
-            id: 'customers',
-            label: 'Customers',
-            icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
-            subItems: [
-                { id: 'segments', label: 'Segments' },
-                { id: 'companies', label: 'Companies' }
-            ]
-        },
-        {
-            id: 'marketing',
-            label: 'Marketing',
-            icon: 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z',
-            subItems: [
-                { id: 'campaigns', label: 'Campaigns' },
-                { id: 'attribution', label: 'Attribution' },
-                { id: 'automations', label: 'Automations' }
-            ]
-        },
-        { id: 'discounts', label: 'Discounts', icon: 'M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z' },
-        { 
-            id: 'content', 
-            label: 'Content', 
-            icon: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10',
-            subItems: [
-                { id: 'metaobjects', label: 'Metaobjects' },
-                { id: 'files', label: 'Files' },
-                { id: 'menus', label: 'Menus' },
-                { id: 'blog-posts', label: 'Blog posts' }
-            ]
-        },
+        { id: 'home', label: 'Dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
+        { id: 'stores', label: 'Stores', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
         { id: 'analytics', label: 'Analytics', icon: 'M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z' },
+        { id: 'support', label: 'Support', icon: 'M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z' },
+        { id: 'profile', label: 'Profiles', icon: 'M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z' }
     ];
 
     const salesChannels = [
-        { 
-            id: 'online-store', 
-            label: 'Online Store', 
+        {
+            id: 'online-store',
+            label: 'Online Store',
             icon: 'M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9',
             subItems: [
                 { id: 'themes', label: 'Themes' },
@@ -122,7 +65,7 @@ const DashboardSidebar = ({ isOpen, setIsOpen, isChatOpen, setIsChatOpen }) => {
                 lg:relative lg:inset-auto lg:z-auto lg:h-full
                 transform transition-transform duration-300
                 ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-                bg-[#f1f1f1] border-r border-gray-200 flex flex-col overflow-y-auto shadow-2xl lg:shadow-none
+                bg-[#1a1c23] border-r border-white/5 flex flex-col overflow-y-auto shadow-2xl lg:shadow-none
             `}>
                 <div className="p-6 pb-2">
                     <Link
@@ -131,17 +74,22 @@ const DashboardSidebar = ({ isOpen, setIsOpen, isChatOpen, setIsChatOpen }) => {
                         className="flex items-center gap-2 group"
                     >
                         <img src={logo} alt="Storify" className="h-8 w-auto flex-shrink-0" />
-                        <span className="text-2xl brand-text leading-none">storify</span>
+                        <span className="text-2xl brand-text leading-none text-white/90">storify</span>
                     </Link>
                 </div>
 
-                <div className="px-6 mb-4 space-y-2">
-                    <div className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-xl shadow-sm">
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Active Store</p>
-                        <p className="font-extrabold text-sm text-[#202223] truncate mt-0.5">{localStorage.getItem('shopStoreName') || 'Select a store'}</p>
-                    </div>
-                    <div className="w-full px-3 py-1 bg-black/5 rounded-lg text-[10px] font-bold text-[#5c5f62] tracking-wider text-center uppercase">
-                        {panelMode === 'multi' ? 'Multi Vendor' : 'Single Vendor'}
+                <div className="px-6 mb-4">
+                    <div className="flex justify-center">
+                        <div
+                            className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold tracking-wide shadow-sm border
+        ${panelMode === "multi"
+                                    ? "bg-purple-500/10 text-purple-400 border-purple-500/20"
+                                    : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                                }`}
+                        >
+                            <span className="h-2 w-2 rounded-full bg-current opacity-80"></span>
+                            {panelMode === "multi" ? "Multi Vendor" : "Single Vendor"}
+                        </div>
                     </div>
                 </div>
 
@@ -153,13 +101,13 @@ const DashboardSidebar = ({ isOpen, setIsOpen, isChatOpen, setIsChatOpen }) => {
                                     to={item.id === 'content' ? '/dashboard/content/metaobjects' : (item.id === 'home' ? '/dashboard' : `/dashboard/${item.id}`)}
                                     onClick={() => setIsChatOpen(false)}
                                     className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-bold transition-all group ${isActive(item.id) && !item.subItems?.some(subItem => location.pathname.includes(`/dashboard/${item.id}/${subItem.id}`))
-                                            ? 'bg-white text-black shadow-sm'
-                                            : isActive(item.id) ? 'text-black font-bold' : 'text-[#5c5f62] hover:bg-black/5 hover:text-black font-semibold'
+                                        ? 'bg-[#008060]/12 text-white shadow-sm border-l-4 border-[#008060] rounded-r-lg rounded-l-none'
+                                        : isActive(item.id) ? 'text-white font-bold' : 'text-[#9ca3af] hover:bg-white/5 hover:text-white font-semibold'
                                         }`}
                                 >
                                     <svg className={`w-5 h-5 transition-colors ${isActive(item.id)
-                                            ? 'text-black'
-                                            : 'text-[#5c5f62] group-hover:text-black'
+                                        ? 'text-[#008060]'
+                                        : 'text-[#9ca3af] group-hover:text-white'
                                         }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
                                     </svg>
@@ -170,7 +118,7 @@ const DashboardSidebar = ({ isOpen, setIsOpen, isChatOpen, setIsChatOpen }) => {
                                 {isActive(item.id) && item.subItems && (
                                     <div className="mt-1 ml-4 space-y-0.5 relative">
                                         {/* Vertical line connecting all subitems */}
-                                        <div className="absolute left-[13px] top-[-10px] bottom-[18px] w-[1.5px] bg-[#d3d6d9] rounded-full"></div>
+                                        <div className="absolute left-[13px] top-[-10px] bottom-[18px] w-[1.5px] bg-white/10 rounded-full"></div>
 
                                         {item.subItems.map((subItem, index) => {
                                             const isSubActive = location.pathname.includes(`/dashboard/${item.id}/${subItem.id}`);
@@ -178,7 +126,7 @@ const DashboardSidebar = ({ isOpen, setIsOpen, isChatOpen, setIsChatOpen }) => {
                                                 <div key={subItem.id} className="relative flex items-center group">
                                                     {/* L-connector arrow */}
                                                     <div className="ml-[13px] mr-2 flex-shrink-0">
-                                                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-[#d3d6d9]">
+                                                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-white/10">
                                                             <path d="M0 0V8C0 9.10457 0.89543 10 2 10H10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                                                             <path d="M8 7.5L10.5 10L8 12.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                                         </svg>
@@ -187,8 +135,8 @@ const DashboardSidebar = ({ isOpen, setIsOpen, isChatOpen, setIsChatOpen }) => {
                                                     <Link
                                                         to={`/dashboard/${item.id}/${subItem.id}`}
                                                         className={`flex-grow py-1.5 px-2 text-sm transition-all rounded-md ${isSubActive
-                                                                ? 'text-black font-bold bg-[#ffffff] shadow-sm translate-x-1'
-                                                                : 'text-[#5c5f62] hover:text-black font-medium hover:translate-x-1'
+                                                            ? 'text-[#008060] font-bold bg-white/5 shadow-sm translate-x-1 border-l-2 border-[#008060] rounded-l-none'
+                                                            : 'text-[#9ca3af] hover:text-white font-medium hover:translate-x-1'
                                                             }`}
                                                     >
                                                         {subItem.label}
@@ -206,8 +154,8 @@ const DashboardSidebar = ({ isOpen, setIsOpen, isChatOpen, setIsChatOpen }) => {
                         <>
                             <div className="mt-8">
                                 <div className="px-3 mb-2 flex items-center justify-between group">
-                                    <span className="text-[10px] font-black text-gray-500 tracking-[0.2em] uppercase">Sales channels</span>
-                                    <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/5 rounded transition-all text-gray-500">
+                                    <span className="text-[10px] font-black text-gray-400 tracking-[0.2em] uppercase">Sales channels</span>
+                                    <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/5 rounded transition-all text-gray-400">
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
                                     </button>
                                 </div>
@@ -218,13 +166,13 @@ const DashboardSidebar = ({ isOpen, setIsOpen, isChatOpen, setIsChatOpen }) => {
                                                 to={`/dashboard/${item.id}/${item.subItems ? item.subItems[0].id : ''}`}
                                                 onClick={() => setIsChatOpen(false)}
                                                 className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-bold transition-all group ${isActive(item.id)
-                                                        ? 'bg-white text-black shadow-sm'
-                                                        : 'text-[#5c5f62] hover:bg-black/5 hover:text-black font-semibold'
+                                                    ? 'bg-[#008060]/12 text-white shadow-sm border-l-4 border-[#008060] rounded-r-lg rounded-l-none'
+                                                    : 'text-[#9ca3af] hover:bg-white/5 hover:text-white font-semibold'
                                                     }`}
                                             >
                                                 <svg className={`w-5 h-5 transition-colors ${isActive(item.id)
-                                                        ? 'text-black'
-                                                        : 'text-[#5c5f62] group-hover:text-black'
+                                                    ? 'text-[#008060]'
+                                                    : 'text-[#9ca3af] group-hover:text-white'
                                                     }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
                                                 </svg>
@@ -234,13 +182,13 @@ const DashboardSidebar = ({ isOpen, setIsOpen, isChatOpen, setIsChatOpen }) => {
                                             {/* Sub-items rendering for sales channels */}
                                             {isActive(item.id) && item.subItems && (
                                                 <div className="mt-1 ml-4 space-y-0.5 relative">
-                                                    <div className="absolute left-[13px] top-[-10px] bottom-[18px] w-[1.5px] bg-[#d3d6d9] rounded-full"></div>
+                                                    <div className="absolute left-[13px] top-[-10px] bottom-[18px] w-[1.5px] bg-white/10 rounded-full"></div>
                                                     {item.subItems.map((subItem) => {
                                                         const isSubActive = location.pathname.includes(`/dashboard/${item.id}/${subItem.id}`);
                                                         return (
                                                             <div key={subItem.id} className="relative flex items-center group">
                                                                 <div className="ml-[13px] mr-2 flex-shrink-0">
-                                                                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-[#d3d6d9]">
+                                                                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-white/10">
                                                                         <path d="M0 0V8C0 9.10457 0.89543 10 2 10H10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                                                                         <path d="M8 7.5L10.5 10L8 12.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                                                     </svg>
@@ -248,8 +196,8 @@ const DashboardSidebar = ({ isOpen, setIsOpen, isChatOpen, setIsChatOpen }) => {
                                                                 <Link
                                                                     to={`/dashboard/${item.id}/${subItem.id}`}
                                                                     className={`flex-grow py-1.5 px-2 text-sm transition-all rounded-md ${isSubActive
-                                                                            ? 'text-black font-bold bg-[#ffffff] shadow-sm translate-x-1'
-                                                                            : 'text-[#5c5f62] hover:text-black font-medium hover:translate-x-1'
+                                                                        ? 'text-[#008060] font-bold bg-white/5 shadow-sm translate-x-1 border-l-2 border-[#008060] rounded-l-none'
+                                                                        : 'text-[#9ca3af] hover:text-white font-medium hover:translate-x-1'
                                                                         }`}
                                                                 >
                                                                     {subItem.label}
@@ -266,14 +214,14 @@ const DashboardSidebar = ({ isOpen, setIsOpen, isChatOpen, setIsChatOpen }) => {
 
                             <div className="mt-8">
                                 <div className="px-3 mb-2 flex items-center justify-between group">
-                                    <span className="text-xs font-bold text-[#5c5f62] tracking-wider uppercase">Apps</span>
-                                    <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-[#e4e3e6] rounded transition-all">
-                                        <svg className="w-4 h-4 text-[#5c5f62]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                                    <span className="text-xs font-bold text-[#9ca3af] tracking-wider uppercase">Apps</span>
+                                    <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/5 rounded transition-all">
+                                        <svg className="w-4 h-4 text-[#9ca3af]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
                                     </button>
                                 </div>
-                                <button className="w-full flex items-center gap-3 px-3 py-1.5 rounded-lg text-sm font-semibold text-[#5c5f62] hover:bg-[#e4e3e6] transition-all">
-                                    <div className="w-5 h-5 flex items-center justify-center bg-gray-200 rounded">
-                                        <svg className="w-3 h-3 text-[#5c5f62]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" /></svg>
+                                <button className="w-full flex items-center gap-3 px-3 py-1.5 rounded-lg text-sm font-semibold text-[#9ca3af] hover:bg-white/5 transition-all">
+                                    <div className="w-5 h-5 flex items-center justify-center bg-white/10 rounded">
+                                        <svg className="w-3 h-3 text-[#9ca3af]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" /></svg>
                                     </div>
                                     Add
                                 </button>
@@ -282,51 +230,17 @@ const DashboardSidebar = ({ isOpen, setIsOpen, isChatOpen, setIsChatOpen }) => {
                     )}
                 </nav>
 
-                <div className="p-4 border-t border-gray-200 space-y-4">
-                    <div className="space-y-1">
-                        <div className="px-3 mb-2 flex items-center justify-between group cursor-pointer">
-                            <span className="text-[10px] font-black text-gray-500 tracking-[0.2em] uppercase">Sidekick conversations</span>
-                            <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-                        </div>
-                        <div className="space-y-0.5">
-                            <button
-                                onClick={() => setIsChatOpen(true)}
-                                className={`w-full flex items-center gap-3 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all ${isChatOpen ? 'bg-white text-black shadow-sm' : 'text-[#5c5f62] hover:bg-black/5'
-                                    }`}
-                            >
-                                Hello
-                            </button>
-                            <button
-                                onClick={() => setIsChatOpen(true)}
-                                className="w-full flex items-center gap-3 px-3 py-1.5 rounded-lg text-sm font-semibold text-[#5c5f62] hover:bg-black/5 text-left truncate"
-                            >
-                                Creating a memorable store na...
-                            </button>
-                        </div>
-                    </div>
+                <div className="p-4 border-t border-white/5 space-y-4">
 
                     <div className="space-y-1">
-                        <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-bold text-[#5c5f62] hover:bg-black/5 hover:text-black transition-all">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                            Settings
-                        </button>
                         <button onClick={() => {
                             localStorage.removeItem('merchantInfo');
                             localStorage.removeItem('shopStoreName');
                             navigate('/admin/login');
-                        }} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-bold text-red-500 hover:bg-red-50 transition-all mt-1">
+                        }} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-bold text-red-500 hover:bg-red-500/10 transition-all mt-1">
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
                             Logout
                         </button>
-                    </div>
-                    <div className="p-4 bg-[#0B0F14] rounded-xl text-white mt-4 relative overflow-hidden group transition-all shadow-xl">
-                        <div className="relative z-10">
-                            <p className="text-[10px] font-black text-white/50 uppercase tracking-[0.2em] mb-1">Ends soon</p>
-                            <p className="text-sm font-bold mb-4">Subscribe for ₹20</p>
-                            <Link to="/dashboard/plan" className="w-full py-2 bg-white text-black text-xs font-black uppercase tracking-widest rounded-lg hover:bg-gray-100 transition-all block text-center shadow-lg active:scale-95">
-                                Subscribe
-                            </Link>
-                        </div>
                     </div>
                 </div>
             </aside>

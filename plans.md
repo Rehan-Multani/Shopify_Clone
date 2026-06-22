@@ -539,7 +539,7 @@ MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/storify
 JWT_SECRET=your-super-secret-key
 
 # Razorpay (SuperAdmin - Subscription Payments)
-RAZORPAY_KEY_ID=rzp_live_xxxxx
+rzp_test_SatrrxFwKXJX8e=rzp_live_xxxxx
 RAZORPAY_KEY_SECRET=xxxxxxxxxxxxx
 
 # Email

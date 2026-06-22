@@ -1,0 +1,21 @@
+import dotenv from 'dotenv';
+import connectDB from '../../shared/connectDB.js';
+import app from './app.js';
+
+// Load env vars (updated with mock keys fallback)
+dotenv.config();
+
+// Connect to database
+connectDB();
+
+const PORT = process.env.PORT || 5005;
+
+const server = app.listen(PORT, () => {
+    console.log(`Billing service running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err, promise) => {
+    console.error(`Billing Service Error: ${err.message}`);
+    server.close(() => process.exit(1));
+});

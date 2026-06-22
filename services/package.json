@@ -1,0 +1,17 @@
+{
+  "name": "storify-services",
+  "version": "1.0.0",
+  "description": "Root runner for Storify microservices",
+  "type": "module",
+  "scripts": {
+    "dev": "node start.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^17.4.2",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.7.1",
+    "multer": "^2.2.0",
+    "nodemailer": "^9.0.1"
+  }
+}

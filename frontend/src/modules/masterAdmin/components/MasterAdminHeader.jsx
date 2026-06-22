@@ -81,55 +81,7 @@ const MasterAdminHeader = ({ isOpen, setIsOpen }) => {
 
             {/* Right actions */}
             <div className="flex items-center gap-1 flex-shrink-0">
-                {/* Status indicator */}
-                <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg mr-1" style={{ background: 'rgba(0,128,96,0.12)', border: '1px solid rgba(0,128,96,0.2)' }}>
-                    <div className="w-1.5 h-1.5 rounded-full" style={{ background: '#34d399' }}></div>
-                    <span className="text-[11px] font-bold" style={{ color: '#34d399' }}>All systems online</span>
-                </div>
 
-                {/* Notifications */}
-                <div className="relative">
-                    <button
-                        onClick={() => setShowNotifications(v => !v)}
-                        className="p-2 text-gray-400 rounded-lg transition-all relative group"
-                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
-                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                    >
-                        <svg className="w-5 h-5 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                        </svg>
-                        <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" style={{ border: '2px solid #1a1c23' }}></span>
-                    </button>
-
-                    {showNotifications && (
-                        <>
-                            <div className="fixed inset-0 z-40" onClick={() => setShowNotifications(false)} />
-                            <div className="absolute right-0 top-full mt-2 w-80 rounded-xl shadow-2xl z-50 overflow-hidden" style={{ background: '#1e2028', border: '1px solid rgba(255,255,255,0.08)' }}>
-                                <div className="px-4 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                                    <span className="text-sm font-bold text-white">Notifications</span>
-                                    <button className="text-xs font-semibold" style={{ color: '#14B8A6' }}>Mark all read</button>
-                                </div>
-                                <div style={{ maxHeight: 280, overflowY: 'auto' }}>
-                                    {notifications.map(n => (
-                                        <div key={n.id} className="px-4 py-3 cursor-pointer transition-all flex items-start gap-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
-                                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
-                                            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                                        >
-                                            <div className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0" style={{ background: n.urgent ? '#f87171' : '#14B8A6' }}></div>
-                                            <div className="flex-grow min-w-0">
-                                                <p className="text-xs leading-relaxed" style={{ color: '#D1D5DB' }}>{n.text}</p>
-                                                <p className="text-[10px] mt-0.5" style={{ color: '#4B5563' }}>{n.time}</p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className="px-4 py-3">
-                                    <button className="w-full text-center text-xs font-semibold" style={{ color: '#14B8A6' }}>View all notifications</button>
-                                </div>
-                            </div>
-                        </>
-                    )}
-                </div>
 
                 <div className="w-px h-6 mx-1" style={{ background: 'rgba(255,255,255,0.08)' }}></div>
 
@@ -173,21 +125,7 @@ const MasterAdminHeader = ({ isOpen, setIsOpen }) => {
                                         </svg>
                                         Settings
                                     </button>
-                                    <button 
-                                        onClick={() => {
-                                            setShowProfileMenu(false);
-                                            setShowNotifications(true);
-                                        }}
-                                        className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:text-white rounded-lg transition-all flex items-center gap-2"
-                                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
-                                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                                    >
-                                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                                        </svg>
-                                        Notifications
-                                    </button>
-                                    <div className="h-px w-full my-1" style={{ background: 'rgba(255,255,255,0.06)' }}></div>
+
                                     <button 
                                         onClick={() => {
                                             setShowProfileMenu(false);

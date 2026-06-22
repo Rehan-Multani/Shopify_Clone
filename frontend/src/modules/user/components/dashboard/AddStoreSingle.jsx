@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const MERCHANT_ADMIN_API_URL = import.meta.env.VITE_MERCHANT_ADMIN_API_URL || 'http://localhost:5002/api/admin';
+const STORE_API_URL = import.meta.env.VITE_STORE_API_URL || 'http://localhost:5004/api';
+const BILLING_API_URL = import.meta.env.VITE_BILLING_API_URL || 'http://localhost:5005/api/billing';
 
 const AddStoreSingle = () => {
     const navigate = useNavigate();
@@ -10,41 +12,10 @@ const AddStoreSingle = () => {
     const [plans, setPlans] = useState([]);
     const [selectedPlanId, setSelectedPlanId] = useState('');
 
-    useEffect(() => {
-        const fetchPlans = async () => {
-            try {
-                const res = await fetch(`${API_URL}/plans`);
-                const data = await res.json();
-                if (res.ok) {
-                    setPlans(data);
-                    const singleVendorPlan = data.find(p => p.planType === 'Single Vendor');
-                    if (singleVendorPlan) {
-                        setSelectedPlanId(singleVendorPlan._id);
-                    } else if (data.length > 0) {
-                        setSelectedPlanId(data[0]._id);
-                    }
-                }
-            } catch (err) {
-                console.error('Failed to fetch plans', err);
-            }
-        };
-        fetchPlans();
-    }, []);
-
-    const loadRazorpayScript = () => {
-        return new Promise((resolve) => {
-            if (document.getElementById('razorpay-script')) {
-                resolve(true);
-                return;
-            }
-            const script = document.createElement('script');
-            script.id = 'razorpay-script';
-            script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-            script.onload = () => resolve(true);
-            script.onerror = () => resolve(false);
-            document.body.appendChild(script);
-        });
-    };
+    // Parse path to see if we are in Edit Mode
+    const pathParts = window.location.pathname.split('/');
+    const isEdit = pathParts.includes('edit');
+    const storeId = isEdit ? pathParts[pathParts.indexOf('edit') + 1] : null;
 
     const [form, setForm] = useState({
         storeName: '',
@@ -71,6 +42,80 @@ const AddStoreSingle = () => {
         };
     };
 
+    // Fetch plans
+    useEffect(() => {
+        const fetchPlans = async () => {
+            try {
+                const res = await fetch(`${MERCHANT_ADMIN_API_URL}/plans`);
+                const data = await res.json();
+                if (res.ok) {
+                    const merchantInfo = JSON.parse(localStorage.getItem('merchantInfo') || '{}');
+                    const currentPlanType = merchantInfo?.plan?.planType || 'Single Vendor';
+                    const filteredPlans = data.filter(p => p.planType === currentPlanType);
+                    setPlans(filteredPlans);
+                    if (!isEdit) {
+                        if (filteredPlans.length > 0) {
+                            setSelectedPlanId(filteredPlans[0]._id);
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to fetch plans', err);
+            }
+        };
+        fetchPlans();
+    }, [isEdit]);
+
+    // Fetch store details if editing
+    useEffect(() => {
+        if (!isEdit || !storeId) return;
+        const fetchStore = async () => {
+            try {
+                const res = await fetch(`${STORE_API_URL}/stores/${storeId}`, {
+                    headers: getAuthHeaders()
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    setForm({
+                        storeName: data.storeName || '',
+                        storeDescription: data.storeDescription || '',
+                        contactEmail: data.contactEmail || '',
+                        contactPhone: data.contactPhone || '',
+                        address: data.address || '',
+                        city: data.city || '',
+                        state: data.state || '',
+                        pincode: data.pincode || '',
+                        storeLogo: data.storeLogo || '',
+                        facebook: data.socialLinks?.facebook || '',
+                        instagram: data.socialLinks?.instagram || '',
+                        twitter: data.socialLinks?.twitter || ''
+                    });
+                } else {
+                    setError(data.message || 'Failed to fetch store details');
+                }
+            } catch (err) {
+                console.error('Error fetching store details:', err);
+                setError('Failed to load store data');
+            }
+        };
+        fetchStore();
+    }, [isEdit, storeId]);
+
+    const loadRazorpayScript = () => {
+        return new Promise((resolve) => {
+            if (document.getElementById('razorpay-script')) {
+                resolve(true);
+                return;
+            }
+            const script = document.createElement('script');
+            script.id = 'razorpay-script';
+            script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+            script.onload = () => resolve(true);
+            script.onerror = () => resolve(false);
+            document.body.appendChild(script);
+        });
+    };
+
     const handleLogoUpload = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -84,13 +129,59 @@ const AddStoreSingle = () => {
             setError('Store name is required');
             return;
         }
-        if (!selectedPlanId) {
-            setError('Please select a store plan');
+
+        if (form.contactEmail.trim() && !/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(form.contactEmail.trim())) {
+            setError('Please enter a valid contact email address');
+            return;
+        }
+
+        if (form.contactPhone.trim() && !/^\d{10}$/.test(form.contactPhone.trim())) {
+            setError('Phone number must be exactly 10 digits');
             return;
         }
 
         setIsSaving(true);
         setError('');
+
+        if (isEdit) {
+            // Update Store Flow
+            try {
+                const res = await fetch(`${STORE_API_URL}/stores/${storeId}`, {
+                    method: 'PUT',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({
+                        ...form,
+                        socialLinks: {
+                            facebook: form.facebook,
+                            instagram: form.instagram,
+                            twitter: form.twitter
+                        }
+                    })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    // Update activeStoreId/shopStoreName in localStorage if we updated the currently active store
+                    if (localStorage.getItem('activeStoreId') === storeId) {
+                        localStorage.setItem('shopStoreName', data.storeName);
+                    }
+                    navigate('/dashboard/stores');
+                } else {
+                    setError(data.message || 'Failed to update store');
+                }
+            } catch (err) {
+                setError('Connection error. Please try again.');
+            } finally {
+                setIsSaving(false);
+            }
+            return;
+        }
+
+        // Create Store Flow (with payment)
+        if (!selectedPlanId) {
+            setError('Please select a store plan');
+            setIsSaving(false);
+            return;
+        }
 
         try {
             const scriptLoaded = await loadRazorpayScript();
@@ -101,7 +192,7 @@ const AddStoreSingle = () => {
             }
 
             // 1. Create order on backend
-            const orderRes = await fetch(`${API_URL}/payments/create-order`, {
+            const orderRes = await fetch(`${BILLING_API_URL}/create-order`, {
                 method: 'POST',
                 headers: getAuthHeaders(),
                 body: JSON.stringify({ planId: selectedPlanId })
@@ -117,6 +208,40 @@ const AddStoreSingle = () => {
             const merchantInfo = JSON.parse(localStorage.getItem('merchantInfo') || '{}');
             const selectedPlan = plans.find(p => p._id === selectedPlanId);
 
+            // Bypassing Razorpay checkout if backend issued a mock order
+            if (orderData.orderId && orderData.orderId.startsWith('mock_order_')) {
+                const verifyRes = await fetch(`${BILLING_API_URL}/verify-store-payment`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({
+                        razorpay_order_id: orderData.orderId,
+                        razorpay_payment_id: `mock_pay_${Date.now()}`,
+                        razorpay_signature: 'mock_sig',
+                        planId: selectedPlanId,
+                        storeDetails: {
+                            ...form,
+                            socialLinks: {
+                                facebook: form.facebook,
+                                instagram: form.instagram,
+                                twitter: form.twitter
+                            }
+                        }
+                    })
+                });
+                const verifyData = await verifyRes.json();
+
+                if (verifyRes.ok) {
+                    localStorage.setItem('activeStoreId', verifyData.store._id);
+                    localStorage.setItem('shopStoreName', verifyData.store.storeName);
+                    localStorage.setItem('adminPanelType', selectedPlan.planType === 'Multi Vendor' ? 'multi' : 'single');
+                    window.location.href = '/dashboard/stores';
+                } else {
+                    setError(verifyData.message || 'Store verification failed');
+                }
+                setIsSaving(false);
+                return;
+            }
+
             // 2. Open Razorpay checkout
             const options = {
                 key: orderData.key,
@@ -129,7 +254,7 @@ const AddStoreSingle = () => {
                     try {
                         setIsSaving(true);
                         // 3. Verify payment and create store
-                        const verifyRes = await fetch(`${API_URL}/payments/verify-store-payment`, {
+                        const verifyRes = await fetch(`${BILLING_API_URL}/verify-store-payment`, {
                             method: 'POST',
                             headers: getAuthHeaders(),
                             body: JSON.stringify({
@@ -197,7 +322,7 @@ const AddStoreSingle = () => {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                     </svg>
                 </button>
-                <h1 className="text-xl font-bold text-[#202223]">Add Store</h1>
+                <h1 className="text-xl font-bold text-[#202223]">{isEdit ? 'Edit Store' : 'Add Store'}</h1>
             </div>
 
             {error && (
@@ -245,27 +370,29 @@ const AddStoreSingle = () => {
                             placeholder="Describe what your store sells..." />
                     </div>
 
-                    <div className="pt-4 border-t border-gray-100">
-                        <label className="block text-sm font-bold text-[#202223] mb-3">Select Store Plan <span className="text-red-500">*</span></label>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {plans.map(p => (
-                                <div 
-                                    key={p._id}
-                                    onClick={() => setSelectedPlanId(p._id)}
-                                    className={`p-4 border rounded-xl cursor-pointer transition-all flex flex-col justify-between hover:border-black/20 ${selectedPlanId === p._id ? 'border-black bg-gray-50/50 ring-2 ring-black/5' : 'border-gray-200'}`}
-                                >
-                                    <div>
-                                        <p className="font-extrabold text-sm text-[#202223]">{p.planName}</p>
-                                        <p className="text-[11px] text-[#5c5f62] mt-0.5">{p.description || `Build a ${p.planType} store`}</p>
+                    {!isEdit && (
+                        <div className="pt-4 border-t border-gray-100">
+                            <label className="block text-sm font-bold text-[#202223] mb-3">Select Store Plan <span className="text-red-500">*</span></label>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {plans.map(p => (
+                                    <div 
+                                        key={p._id}
+                                        onClick={() => setSelectedPlanId(p._id)}
+                                        className={`p-4 border rounded-xl cursor-pointer transition-all flex flex-col justify-between hover:border-black/20 ${selectedPlanId === p._id ? 'border-black bg-gray-50/50 ring-2 ring-black/5' : 'border-gray-200'}`}
+                                    >
+                                        <div>
+                                            <p className="font-extrabold text-sm text-[#202223]">{p.planName}</p>
+                                            <p className="text-[11px] text-[#5c5f62] mt-0.5">{p.description || `Build a ${p.planType} store`}</p>
+                                        </div>
+                                        <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
+                                            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-black/5 text-[#5c5f62]">{p.planType}</span>
+                                            <span className="font-black text-sm text-black">₹{p.planPrice}/mo</span>
+                                        </div>
                                     </div>
-                                    <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
-                                        <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-black/5 text-[#5c5f62]">{p.planType}</span>
-                                        <span className="font-black text-sm text-black">₹{p.planPrice}/mo</span>
-                                    </div>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
 
@@ -365,7 +492,7 @@ const AddStoreSingle = () => {
                     {isSaving ? (
                         <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                     ) : null}
-                    {isSaving ? 'Creating...' : 'Create store'}
+                    {isSaving ? (isEdit ? 'Saving...' : 'Creating...') : (isEdit ? 'Save changes' : 'Create store')}
                 </button>
             </div>
         </div>

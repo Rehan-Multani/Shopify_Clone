@@ -16,8 +16,8 @@ const MasterAdminLogin = () => {
     setError('');
 
     try {
-      const API_URL = import.meta.env.VITE_API_BASE_URL;
-      const response = await fetch(`${API_URL}/master-admin/login`, {
+      const AUTH_API_URL = import.meta.env.VITE_AUTH_API_URL || 'http://localhost:5001/api/auth';
+      const response = await fetch(`${AUTH_API_URL}/admin/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

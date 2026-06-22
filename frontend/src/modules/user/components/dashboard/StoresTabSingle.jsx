@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const STORE_API_URL = import.meta.env.VITE_STORE_API_URL || 'http://localhost:5004/api';
+const API_URL = STORE_API_URL;
 
 const StoresTabSingle = () => {
     const navigate = useNavigate();
@@ -172,7 +173,7 @@ const StoresTabSingle = () => {
                             {/* Store Banner */}
                             {store.storeBanner && (
                                 <div className="h-24 bg-gradient-to-r from-gray-100 to-gray-50 overflow-hidden">
-                                    <img src={store.storeBanner.startsWith('http') ? store.storeBanner : `${API_URL.replace('/api', '')}${store.storeBanner}`} alt="" className="w-full h-full object-cover" />
+                                    <img src={store.storeBanner.startsWith('http') || store.storeBanner.startsWith('data:') ? store.storeBanner : `${API_URL.replace('/api', '')}${store.storeBanner}`} alt="" className="w-full h-full object-cover" />
                                 </div>
                             )}
 
@@ -180,7 +181,7 @@ const StoresTabSingle = () => {
                                 <div className="flex items-start justify-between mb-3">
                                     <div className="flex items-center gap-3">
                                         {store.storeLogo ? (
-                                            <img src={store.storeLogo.startsWith('http') ? store.storeLogo : `${API_URL.replace('/api', '')}${store.storeLogo}`} alt={store.storeName} className="w-12 h-12 rounded-xl object-cover border border-gray-200" />
+                                            <img src={store.storeLogo.startsWith('http') || store.storeLogo.startsWith('data:') ? store.storeLogo : `${API_URL.replace('/api', '')}${store.storeLogo}`} alt={store.storeName} className="w-12 h-12 rounded-xl object-cover border border-gray-200" />
                                         ) : (
                                             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#14B8A6] to-[#0d9488] flex items-center justify-center text-white font-black text-lg shadow-sm">
                                                 {store.storeName.charAt(0).toUpperCase()}
@@ -218,8 +219,8 @@ const StoresTabSingle = () => {
                                 {/* Actions */}
                                 <div className="flex flex-col gap-2 pt-3 border-t border-gray-100">
                                     <div className="flex items-center gap-2">
-                                        <button 
-                                            onClick={() => handleSelectStore(store)} 
+                                        <button
+                                            onClick={() => handleSelectStore(store)}
                                             className={`flex-1 py-2 rounded-lg text-xs font-bold border transition-all ${activeStoreId === store._id ? 'bg-black text-white border-black' : 'border-gray-200 text-[#202223] hover:bg-gray-50'}`}
                                         >
                                             {activeStoreId === store._id ? 'Currently Managing' : 'Manage Store'}

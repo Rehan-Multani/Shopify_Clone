@@ -19,10 +19,10 @@ const NavItem = ({ item, active }) => (
         className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all group relative select-none"
         style={{
             background: active ? 'rgba(20,184,166,0.12)' : 'transparent',
-            color: active ? '#14B8A6' : '#9CA3AF',
+            color: active ? '#fff' : '#9CA3AF',
         }}
-        onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = active ? '#14B8A6' : '#fff'; }}
-        onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = active ? '#14B8A6' : '#9CA3AF'; }}
+        onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#fff'; }}
+        onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = active ? '#fff' : '#9CA3AF'; }}
     >
         {/* Active indicator bar */}
         {active && (

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
-const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const MERCHANT_ADMIN_API_URL = import.meta.env.VITE_MERCHANT_ADMIN_API_URL || 'http://localhost:5002/api/admin';
+const API_URL = MERCHANT_ADMIN_API_URL;
 
 const Modal = ({ title, onClose, children, width = 'max-w-md' }) => (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.5)' }}
@@ -64,23 +65,15 @@ const MerchantForm = ({ merchant, plans, onSave, onCancel, isNew, isSaving }) =>
         mobile: merchant.mobile,
         profile: merchant.profile || '',
         address: merchant.address || '',
-        plan: merchant.plan ? (typeof merchant.plan === 'object' ? merchant.plan._id : merchant.plan) : '',
+        planType: merchant.planType || 'Single Vendor',
         status: merchant.status || 'active',
         revenue: merchant.revenue || 0,
         gstNumber: merchant.gstNumber || ''
     } : {
-        name: '', email: '', mobile: '', profile: '', address: '', plan: '', status: 'active', revenue: 0, gstNumber: ''
+        name: '', email: '', mobile: '', profile: '', address: '', planType: 'Single Vendor', status: 'active', revenue: 0, gstNumber: ''
     });
 
-    const initialPlanType = merchant?.plan && typeof merchant.plan === 'object' 
-        ? merchant.plan.planType 
-        : (plans.find(p => p._id === merchant?.plan)?.planType || 'Single Vendor');
-
-    const [planType, setPlanType] = useState(initialPlanType);
-
     const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
-
-    const filteredPlans = plans.filter(p => p.planType === planType);
 
     return (
         <div className="space-y-5">
@@ -158,10 +151,7 @@ const MerchantForm = ({ merchant, plans, onSave, onCancel, isNew, isSaving }) =>
                 </div>
                 <div>
                     <label className="text-xs font-semibold text-[#5c5f62] block mb-1.5">Plan Type</label>
-                    <select value={planType} onChange={e => {
-                        setPlanType(e.target.value);
-                        set('plan', ''); // Clear selected plan when plan type changes
-                    }}
+                    <select value={form.planType} onChange={e => set('planType', e.target.value)}
                         className="w-full px-3 py-2 border border-[#d3d3d3] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30 bg-white cursor-pointer appearance-none"
                         style={{ backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239CA3AF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.4-12.8z%22%2F%3E%3C%2Fsvg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.7rem top 50%', backgroundSize: '0.65rem auto' }}
                     >
@@ -171,24 +161,10 @@ const MerchantForm = ({ merchant, plans, onSave, onCancel, isNew, isSaving }) =>
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-                <div>
-                    <label className="text-xs font-semibold text-[#5c5f62] block mb-1.5">Plan</label>
-                    <select value={form.plan} onChange={e => set('plan', e.target.value)}
-                        className="w-full px-3 py-2 border border-[#d3d3d3] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30 bg-white cursor-pointer appearance-none"
-                        style={{ backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239CA3AF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.4-12.8z%22%2F%3E%3C%2Fsvg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.7rem top 50%', backgroundSize: '0.65rem auto' }}
-                    >
-                        <option value="">No Plan</option>
-                        {filteredPlans.map(p => (
-                            <option key={p._id} value={p._id}>{p.planName} (₹{p.planPrice}/mo)</option>
-                        ))}
-                    </select>
-                </div>
-                <div>
-                    <label className="text-xs font-semibold text-[#5c5f62] block mb-1.5">GST Number</label>
-                    <input type="text" value={form.gstNumber} onChange={e => set('gstNumber', e.target.value.toUpperCase())}
-                        placeholder="e.g. 22AAAAA0000A1Z5" className="w-full px-3 py-2 border border-[#d3d3d3] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30" />
-                </div>
+            <div>
+                <label className="text-xs font-semibold text-[#5c5f62] block mb-1.5">GST Number</label>
+                <input type="text" value={form.gstNumber} onChange={e => set('gstNumber', e.target.value.toUpperCase())}
+                    placeholder="e.g. 22AAAAA0000A1Z5" className="w-full px-3 py-2 border border-[#d3d3d3] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30" />
             </div>
 
             <div>
@@ -386,12 +362,7 @@ const MerchantsTab = () => {
     };
 
     const getPlanType = (m) => {
-        if (!m.plan) return 'Single Vendor';
-        if (typeof m.plan === 'object') {
-            return m.plan.planType || 'Single Vendor';
-        }
-        const found = plans.find(p => p._id === m.plan);
-        return found ? found.planType : 'Single Vendor';
+        return m.planType || 'Single Vendor';
     };
 
     const counts = {
@@ -494,7 +465,7 @@ const MerchantsTab = () => {
                         <table className="w-full">
                             <thead>
                                 <tr className="border-b border-[#f0f0f0]">
-                                    {['Merchant', 'Mobile', 'Plan', 'Status', 'Total Revenue', 'Joined At', 'Actions'].map(h => (
+                                    {['Merchant', 'Mobile', 'Plan Type', 'Status', 'Total Revenue', 'Joined At', 'Actions'].map(h => (
                                         <th key={h} className={`px-5 py-3 text-[11px] font-black uppercase tracking-widest text-[#9CA3AF] ${h === 'Actions' ? 'text-right' : 'text-left'}`}>{h}</th>
                                     ))}
                                 </tr>
@@ -542,7 +513,7 @@ const MerchantsTab = () => {
                         <table className="w-full">
                             <thead>
                                 <tr className="border-b border-[#f0f0f0]">
-                                    {['Merchant', 'Mobile', 'Plan', 'Status', 'Total Revenue', 'Joined At', 'Actions'].map(h => (
+                                    {['Merchant', 'Mobile', 'Plan Type', 'Status', 'Total Revenue', 'Joined At', 'Actions'].map(h => (
                                         <th key={h} className={`px-5 py-3 text-[11px] font-black uppercase tracking-widest text-[#9CA3AF] ${h === 'Actions' ? 'text-right' : 'text-left'}`}>{h}</th>
                                     ))}
                                 </tr>
@@ -568,7 +539,7 @@ const MerchantsTab = () => {
                                             </div>
                                         </td>
                                         <td className="px-5 py-3.5 text-sm text-[#5c5f62] text-center">{m.mobile}</td>
-                                        <td className="px-5 py-3.5 text-center"><div className="flex justify-center"><PlanBadge plan={m.plan} /></div></td>
+                                        <td className="px-5 py-3.5 text-center"><div className="flex justify-center"><PlanBadge plan={m.planType} /></div></td>
                                         <td className="px-5 py-3.5 text-center"><div className="flex justify-center"><StatusBadge status={m.status} /></div></td>
                                         <td className="px-5 py-3.5 text-sm font-bold text-[#202223] text-center">₹{(m.revenue || 0).toLocaleString()}</td>
                                         <td className="px-5 py-3.5 text-xs text-[#9CA3AF] text-center">

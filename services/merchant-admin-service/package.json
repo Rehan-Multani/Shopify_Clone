@@ -1,0 +1,25 @@
+{
+  "name": "storify-merchant-admin-service",
+  "version": "1.0.0",
+  "description": "Merchant and Admin Management Microservice for Storify",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "mongoose": "^8.9.5",
+    "multer": "^1.4.5-lts.1",
+    "nodemailer": "^9.0.1",
+    "sharp": "^0.35.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}

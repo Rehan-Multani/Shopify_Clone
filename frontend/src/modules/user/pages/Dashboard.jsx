@@ -51,6 +51,9 @@ import CouponsTab from '../components/dashboard/CouponsTab';
 import CreateCouponSingle from '../components/dashboard/CreateCouponSingle';
 import StoresTabSingle from '../components/dashboard/StoresTabSingle';
 import AddStoreSingle from '../components/dashboard/AddStoreSingle';
+import MerchantDashboard from '../components/dashboard/MerchantDashboard';
+import AnalyticsTab from '../components/dashboard/AnalyticsTab';
+import SupportTab from '../components/dashboard/SupportTab';
 
 const Dashboard = () => {
     const { tab } = useParams();
@@ -95,12 +98,13 @@ const Dashboard = () => {
         if (tab === 'stores') {
             if (panelMode === 'single') {
                 if (location.pathname.endsWith('/new')) return <AddStoreSingle />;
+                if (location.pathname.includes('/edit/')) return <AddStoreSingle />;
                 return <StoresTabSingle />;
             }
         }
 
         if (tab === 'analytics') {
-            return <MarketingOverview />;
+            return <AnalyticsTab />;
         }
 
         if (tab === 'reports') {
@@ -190,177 +194,12 @@ const Dashboard = () => {
             return <ThemesTab />;
         }
 
-        // Default: Home View
-        return (
-            <>
-                {/* Trial Banner */}
-                <div className="bg-[#1a1c23] rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between text-white shadow-lg relative overflow-hidden group gap-4">
-                    <div className="flex items-center gap-4 relative z-10">
-                        <div>
-                            <h3 className="font-bold text-sm sm:text-base">Get 3 months for ₹20/month</h3>
-                            <p className="text-xs sm:text-sm text-gray-400">Available for a limited time on select plans.</p>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-3 relative z-10 w-full sm:w-auto justify-end">
-                        <Link to="/dashboard/plan" className="bg-white text-black px-6 py-2 rounded-lg font-bold text-sm hover:bg-gray-100 transition-all flex-grow sm:flex-grow-0 block text-center shadow-lg">
-                            Select a plan
-                        </Link>
-                        <button className="p-2 hover:bg-white/10 rounded-lg transition-all flex-shrink-0 text-white/60 hover:text-white">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                        </button>
-                    </div>
-                </div>
+        if (tab === 'support') {
+            return <SupportTab />;
+        }
 
-                {/* Greeting & AI Input */}
-                <div className="space-y-4">
-                    <h1 className="text-lg lg:text-xl font-bold text-[#202223] tracking-tight">Good afternoon, let's get started.</h1>
-                    
-                    <div className="bg-white rounded-xl border border-gray-200 p-1.5 shadow-sm transition-all focus-within:ring-1 focus-within:ring-black/20">
-                        <div className="px-3 lg:px-4 py-2 border-b border-gray-100 mb-2">
-                             <span className="text-[10px] lg:text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Ask anything...</span>
-                        </div>
-                        <div className="px-3 lg:px-4 py-2 flex items-center justify-between gap-3">
-                            <input 
-                                type="text" 
-                                value={homeInput}
-                                onChange={(e) => setHomeInput(e.target.value)}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter' && homeInput.trim()) {
-                                        setInitialChatMessage(homeInput);
-                                        setIsChatOpen(true);
-                                        setHomeInput('');
-                                    }
-                                }}
-                                placeholder="Describe a task..." 
-                                className="flex-grow bg-transparent text-sm text-[#202223] outline-none placeholder:text-gray-400 min-w-0"
-                            />
-                            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-                                <button className="p-1.5 hover:bg-gray-100 rounded-lg transition-all text-gray-400 hover:text-black">
-                                    <svg className="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
-                                    </svg>
-                                </button>
-                                <button 
-                                    onClick={() => {
-                                        if (homeInput.trim()) {
-                                            setInitialChatMessage(homeInput);
-                                            setIsChatOpen(true);
-                                            setHomeInput('');
-                                        }
-                                    }}
-                                    className="bg-gray-100 p-1.5 rounded-lg text-gray-400 hover:text-black transition-all"
-                                >
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {/* Setup Guide */}
-                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-                    <div className="p-4 lg:p-6 border-b border-gray-100 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            {isEditingStoreName ? (
-                                <div className="flex items-center gap-2">
-                                    <input 
-                                        type="text" 
-                                        value={editValue} 
-                                        onChange={(e) => setEditValue(e.target.value)}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter') handleSaveStoreName();
-                                            if (e.key === 'Escape') setIsEditingStoreName(false);
-                                        }}
-                                        className="border border-gray-300 rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 w-48 sm:w-64"
-                                        autoFocus
-                                        placeholder="Enter store name"
-                                    />
-                                    <button 
-                                        onClick={handleSaveStoreName}
-                                        className="bg-black text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-black/80 transition-all shadow-sm"
-                                    >
-                                        Save
-                                    </button>
-                                    <button 
-                                        onClick={() => setIsEditingStoreName(false)}
-                                        className="text-[#5c5f62] text-xs font-bold hover:text-black transition-colors"
-                                    >
-                                        Cancel
-                                    </button>
-                                </div>
-                            ) : (
-                                <>
-                                    <h2 className="font-bold text-[#202223] text-sm lg:text-base tracking-tight">
-                                        {storeName !== 'My Store' ? storeName : 'Add store name'}
-                                    </h2>
-                                    <button 
-                                        onClick={() => {
-                                            setEditValue(storeName === 'My Store' ? '' : storeName);
-                                            setIsEditingStoreName(true);
-                                        }}
-                                        className="p-1.5 hover:bg-gray-100 rounded-lg transition-all text-[#5c5f62]"
-                                    >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                                    </button>
-                                </>
-                            )}
-                        </div>
-                    </div>
- 
-                    <div className="p-4 lg:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
-                        {/* Setup Card 1 */}
-                        <div className="bg-[#fbfcff] rounded-2xl p-4 lg:p-6 border border-gray-100 group cursor-pointer hover:shadow-md transition-all flex flex-col h-full">
-                            <div className="aspect-[16/9] mb-4 lg:mb-6 relative flex items-center justify-center">
-                                <div className="absolute inset-0 bg-[#f6f6f7] rounded-xl overflow-hidden shadow-inner flex items-center justify-center gap-2 scale-90 sm:scale-100 border border-gray-100">
-                                    {/* Illustrations placeholder */}
-                                    <div className="w-16 sm:w-24 h-24 sm:h-32 bg-white rounded-lg shadow-xl rotate-[-15deg] translate-x-4 border border-gray-100 flex items-center justify-center">
-                                    </div>
-                                    <div className="w-16 sm:w-24 h-24 sm:h-32 bg-white rounded-lg shadow-xl z-10 border border-gray-200 flex flex-col p-2 sm:p-4 space-y-1.5 sm:space-y-2">
-                                        <div className="w-8 h-8 sm:w-12 sm:h-12 bg-gray-50 rounded-lg self-center flex items-center justify-center border border-gray-100">
-                                            <svg className="w-4 h-4 sm:w-6 sm:h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <h3 className="font-bold text-base lg:text-lg mb-2 text-[#202223] transition-colors">Import your products from Amazon</h3>
-                            <p className="text-xs lg:text-sm text-[#5c5f62] mb-4 lg:mb-6 flex-grow leading-relaxed">Not ready to import? <span className="text-blue-600 underline">Add a product manually</span> to get started</p>
-                            <div className="flex items-center gap-2 lg:gap-3">
-                                <Link 
-                                    to="/dashboard/products/new"
-                                    className="bg-white text-black border border-gray-200 px-6 py-2 rounded-lg font-bold text-xs lg:text-sm hover:bg-gray-50 transition-all shadow-sm active:scale-95"
-                                >
-                                    Add product
-                                </Link>
-                                <button 
-                                    onClick={() => setIsCSVModalOpen(true)}
-                                    className="bg-[#1a1c23] text-white px-6 py-2 rounded-lg font-bold text-xs lg:text-sm hover:bg-black transition-all shadow-md active:scale-95"
-                                >
-                                    Import products
-                                </button>
-                            </div>
-                        </div>
- 
-                        {/* Setup Card 2 */}
-                        <div className="bg-[#fbfcff] rounded-2xl p-6 border border-gray-100 group cursor-pointer hover:shadow-md transition-all flex flex-col h-full">
-                            <div className="aspect-[16/9] mb-6 relative flex items-center justify-center">
-                                <div className="absolute inset-0 bg-[#f6f6f7] rounded-xl overflow-hidden shadow-inner flex items-center justify-center gap-2 border border-gray-100">
-                                     <div className="w-32 h-40 bg-white rounded-lg shadow-xl z-10 border border-gray-100 flex flex-col p-4 relative">
-                                        <div className="w-full h-1/2 bg-gray-50 rounded-lg mb-4"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <h3 className="font-bold text-lg mb-2 text-[#202223] transition-colors">Customize your online store</h3>
-                            <p className="text-sm text-[#5c5f62] mb-6 flex-grow leading-relaxed">Choose or generate a custom theme, then add your logo, colors, and images.</p>
-                            <Link 
-                                to="/dashboard/online-store/themes"
-                                className="w-fit bg-white text-[#202223] border border-gray-200 px-6 py-2 rounded-lg font-extrabold text-sm hover:bg-gray-50 transition-all shadow-sm active:scale-95 text-center"
-                            >
-                                Customize theme
-                            </Link>
-                        </div>
-                    </div>
-                </div>
-            </>
-        );
+        // Default: Home View
+        return <MerchantDashboard />;
     };
 
     const isFullFocusPage = location.pathname.endsWith('/content/metaobjects/new');

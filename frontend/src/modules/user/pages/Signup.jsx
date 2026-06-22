@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import logo from '../../../assets/storify-logo.png';
 
-const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const MERCHANT_ADMIN_API_URL = import.meta.env.VITE_MERCHANT_ADMIN_API_URL || 'http://localhost:5002/api/admin';
+const API_URL = MERCHANT_ADMIN_API_URL;
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -12,7 +13,6 @@ const Signup = () => {
   const [form, setForm] = useState({
     name: '',
     email: '',
-    password: '',
     mobile: '',
     planType: 'Single Vendor',
     plan: '',
@@ -20,8 +20,6 @@ const Signup = () => {
     address: '',
     profile: ''
   });
-
-  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -126,19 +124,28 @@ const Signup = () => {
                       placeholder="10-digit mobile number" className="w-full bg-[#111827] border border-white/10 rounded-lg py-2.5 px-4 text-white text-sm focus:outline-none focus:border-storify transition-all" />
               </div>
               <div className="space-y-1.5">
-                  <label className="text-[13px] font-semibold text-gray-300 block ml-0.5">Password</label>
+                  <label className="text-[13px] font-semibold text-gray-300 block ml-0.5">Plan Type</label>
                   <div className="relative">
-                      <input type={showPassword ? 'text' : 'password'} required value={form.password} onChange={e => set('password', e.target.value)}
-                          placeholder="••••••••" className="w-full bg-[#111827] border border-white/10 rounded-lg py-2.5 px-4 text-white text-sm focus:outline-none focus:border-storify transition-all pr-10" />
-                      <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors">
-                          {showPassword ? (
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                          ) : (
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
-                          )}
-                      </button>
+                      <select 
+                          value={form.planType} 
+                          onChange={e => set('planType', e.target.value)}
+                          className="w-full bg-[#111827] border border-white/10 rounded-lg py-2.5 px-4 text-white text-sm focus:outline-none focus:border-storify transition-all appearance-none cursor-pointer"
+                      >
+                          <option value="Single Vendor">Single Vendor</option>
+                          <option value="Multi Vendor">Multi Vendor</option>
+                      </select>
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                      </div>
                   </div>
               </div>
+          </div>
+
+          <div className="bg-[#111827] border border-white/5 text-gray-400 px-4 py-3 rounded-lg text-[13px] font-medium flex items-center gap-2">
+              <svg className="w-4 h-4 text-teal-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>A temporary password will be sent to your registered email address upon successful signup.</span>
           </div>
 
           {/* Plan selection removed - signup is free */}
@@ -158,8 +165,8 @@ const Signup = () => {
 
           <button
             type="submit"
-            disabled={isLoading || !form.name.trim() || !form.email || !form.password || form.mobile.length !== 10}
-            className={`w-full bg-storify text-white font-bold rounded-lg py-3 mt-6 text-[15px] transition-all flex justify-center items-center ${(isLoading || !form.name.trim() || !form.email || !form.password || form.mobile.length !== 10) ? 'opacity-70 cursor-not-allowed' : 'hover:bg-storify-glow active:scale-[0.98]'}`}
+            disabled={isLoading || !form.name.trim() || !form.email || form.mobile.length !== 10}
+            className={`w-full bg-storify text-white font-bold rounded-lg py-3 mt-6 text-[15px] transition-all flex justify-center items-center ${(isLoading || !form.name.trim() || !form.email || form.mobile.length !== 10) ? 'opacity-70 cursor-not-allowed' : 'hover:bg-storify-glow active:scale-[0.98]'}`}
           >
             {isLoading ? (
               <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

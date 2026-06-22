@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import logo from '../../../assets/storify-logo.png';
 
-const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const AUTH_API_URL = import.meta.env.VITE_AUTH_API_URL || 'http://localhost:5001/api/auth';
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
@@ -26,7 +26,7 @@ const ForgotPassword = () => {
     setSuccess('');
 
     try {
-      const response = await fetch(`${API_URL}/merchants/forgot-password`, {
+      const response = await fetch(`${AUTH_API_URL}/merchant/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
@@ -52,7 +52,7 @@ const ForgotPassword = () => {
     setSuccess('');
 
     try {
-      const response = await fetch(`${API_URL}/merchants/verify-otp`, {
+      const response = await fetch(`${AUTH_API_URL}/merchant/verify-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, otp }),
@@ -82,7 +82,7 @@ const ForgotPassword = () => {
     setSuccess('');
 
     try {
-      const response = await fetch(`${API_URL}/merchants/reset-password`, {
+      const response = await fetch(`${AUTH_API_URL}/merchant/reset-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, otp, newPassword }),

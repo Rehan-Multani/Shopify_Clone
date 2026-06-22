@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import logo from '../../../assets/storify-logo.png';
 import { Link, useNavigate } from 'react-router-dom';
 
-const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const MERCHANT_ADMIN_API_URL = import.meta.env.VITE_MERCHANT_ADMIN_API_URL || 'http://localhost:5002/api/admin';
+const API_URL = MERCHANT_ADMIN_API_URL;
 
 const PickPlan = () => {
     const navigate = useNavigate();

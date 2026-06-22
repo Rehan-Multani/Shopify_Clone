@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import logo from '../../../assets/storify-logo.png';
 
-const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const BILLING_API_URL = import.meta.env.VITE_BILLING_API_URL || 'http://localhost:5005/api/billing';
 
 const Subscribe = () => {
     const location = useLocation();
@@ -51,7 +51,7 @@ const Subscribe = () => {
             }
 
             // Create order on backend
-            const orderRes = await fetch(`${API_URL}/payments/create-order`, {
+            const orderRes = await fetch(`${BILLING_API_URL}/create-order`, {
                 method: 'POST',
                 headers: getAuthHeaders(),
                 body: JSON.stringify({ planId: selectedPlan._id })
@@ -78,7 +78,7 @@ const Subscribe = () => {
                 handler: async function (response) {
                     // Verify payment on backend
                     try {
-                        const verifyRes = await fetch(`${API_URL}/payments/verify`, {
+                        const verifyRes = await fetch(`${BILLING_API_URL}/verify`, {
                             method: 'POST',
                             headers: getAuthHeaders(),
                             body: JSON.stringify({
