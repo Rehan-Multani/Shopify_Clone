@@ -46,6 +46,53 @@ const AddSingleVendorProduct = () => {
         fetchCategories();
     }, []);
 
+    // Parse path to see if we are in Edit Mode
+    const pathParts = window.location.pathname.split('/');
+    const isEdit = pathParts.includes('edit');
+    const productId = isEdit ? pathParts[pathParts.indexOf('edit') + 1] : null;
+
+    useEffect(() => {
+        if (!isEdit || !productId) return;
+        const fetchProduct = async () => {
+            try {
+                const storeId = localStorage.getItem('activeStoreId') || '';
+                const res = await fetch(`${API_URL}/products`, {
+                    headers: { 'Authorization': `Bearer ${token}`, 'x-store-id': storeId }
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    const prod = data.find(p => p._id === productId);
+                    if (prod) {
+                        setForm({
+                            name: prod.name || '',
+                            description: prod.description || '',
+                            brandName: prod.brandName || '',
+                            sku: prod.sku || '',
+                            actualPrice: prod.actualPrice || '',
+                            sellingPrice: prod.sellingPrice || '',
+                            stock: prod.stock || '',
+                            category: prod.category?._id || '',
+                            weight: prod.weight || '',
+                            tags: prod.tags ? prod.tags.join(', ') : '',
+                            isActive: prod.isActive !== undefined ? prod.isActive : true
+                        });
+                        if (prod.images && prod.images.length > 0) {
+                            setImagePreviews(prod.images.map(img => `${API_URL.replace('/api', '')}${img}`));
+                        }
+                    } else {
+                        setError('Product not found');
+                    }
+                } else {
+                    setError('Failed to fetch product details');
+                }
+            } catch (err) {
+                console.error(err);
+                setError('Failed to load product data');
+            }
+        };
+        fetchProduct();
+    }, [isEdit, productId]);
+
     const handleImageSelect = (files) => {
         const newFiles = Array.from(files);
         const totalCount = imageFiles.length + newFiles.length;
@@ -102,7 +149,11 @@ const AddSingleVendorProduct = () => {
         setError('');
 
         try {
-            let imageUrls = [];
+            let imageUrls = isEdit 
+                ? imagePreviews
+                    .filter(img => !img.startsWith('blob:'))
+                    .map(img => img.replace(API_URL.replace('/api', ''), '')) 
+                : [];
 
             // Upload images if any
             if (imageFiles.length > 0) {
@@ -116,7 +167,11 @@ const AddSingleVendorProduct = () => {
                 });
                 const uploadData = await uploadRes.json();
                 if (uploadRes.ok) {
-                    imageUrls = uploadData.urls;
+                    if (isEdit) {
+                        imageUrls = [...imageUrls, ...uploadData.urls];
+                    } else {
+                        imageUrls = uploadData.urls;
+                    }
                 } else {
                     throw new Error(uploadData.message || 'Image upload failed');
                 }
@@ -139,21 +194,34 @@ const AddSingleVendorProduct = () => {
             };
 
             const storeId = localStorage.getItem('activeStoreId') || '';
-            const res = await fetch(`${API_URL}/products`, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json', 
-                    'Authorization': `Bearer ${token}`,
-                    'x-store-id': storeId
-                },
-                body: JSON.stringify(payload)
-            });
+            let res;
+            if (isEdit) {
+                res = await fetch(`${API_URL}/products/${productId}`, {
+                    method: 'PUT',
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Authorization': `Bearer ${token}`,
+                        'x-store-id': storeId
+                    },
+                    body: JSON.stringify(payload)
+                });
+            } else {
+                res = await fetch(`${API_URL}/products`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Authorization': `Bearer ${token}`,
+                        'x-store-id': storeId
+                    },
+                    body: JSON.stringify(payload)
+                });
+            }
             const data = await res.json();
 
             if (res.ok) {
                 navigate('/dashboard/products');
             } else {
-                setError(data.message || 'Failed to create product');
+                setError(data.message || `Failed to ${isEdit ? 'update' : 'create'} product`);
             }
         } catch (err) {
             setError(err.message || 'Something went wrong');
@@ -163,7 +231,7 @@ const AddSingleVendorProduct = () => {
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 max-w-4xl mx-auto">
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -172,7 +240,7 @@ const AddSingleVendorProduct = () => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                         </svg>
                     </button>
-                    <h1 className="text-xl lg:text-2xl font-bold text-[#202223] tracking-tight">Add Product</h1>
+                    <h1 className="text-xl lg:text-2xl font-bold text-[#202223] tracking-tight">{isEdit ? 'Edit Product' : 'Add Product'}</h1>
                 </div>
             </div>
 
@@ -197,7 +265,7 @@ const AddSingleVendorProduct = () => {
                                 value={form.name}
                                 onChange={(e) => setForm(p => ({ ...p, name: e.target.value }))}
                                 placeholder="e.g. Premium Wireless Headphones"
-                                className="w-full max-w-lg border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-transparent transition-all"
+                                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all"
                             />
                         </div>
                         <div>
@@ -207,7 +275,7 @@ const AddSingleVendorProduct = () => {
                                 onChange={(e) => setForm(p => ({ ...p, description: e.target.value }))}
                                 placeholder="Describe your product..."
                                 rows={5}
-                                className="w-full max-w-2xl border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-transparent transition-all resize-none"
+                                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all resize-none"
                             />
                             <p className="text-xs text-gray-400 mt-1">{form.description.length}/2000 characters</p>
                         </div>
@@ -234,7 +302,7 @@ const AddSingleVendorProduct = () => {
                             <select
                                 value={form.category}
                                 onChange={(e) => setForm(p => ({ ...p, category: e.target.value }))}
-                                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 cursor-pointer"
+                                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black cursor-pointer"
                             >
                                 <option value="">Select category</option>
                                 {categories.map(c => (
@@ -255,7 +323,7 @@ const AddSingleVendorProduct = () => {
                                 onChange={(e) => setForm(p => ({ ...p, stock: e.target.value }))}
                                 placeholder="0"
                                 min="0"
-                                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-transparent transition-all"
+                                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all"
                             />
                         </div>
                     </div>

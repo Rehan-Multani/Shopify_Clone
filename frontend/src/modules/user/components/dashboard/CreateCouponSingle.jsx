@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const CATALOG_API_URL = import.meta.env.VITE_CATALOG_API_URL || 'http://localhost:5003/api';
@@ -22,6 +22,47 @@ const CreateCoupon = () => {
 
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
+
+    // Parse path to see if we are in Edit Mode
+    const pathParts = window.location.pathname.split('/');
+    const isEdit = pathParts.includes('edit');
+    const couponId = isEdit ? pathParts[pathParts.indexOf('edit') + 1] : null;
+
+    useEffect(() => {
+        if (!isEdit || !couponId) return;
+        const fetchCoupon = async () => {
+            try {
+                const res = await fetch(`${API_URL}/coupons`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    const c = data.find(item => item._id === couponId);
+                    if (c) {
+                        setForm({
+                            code: c.code || '',
+                            discountType: c.discountType || 'percentage',
+                            discountValue: c.discountValue || '',
+                            minimumOrderAmount: c.minimumOrderAmount || '',
+                            usageLimit: c.usageLimit || '',
+                            startDate: c.startDate ? c.startDate.split('T')[0] : '',
+                            endDate: c.endDate ? c.endDate.split('T')[0] : '',
+                            description: c.description || '',
+                            isActive: c.isActive !== undefined ? c.isActive : true
+                        });
+                    } else {
+                        setError('Coupon not found');
+                    }
+                } else {
+                    setError('Failed to fetch coupon details');
+                }
+            } catch (err) {
+                console.error(err);
+                setError('Failed to load coupon data');
+            }
+        };
+        fetchCoupon();
+    }, [isEdit, couponId]);
 
     const generateCode = () => {
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -53,8 +94,11 @@ const CreateCoupon = () => {
                 isActive: form.isActive
             };
 
-            const res = await fetch(`${API_URL}/coupons`, {
-                method: 'POST',
+            const url = isEdit ? `${API_URL}/coupons/${couponId}` : `${API_URL}/coupons`;
+            const method = isEdit ? 'PUT' : 'POST';
+
+            const res = await fetch(url, {
+                method,
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(payload)
             });
@@ -63,7 +107,7 @@ const CreateCoupon = () => {
             if (res.ok) {
                 navigate('/dashboard/coupons');
             } else {
-                setError(data.message || 'Failed to create coupon');
+                setError(data.message || `Failed to ${isEdit ? 'update' : 'create'} coupon`);
             }
         } catch (err) {
             setError(err.message || 'Something went wrong');
@@ -73,7 +117,7 @@ const CreateCoupon = () => {
     };
 
     return (
-        <div className="space-y-6 max-w-3xl">
+        <div className="space-y-6 max-w-3xl mx-auto">
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -82,7 +126,7 @@ const CreateCoupon = () => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                         </svg>
                     </button>
-                    <h1 className="text-xl lg:text-2xl font-bold text-[#202223] tracking-tight">Create Coupon</h1>
+                    <h1 className="text-xl lg:text-2xl font-bold text-[#202223] tracking-tight">{isEdit ? 'Edit Coupon' : 'Create Coupon'}</h1>
                 </div>
             </div>
 
@@ -296,7 +340,7 @@ const CreateCoupon = () => {
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
                     )}
-                    Save Coupon
+                    {isEdit ? 'Update Coupon' : 'Save Coupon'}
                 </button>
             </div>
         </div>

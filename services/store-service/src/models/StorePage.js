@@ -6,10 +6,14 @@ const storePageSchema = new mongoose.Schema({
         ref: 'Merchant',
         required: true
     },
+    storeId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Store',
+        required: true
+    },
     slug: {
         type: String,
-        required: true,
-        enum: ['privacy-policy', 'terms-and-conditions', 'about-us', 'contact-us', 'refund-policy']
+        required: true
     },
     title: {
         type: String,
@@ -23,7 +27,7 @@ const storePageSchema = new mongoose.Schema({
     timestamps: true
 });
 
-storePageSchema.index({ merchantId: 1, slug: 1 }, { unique: true });
+storePageSchema.index({ storeId: 1, slug: 1 }, { unique: true });
 
 const StorePage = mongoose.model('StorePage', storePageSchema);
 export default StorePage;

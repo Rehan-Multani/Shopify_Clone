@@ -1,5 +1,5 @@
 import express from 'express';
-import { getPages, getPageBySlug, updatePage } from '../controllers/storePageController.js';
+import { getPages, getPageBySlug, updatePage, deletePage } from '../controllers/storePageController.js';
 
 const router = express.Router();
 
@@ -8,6 +8,7 @@ router.route('/')
 
 router.route('/:slug')
     .get(getPageBySlug)
-    .put(updatePage);
+    .put(updatePage)
+    .delete(deletePage);
 
 export default router;

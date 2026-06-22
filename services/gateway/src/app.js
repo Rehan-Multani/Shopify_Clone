@@ -113,6 +113,8 @@ app.use('/api/stores/admin/all', createServiceProxy(MERCHANT_ADMIN_SERVICE_URL, 
 app.use('/api/products', createServiceProxy(CATALOG_SERVICE_URL));
 app.use('/api/categories', createServiceProxy(CATALOG_SERVICE_URL));
 app.use('/api/coupons', createServiceProxy(CATALOG_SERVICE_URL));
+app.use('/api/customers', createServiceProxy(CATALOG_SERVICE_URL));
+app.use('/api/banners', createServiceProxy(CATALOG_SERVICE_URL));
 
 // 4. Store Service Routes
 app.use('/api/stores', createServiceProxy(STORE_SERVICE_URL));

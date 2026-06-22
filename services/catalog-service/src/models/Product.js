@@ -83,11 +83,10 @@ const productSchema = new mongoose.Schema({
     timestamps: true
 });
 
-productSchema.pre('save', function (next) {
+productSchema.pre('save', function () {
     if (this.isModified('name')) {
         this.slug = slugify(this.name, { lower: true, strict: true });
     }
-    next();
 });
 
 productSchema.index(

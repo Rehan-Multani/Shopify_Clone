@@ -237,13 +237,13 @@ const SingleVendorProductsTab = () => {
                                                 <span className="text-xs font-mono bg-gray-100 px-2 py-1 rounded text-[#5c5f62]">{product.sku || '—'}</span>
                                             </td>
                                             <td className="px-5 py-3 text-right">
-                                                <div>
+                                                <div className="flex items-center justify-end gap-2 flex-wrap">
                                                     <span className="font-bold text-sm text-[#202223]">{formatPrice(product.sellingPrice)}</span>
                                                     {discount && (
-                                                        <div className="flex items-center gap-1.5 justify-end mt-0.5">
+                                                        <>
                                                             <span className="text-xs text-gray-400 line-through">{formatPrice(product.actualPrice)}</span>
                                                             <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">{discount}% off</span>
-                                                        </div>
+                                                        </>
                                                     )}
                                                 </div>
                                             </td>
@@ -266,7 +266,26 @@ const SingleVendorProductsTab = () => {
                                                 </button>
                                             </td>
                                             <td className="px-5 py-3">
-                                                <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <div className="flex items-center justify-end gap-1.5">
+                                                    <Link
+                                                        to={`/dashboard/products/view/${product._id}`}
+                                                        className="p-2 hover:bg-gray-100 rounded-lg transition-all text-gray-400 hover:text-black"
+                                                        title="View Details"
+                                                    >
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                        </svg>
+                                                    </Link>
+                                                    <Link
+                                                        to={`/dashboard/products/edit/${product._id}`}
+                                                        className="p-2 hover:bg-gray-100 rounded-lg transition-all text-gray-400 hover:text-black"
+                                                        title="Edit"
+                                                    >
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                                        </svg>
+                                                    </Link>
                                                     <button
                                                         onClick={() => setDeleteModal({ open: true, id: product._id, name: product.name })}
                                                         className="p-2 hover:bg-red-50 rounded-lg transition-all text-gray-400 hover:text-red-500"

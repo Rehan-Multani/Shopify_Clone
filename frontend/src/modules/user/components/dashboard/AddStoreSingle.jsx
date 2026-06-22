@@ -314,7 +314,7 @@ const AddStoreSingle = () => {
     };
 
     return (
-        <div className="space-y-6 max-w-3xl">
+        <div className="space-y-6 max-w-2xl mx-auto">
             {/* Header */}
             <div className="flex items-center gap-4">
                 <button onClick={() => navigate('/dashboard/stores')} className="p-2 hover:bg-gray-100 rounded-lg transition-all">

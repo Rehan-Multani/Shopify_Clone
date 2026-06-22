@@ -5,28 +5,35 @@ const STORE_API_URL = import.meta.env.VITE_STORE_API_URL || 'http://localhost:50
 const API_URL = STORE_API_URL;
 
 const EditPageTab = () => {
-    const { "*": path } = useParams(); // Using wildcard since this component is nested deep in the routing structure
-    // Extract slug from the path. Assuming path is something like 'pages/edit/privacy-policy' or just 'privacy-policy'
-    // Since Dashboard route parameter is 'tab', we might need to parse the location directly.
-    const slug = window.location.pathname.split('/').pop();
-    
+    const navigate = useNavigate();
+    const slugFromPath = window.location.pathname.split('/').pop();
+    const isNew = slugFromPath === 'new';
+
     const [page, setPage] = useState(null);
+    const [title, setTitle] = useState('');
+    const [slug, setSlug] = useState('');
     const [content, setContent] = useState('');
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(!isNew);
     const [saving, setSaving] = useState(false);
     const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
-    const navigate = useNavigate();
 
     const token = localStorage.getItem('merchantToken');
 
     const fetchPage = async () => {
+        if (isNew) return;
         try {
-            const res = await fetch(`${API_URL}/store-pages/${slug}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+            const storeId = localStorage.getItem('activeStoreId') || '';
+            const res = await fetch(`${API_URL}/store-pages/${slugFromPath}`, {
+                headers: { 
+                    'Authorization': `Bearer ${token}`,
+                    'x-store-id': storeId
+                }
             });
             const data = await res.json();
             if (res.ok && data.success) {
                 setPage(data.page);
+                setTitle(data.page.title);
+                setSlug(data.page.slug);
                 setContent(data.page.content);
             }
         } catch (err) {
@@ -38,27 +45,61 @@ const EditPageTab = () => {
 
     useEffect(() => {
         fetchPage();
-    }, [slug]);
+    }, [slugFromPath, isNew]);
 
     const showToast = (message, type = 'success') => {
         setToast({ show: true, message, type });
         setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3000);
     };
 
+    // Auto-generate slug from title during page creation
+    const handleTitleChange = (val) => {
+        setTitle(val);
+        if (isNew) {
+            const generatedSlug = val
+                .toLowerCase()
+                .replace(/[^a-z0-9 -]/g, '') // remove invalid chars
+                .replace(/\s+/g, '-') // collapse whitespace and replace by -
+                .replace(/-+/g, '-'); // collapse dashes
+            setSlug(generatedSlug);
+        }
+    };
+
     const handleSave = async () => {
+        if (isNew && !title.trim()) {
+            showToast('Page title is required', 'error');
+            return;
+        }
+        if (isNew && !slug.trim()) {
+            showToast('Page slug is required', 'error');
+            return;
+        }
+
         setSaving(true);
+        const targetSlug = isNew ? slug.trim() : slugFromPath;
+
         try {
-            const res = await fetch(`${API_URL}/store-pages/${slug}`, {
+            const storeId = localStorage.getItem('activeStoreId') || '';
+            const res = await fetch(`${API_URL}/store-pages/${targetSlug}`, {
                 method: 'PUT',
                 headers: { 
                     'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'x-store-id': storeId
                 },
-                body: JSON.stringify({ content })
+                body: JSON.stringify({ 
+                    content,
+                    title: title.trim()
+                })
             });
             const data = await res.json();
             if (res.ok && data.success) {
-                showToast('Page content saved successfully');
+                showToast(isNew ? 'Page created successfully' : 'Page content saved successfully');
+                if (isNew) {
+                    setTimeout(() => {
+                        navigate('/dashboard/pages');
+                    }, 1000);
+                }
             } else {
                 showToast(data.message || 'Failed to save', 'error');
             }
@@ -74,17 +115,6 @@ const EditPageTab = () => {
         return (
             <div className="flex items-center justify-center py-20">
                 <div className="w-8 h-8 border-[3px] border-gray-200 border-t-black rounded-full animate-spin"></div>
-            </div>
-        );
-    }
-
-    if (!page) {
-        return (
-            <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center">
-                <h3 className="font-bold text-[#202223] mb-2">Page not found</h3>
-                <Link to="/dashboard/pages" className="text-blue-600 hover:underline text-sm font-medium">
-                    Back to Pages
-                </Link>
             </div>
         );
     }
@@ -113,11 +143,40 @@ const EditPageTab = () => {
                     </svg>
                 </Link>
                 <div>
-                    <h1 className="text-xl lg:text-2xl font-bold text-[#202223] tracking-tight">Edit {page.title}</h1>
+                    <h1 className="text-xl lg:text-2xl font-bold text-[#202223] tracking-tight">
+                        {isNew ? 'Create Store Page' : `Edit ${title}`}
+                    </h1>
                 </div>
             </div>
 
-            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm flex flex-col h-[600px]">
+            {/* Inputs card for Title & Slug (only for creation, or editable title for editing) */}
+            <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm font-bold text-[#202223] mb-1.5">Page Title</label>
+                        <input
+                            type="text"
+                            value={title}
+                            onChange={(e) => handleTitleChange(e.target.value)}
+                            placeholder="e.g. Help Center"
+                            className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-bold text-[#202223] mb-1.5">Page Slug</label>
+                        <input
+                            type="text"
+                            value={slug}
+                            onChange={(e) => isNew && setSlug(e.target.value)}
+                            disabled={!isNew}
+                            placeholder="e.g. help-center"
+                            className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all font-mono disabled:bg-gray-50 disabled:text-gray-400"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm flex flex-col h-[500px]">
                 <div className="p-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
                     <span className="text-sm font-bold text-gray-600">Page Content (HTML supported)</span>
                     <button 
@@ -132,13 +191,13 @@ const EditPageTab = () => {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                             </svg>
                         )}
-                        Save Changes
+                        {isNew ? 'Create Page' : 'Save Changes'}
                     </button>
                 </div>
                 <div className="flex-1 p-0">
                     <textarea 
                         className="w-full h-full p-6 text-[#202223] resize-none focus:outline-none focus:ring-0 border-none font-mono text-sm leading-relaxed"
-                        placeholder={`Enter the content for ${page.title} here...`}
+                        placeholder={`Enter the HTML / text content for ${title || 'your page'} here...`}
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
                     ></textarea>

@@ -4,14 +4,13 @@ import { useNavigate } from 'react-router-dom';
 const CATALOG_API_URL = import.meta.env.VITE_CATALOG_API_URL || 'http://localhost:5003/api';
 const API_URL = CATALOG_API_URL;
 
-const AddCategory = () => {
+const AddBanner = () => {
     const navigate = useNavigate();
     const fileInputRef = useRef(null);
     const token = localStorage.getItem('merchantToken');
 
     const [form, setForm] = useState({
-        name: '',
-        description: '',
+        title: '',
         isActive: true
     });
     const [imageFile, setImageFile] = useState(null);
@@ -23,41 +22,35 @@ const AddCategory = () => {
     // Parse path to see if we are in Edit Mode
     const pathParts = window.location.pathname.split('/');
     const isEdit = pathParts.includes('edit');
-    const categoryId = isEdit ? pathParts[pathParts.indexOf('edit') + 1] : null;
+    const bannerId = isEdit ? pathParts[pathParts.indexOf('edit') + 1] : null;
 
     useEffect(() => {
-        if (!isEdit || !categoryId) return;
-        const fetchCategory = async () => {
+        if (!isEdit || !bannerId) return;
+        const fetchBanner = async () => {
             try {
                 const storeId = localStorage.getItem('activeStoreId') || '';
-                const res = await fetch(`${API_URL}/categories`, {
+                const res = await fetch(`${API_URL}/banners/${bannerId}`, {
                     headers: { 'Authorization': `Bearer ${token}`, 'x-store-id': storeId }
                 });
                 const data = await res.json();
                 if (res.ok) {
-                    const cat = data.find(c => c._id === categoryId);
-                    if (cat) {
-                        setForm({
-                            name: cat.name || '',
-                            description: cat.description || '',
-                            isActive: cat.isActive !== undefined ? cat.isActive : true
-                        });
-                        if (cat.image) {
-                            setImagePreview(`${API_URL.replace('/api', '')}${cat.image}`);
-                        }
-                    } else {
-                        setError('Category not found');
+                    setForm({
+                        title: data.title || '',
+                        isActive: data.isActive !== undefined ? data.isActive : true
+                    });
+                    if (data.image) {
+                        setImagePreview(`${API_URL.replace('/api', '')}${data.image}`);
                     }
                 } else {
-                    setError('Failed to fetch category details');
+                    setError('Failed to fetch banner details');
                 }
             } catch (err) {
                 console.error(err);
-                setError('Failed to load category data');
+                setError('Failed to load banner data');
             }
         };
-        fetchCategory();
-    }, [isEdit, categoryId]);
+        fetchBanner();
+    }, [isEdit, bannerId]);
 
     const handleImageSelect = (file) => {
         if (!file) return;
@@ -65,8 +58,8 @@ const AddCategory = () => {
             setError('Please select an image file');
             return;
         }
-        if (file.size > 5 * 1024 * 1024) {
-            setError('Image must be less than 5MB');
+        if (file.size > 10 * 1024 * 1024) {
+            setError('Image must be less than 10MB');
             return;
         }
         setImageFile(file);
@@ -82,8 +75,12 @@ const AddCategory = () => {
     };
 
     const handleSave = async () => {
-        if (!form.name.trim()) {
-            setError('Category name is required');
+        if (!form.title.trim()) {
+            setError('Banner title is required');
+            return;
+        }
+        if (!isEdit && !imageFile) {
+            setError('Banner image is required');
             return;
         }
 
@@ -98,7 +95,7 @@ const AddCategory = () => {
                 const formData = new FormData();
                 formData.append('image', imageFile);
                 const storeId = localStorage.getItem('activeStoreId') || '';
-                const uploadRes = await fetch(`${API_URL}/categories/upload`, {
+                const uploadRes = await fetch(`${API_URL}/banners/upload`, {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${token}`, 'x-store-id': storeId },
                     body: formData
@@ -114,7 +111,7 @@ const AddCategory = () => {
             const storeId = localStorage.getItem('activeStoreId') || '';
             let res;
             if (isEdit) {
-                res = await fetch(`${API_URL}/categories/${categoryId}`, {
+                res = await fetch(`${API_URL}/banners/${bannerId}`, {
                     method: 'PUT',
                     headers: { 
                         'Content-Type': 'application/json', 
@@ -124,7 +121,7 @@ const AddCategory = () => {
                     body: JSON.stringify({ ...form, image: imageUrl })
                 });
             } else {
-                res = await fetch(`${API_URL}/categories`, {
+                res = await fetch(`${API_URL}/banners`, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json', 
@@ -137,9 +134,9 @@ const AddCategory = () => {
             const data = await res.json();
 
             if (res.ok) {
-                navigate('/dashboard/category');
+                navigate('/dashboard/banners');
             } else {
-                setError(data.message || `Failed to ${isEdit ? 'update' : 'create'} category`);
+                setError(data.message || `Failed to ${isEdit ? 'update' : 'create'} banner`);
             }
         } catch (err) {
             setError(err.message || 'Something went wrong');
@@ -153,12 +150,12 @@ const AddCategory = () => {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <button onClick={() => navigate('/dashboard/category')} className="p-2 hover:bg-gray-100 rounded-lg transition-all text-[#5c5f62]">
+                    <button onClick={() => navigate('/dashboard/banners')} className="p-2 hover:bg-gray-100 rounded-lg transition-all text-[#5c5f62]">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                         </svg>
                     </button>
-                    <h1 className="text-xl lg:text-2xl font-bold text-[#202223] tracking-tight">{isEdit ? 'Edit Category' : 'Add Category'}</h1>
+                    <h1 className="text-xl lg:text-2xl font-bold text-[#202223] tracking-tight">{isEdit ? 'Edit Banner' : 'Add Banner'}</h1>
                 </div>
             </div>
 
@@ -172,39 +169,29 @@ const AddCategory = () => {
             )}
 
             <div className="bg-white rounded-2xl border border-gray-200 p-6 md:p-8 shadow-sm space-y-8">
-                {/* Category Details */}
+                {/* Banner Details */}
                 <div className="space-y-4">
-                    <h2 className="text-lg font-bold text-[#202223] pb-2 border-b border-gray-100">Category Details</h2>
+                    <h2 className="text-lg font-bold text-[#202223] pb-2 border-b border-gray-100">Banner Details</h2>
                     <div>
-                        <label className="block text-sm font-bold text-[#202223] mb-1.5">Category Name</label>
+                        <label className="block text-sm font-bold text-[#202223] mb-1.5">Banner Title</label>
                         <input
                             type="text"
-                            value={form.name}
-                            onChange={(e) => setForm(p => ({ ...p, name: e.target.value }))}
-                            placeholder="e.g. Electronics, Fashion, Home & Garden"
+                            value={form.title}
+                            onChange={(e) => setForm(p => ({ ...p, title: e.target.value }))}
+                            placeholder="e.g. Summer Sale 50% Off, New Arrivals"
                             className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-transparent transition-all"
                         />
                     </div>
-                    <div>
-                        <label className="block text-sm font-bold text-[#202223] mb-1.5">Description</label>
-                        <textarea
-                            value={form.description}
-                            onChange={(e) => setForm(p => ({ ...p, description: e.target.value }))}
-                            placeholder="Describe this category..."
-                            rows={4}
-                            className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-transparent transition-all resize-none"
-                        />
-                        <p className="text-xs text-gray-400 mt-1">{form.description.length}/500 characters</p>
-                    </div>
+               
                 </div>
 
-                {/* Category Image */}
+                {/* Banner Image */}
                 <div className="space-y-4">
-                    <h2 className="text-lg font-bold text-[#202223] pb-2 border-b border-gray-100">Category Image</h2>
+                    <h2 className="text-lg font-bold text-[#202223] pb-2 border-b border-gray-100">Banner Image</h2>
                     
                     {imagePreview ? (
-                        <div className="relative group max-w-sm">
-                            <div className="w-full aspect-video rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
+                        <div className="relative group w-full">
+                            <div className="w-full aspect-[21/9] rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
                                 <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
                             </div>
                             <button
@@ -222,7 +209,7 @@ const AddCategory = () => {
                             onDragLeave={() => setIsDragging(false)}
                             onDrop={handleDrop}
                             onClick={() => fileInputRef.current?.click()}
-                            className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${
+                            className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all ${
                                 isDragging ? 'border-black bg-gray-50 scale-[1.01]' : 'border-gray-200 hover:border-gray-400 hover:bg-gray-50/50'
                             }`}
                         >
@@ -231,8 +218,8 @@ const AddCategory = () => {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
                             </div>
-                            <p className="font-bold text-sm text-[#202223] mb-1">Drop image here or click to upload</p>
-                            <p className="text-xs text-gray-400">Accepts JPEG, PNG, WEBP up to 5MB</p>
+                            <p className="font-bold text-sm text-[#202223] mb-1">Drop banner image here or click to upload</p>
+                            <p className="text-xs text-gray-400">Recommended size: 1920x800px. Accepts JPEG, PNG, WEBP up to 10MB</p>
                         </div>
                     )}
                     <input
@@ -251,7 +238,7 @@ const AddCategory = () => {
                         <div>
                             <span className="font-bold text-sm text-[#202223]">{form.isActive ? 'Active' : 'Inactive'}</span>
                             <p className="text-xs text-gray-400 mt-0.5">
-                                {form.isActive ? 'Visible to customers' : 'Hidden from customers'}
+                                {form.isActive ? 'Visible on your store homepage' : 'Hidden from your store homepage'}
                             </p>
                         </div>
                         <button
@@ -266,7 +253,7 @@ const AddCategory = () => {
 
             {/* Bottom Actions */}
             <div className="flex items-center justify-end gap-3 pt-4 pb-8">
-                <button onClick={() => navigate('/dashboard/category')} className="px-5 py-2.5 text-sm font-bold text-[#5c5f62] hover:bg-gray-100 rounded-lg transition-all">
+                <button onClick={() => navigate('/dashboard/banners')} className="px-5 py-2.5 text-sm font-bold text-[#5c5f62] hover:bg-gray-100 rounded-lg transition-all">
                     Discard
                 </button>
                 <button
@@ -280,11 +267,11 @@ const AddCategory = () => {
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
                     )}
-                    Save Category
+                    Save Banner
                 </button>
             </div>
         </div>
     );
 };
 
-export default AddCategory;
+export default AddBanner;

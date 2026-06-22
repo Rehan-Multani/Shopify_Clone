@@ -222,7 +222,21 @@ const CouponsTab = () => {
                                                         </svg>
                                                     </div>
                                                     <div>
-                                                        <span className="font-bold text-sm text-[#202223] font-mono tracking-wide">{coupon.code}</span>
+                                                        <div className="flex items-center gap-1.5">
+                                                            <span className="font-bold text-sm text-[#202223] font-mono tracking-wide">{coupon.code}</span>
+                                                            <button
+                                                                onClick={() => {
+                                                                    navigator.clipboard.writeText(coupon.code);
+                                                                    showToast('Coupon code copied!');
+                                                                }}
+                                                                className="p-1 hover:bg-gray-100 rounded text-gray-400 hover:text-black transition-all"
+                                                                title="Copy Code"
+                                                            >
+                                                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                                                                </svg>
+                                                            </button>
+                                                        </div>
                                                         {coupon.description && <p className="text-xs text-[#5c5f62] truncate max-w-[140px]">{coupon.description}</p>}
                                                     </div>
                                                 </div>
@@ -258,7 +272,16 @@ const CouponsTab = () => {
                                                 </button>
                                             </td>
                                             <td className="px-5 py-3">
-                                                <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <div className="flex items-center justify-end gap-1.5">
+                                                    <Link
+                                                        to={`/dashboard/coupons/edit/${coupon._id}`}
+                                                        className="p-2 hover:bg-gray-100 rounded-lg transition-all text-gray-400 hover:text-black"
+                                                        title="Edit"
+                                                    >
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                                        </svg>
+                                                    </Link>
                                                     <button
                                                         onClick={() => setDeleteModal({ open: true, id: coupon._id, code: coupon.code })}
                                                         className="p-2 hover:bg-red-50 rounded-lg transition-all text-gray-400 hover:text-red-500"

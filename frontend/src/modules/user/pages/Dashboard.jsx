@@ -17,6 +17,7 @@ import CompaniesTab from '../components/dashboard/CompaniesTab';
 import CustomersTab from '../components/dashboard/CustomersTab';
 import AddProduct from '../components/dashboard/AddProduct';
 import AddCustomer from '../components/dashboard/AddCustomer';
+import ViewCustomer from '../components/dashboard/ViewCustomer';
 import AddCompany from '../components/dashboard/AddCompany';
 import SidekickChat from '../components/dashboard/SidekickChat';
 import CSVImportModal from '../components/dashboard/CSVImportModal';
@@ -47,6 +48,7 @@ import CategoryTab from '../components/dashboard/CategoryTab';
 import AddCategorySingle from '../components/dashboard/AddCategory';
 import SingleVendorProductsTab from '../components/dashboard/SingleVendorProductsTab';
 import AddSingleVendorProduct from '../components/dashboard/AddSingleVendorProduct';
+import ViewSingleVendorProduct from '../components/dashboard/ViewSingleVendorProduct';
 import CouponsTab from '../components/dashboard/CouponsTab';
 import CreateCouponSingle from '../components/dashboard/CreateCouponSingle';
 import StoresTabSingle from '../components/dashboard/StoresTabSingle';
@@ -54,6 +56,8 @@ import AddStoreSingle from '../components/dashboard/AddStoreSingle';
 import MerchantDashboard from '../components/dashboard/MerchantDashboard';
 import AnalyticsTab from '../components/dashboard/AnalyticsTab';
 import SupportTab from '../components/dashboard/SupportTab';
+import BannersTab from '../components/dashboard/BannersTab';
+import AddBanner from '../components/dashboard/AddBanner';
 
 const Dashboard = () => {
     const { tab } = useParams();
@@ -80,6 +84,7 @@ const Dashboard = () => {
         if (tab === 'category') {
             if (panelMode === 'single') {
                 if (location.pathname.endsWith('/new')) return <AddCategorySingle />;
+                if (location.pathname.includes('/edit/')) return <AddCategorySingle />;
                 return <CategoryTab />;
             }
             if (location.pathname.endsWith('/new')) return <AddCollection />;
@@ -89,6 +94,7 @@ const Dashboard = () => {
         if (tab === 'coupons') {
             if (panelMode === 'single') {
                 if (location.pathname.endsWith('/new')) return <CreateCouponSingle />;
+                if (location.pathname.includes('/edit/')) return <CreateCouponSingle />;
                 return <CouponsTab />;
             }
             if (location.pathname.endsWith('/new')) return <CreateDiscount />;
@@ -112,6 +118,7 @@ const Dashboard = () => {
         }
 
         if (tab === 'pages') {
+            if (location.pathname.endsWith('/new')) return <EditPageTab />;
             if (location.pathname.includes('/edit/')) return <EditPageTab />;
             return <PagesTab />;
         }
@@ -138,6 +145,8 @@ const Dashboard = () => {
         if (tab === 'products') {
             if (panelMode === 'single') {
                 if (location.pathname.endsWith('/new')) return <AddSingleVendorProduct />;
+                if (location.pathname.includes('/edit/')) return <AddSingleVendorProduct />;
+                if (location.pathname.includes('/view/')) return <ViewSingleVendorProduct />;
                 if (location.pathname.endsWith('/inventory')) return <InventoryTab />;
                 if (location.pathname.endsWith('/purchase-orders')) return <PurchaseOrdersTab />;
                 return <SingleVendorProductsTab />;
@@ -157,11 +166,9 @@ const Dashboard = () => {
         }
 
         if (tab === 'customers') {
-            if (location.pathname.endsWith('/customers/new')) return <AddCustomer />;
-            if (location.pathname.endsWith('/segments/new')) return <CreateSegment />;
-            if (location.pathname.endsWith('/segments')) return <SegmentsTab />;
-            if (location.pathname.endsWith('/companies/new')) return <AddCompany />;
-            if (location.pathname.endsWith('/companies')) return <CompaniesTab />;
+            if (location.pathname.endsWith('/new')) return <AddCustomer />;
+            if (location.pathname.includes('/edit/')) return <AddCustomer />;
+            if (location.pathname.includes('/view/')) return <ViewCustomer />;
             return <CustomersTab />;
         }
 
@@ -198,6 +205,12 @@ const Dashboard = () => {
             return <SupportTab />;
         }
 
+        if (tab === 'banners') {
+            if (location.pathname.endsWith('/new')) return <AddBanner />;
+            if (location.pathname.includes('/edit/')) return <AddBanner />;
+            return <BannersTab />;
+        }
+
         // Default: Home View
         return <MerchantDashboard />;
     };
@@ -215,7 +228,7 @@ const Dashboard = () => {
                 />
             )}
 
-            <div className="flex-1 flex flex-col min-w-0 transition-all duration-300 relative overflow-y-auto">
+            <div className="flex-1 flex flex-col min-w-0 transition-all duration-300 relative overflow-y-auto custom-scrollbar">
                 <DashboardHeader isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} storeName={storeName} />
                 
                 {isChatOpen ? (

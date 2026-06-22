@@ -1,9 +1,15 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import path from 'path';
+import dotenv from 'dotenv';
+
+dotenv.config();
 import productRoutes from './routes/productRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
 import couponRoutes from './routes/couponRoutes.js';
+import customerRoutes from './routes/customerRoutes.js';
+import bannerRoutes from './routes/bannerRoutes.js';
 
 const app = express();
 
@@ -15,6 +21,8 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
+const uploadDir = process.env.UPLOAD_DIR ? path.resolve(process.env.UPLOAD_DIR) : path.join(process.cwd(), 'public', 'uploads');
+app.use('/uploads', express.static(uploadDir));
 
 import jwt from 'jsonwebtoken';
 
@@ -55,6 +63,8 @@ app.use((req, res, next) => {
 app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/coupons', couponRoutes);
+app.use('/api/customers', customerRoutes);
+app.use('/api/banners', bannerRoutes);
 
 // Health check
 app.get('/api/catalog/health', (req, res) => {
