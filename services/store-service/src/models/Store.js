@@ -78,6 +78,16 @@ const storeSchema = new mongoose.Schema({
     totalOrders: {
         type: Number,
         default: 0
+    },
+    paymentSettings: {
+        codEnabled: {
+            type: Boolean,
+            default: true
+        },
+        onlineEnabled: {
+            type: Boolean,
+            default: true
+        }
     }
 }, {
     timestamps: true

@@ -1,5 +1,5 @@
 import express from 'express';
-import { authMasterAdmin, logoutAdmin } from '../controllers/adminAuthController.js';
+import { authMasterAdmin, logoutAdmin, changeAdminPassword } from '../controllers/adminAuthController.js';
 import { merchantLogin, merchantForgotPassword, merchantVerifyOtp, merchantResetPassword } from '../controllers/merchantAuthController.js';
 import { verifyToken, activateMerchantInternal, getMerchantInternal } from '../controllers/verifyController.js';
 
@@ -8,6 +8,7 @@ const router = express.Router();
 // Admin Auth Routes
 router.post('/admin/login', authMasterAdmin);
 router.post('/admin/logout', logoutAdmin);
+router.put('/admin/change-password', changeAdminPassword);
 
 // Merchant Auth Routes
 router.post('/merchant/login', merchantLogin);

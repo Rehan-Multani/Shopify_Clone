@@ -3,10 +3,12 @@ import crypto from 'crypto';
 import Subscription from '../models/Subscription.js';
 import Plan from '../models/Plan.js';
 
-const razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_placeholder',
-    key_secret: process.env.RAZORPAY_KEY_SECRET || 'placeholder_secret'
-});
+const getRazorpayInstance = () => {
+    return new Razorpay({
+        key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_placeholder',
+        key_secret: process.env.RAZORPAY_KEY_SECRET || 'placeholder_secret'
+    });
+};
 
 // @desc    Create a Razorpay order for plan subscription
 // @route   POST /api/billing/create-order
@@ -30,7 +32,7 @@ export const createOrder = async (req, res) => {
         const options = {
             amount: amountInPaise,
             currency: 'INR',
-            receipt: `receipt_${merchantId}_${Date.now()}`,
+            receipt: `rcpt_${merchantId.toString().slice(-8)}_${Date.now()}`,
             notes: {
                 merchantId: merchantId.toString(),
                 planId: planId,
@@ -38,27 +40,9 @@ export const createOrder = async (req, res) => {
             }
         };
 
-        let order;
-        const keyId = process.env.RAZORPAY_KEY_ID || '';
-        if (keyId === 'rzp_test_YOUR_KEY_HERE' || !keyId || keyId.includes('YOUR_KEY')) {
-            order = {
-                id: `mock_order_${Date.now()}`,
-                amount: amountInPaise,
-                currency: 'INR'
-            };
-        } else {
-            try {
-                order = await razorpay.orders.create(options);
-            } catch (err) {
-                console.warn('Razorpay live order creation failed. Falling back to mock order:', err.message);
-                order = {
-                    id: `mock_order_${Date.now()}`,
-                    amount: amountInPaise,
-                    currency: 'INR'
-                };
-            }
-        }
+        const order = await getRazorpayInstance().orders.create(options);
 
+        const keyId = process.env.RAZORPAY_KEY_ID || '';
         res.json({
             orderId: order.id,
             amount: order.amount,
@@ -69,7 +53,21 @@ export const createOrder = async (req, res) => {
         });
     } catch (error) {
         console.error('Razorpay order creation error:', error);
-        res.status(500).json({ message: 'Failed to create payment order. ' + error.message });
+        let errMsg = 'Unknown error';
+        if (error) {
+            if (typeof error === 'string') {
+                errMsg = error;
+            } else if (error.description) {
+                errMsg = error.description;
+            } else if (error.error && error.error.description) {
+                errMsg = error.error.description;
+            } else if (error.message) {
+                errMsg = error.message;
+            } else {
+                errMsg = JSON.stringify(error);
+            }
+        }
+        res.status(500).json({ message: 'Failed to create payment order. ' + errMsg });
     }
 };
 

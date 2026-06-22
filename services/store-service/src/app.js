@@ -3,6 +3,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import storeRoutes from './routes/storeRoutes.js';
 import storePageRoutes from './routes/storePageRoutes.js';
+import themeRoutes from './routes/themeRoutes.js';
 
 const app = express();
 
@@ -53,6 +54,7 @@ app.use((req, res, next) => {
 // Routes
 app.use('/api/stores', storeRoutes);
 app.use('/api/store-pages', storePageRoutes);
+app.use('/api/themes', themeRoutes);
 
 // Health check
 app.get('/api/store/health', (req, res) => {

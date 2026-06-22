@@ -1,11 +1,15 @@
 import Coupon from '../models/Coupon.js';
 
-// @desc    Get all coupons for logged-in merchant
+// @desc    Get all coupons for logged-in merchant's store
 // @route   GET /api/coupons
 // @access  Private/Merchant
 export const getCoupons = async (req, res) => {
     try {
-        const coupons = await Coupon.find({ merchant: req.merchant._id }).sort({ createdAt: -1 });
+        const storeId = req.headers['x-store-id'];
+        if (!storeId) {
+            return res.status(400).json({ message: 'Store ID header (x-store-id) is required' });
+        }
+        const coupons = await Coupon.find({ merchant: req.merchant._id, store: storeId }).sort({ createdAt: -1 });
         res.json(coupons);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -17,6 +21,10 @@ export const getCoupons = async (req, res) => {
 // @access  Private/Merchant
 export const createCoupon = async (req, res) => {
     try {
+        const storeId = req.headers['x-store-id'];
+        if (!storeId) {
+            return res.status(400).json({ message: 'Store ID header (x-store-id) is required' });
+        }
         const { code, discountType, discountValue, minimumOrderAmount, usageLimit, startDate, endDate, isActive, description } = req.body;
 
         if (!code || !code.trim()) {
@@ -31,14 +39,15 @@ export const createCoupon = async (req, res) => {
             return res.status(400).json({ message: 'Percentage discount cannot exceed 100%' });
         }
 
-        // Check for duplicate code within this merchant
-        const existing = await Coupon.findOne({ merchant: req.merchant._id, code: code.trim().toUpperCase() });
+        // Check for duplicate code within this store
+        const existing = await Coupon.findOne({ store: storeId, code: code.trim().toUpperCase() });
         if (existing) {
             return res.status(400).json({ message: 'A coupon with this code already exists' });
         }
 
         const coupon = await Coupon.create({
             merchant: req.merchant._id,
+            store: storeId,
             code: code.trim().toUpperCase(),
             discountType: discountType || 'percentage',
             discountValue: Number(discountValue),
@@ -61,7 +70,11 @@ export const createCoupon = async (req, res) => {
 // @access  Private/Merchant
 export const updateCoupon = async (req, res) => {
     try {
-        const coupon = await Coupon.findOne({ _id: req.params.id, merchant: req.merchant._id });
+        const storeId = req.headers['x-store-id'];
+        if (!storeId) {
+            return res.status(400).json({ message: 'Store ID header (x-store-id) is required' });
+        }
+        const coupon = await Coupon.findOne({ _id: req.params.id, merchant: req.merchant._id, store: storeId });
 
         if (!coupon) {
             return res.status(404).json({ message: 'Coupon not found' });
@@ -69,10 +82,10 @@ export const updateCoupon = async (req, res) => {
 
         const { code, discountType, discountValue, minimumOrderAmount, usageLimit, startDate, endDate, isActive, description } = req.body;
 
-        // If code is changing, check for duplicates
+        // If code is changing, check for duplicates in the store
         if (code && code.trim().toUpperCase() !== coupon.code) {
             const existing = await Coupon.findOne({
-                merchant: req.merchant._id,
+                store: storeId,
                 code: code.trim().toUpperCase(),
                 _id: { $ne: coupon._id }
             });
@@ -107,7 +120,11 @@ export const updateCoupon = async (req, res) => {
 // @access  Private/Merchant
 export const deleteCoupon = async (req, res) => {
     try {
-        const coupon = await Coupon.findOne({ _id: req.params.id, merchant: req.merchant._id });
+        const storeId = req.headers['x-store-id'];
+        if (!storeId) {
+            return res.status(400).json({ message: 'Store ID header (x-store-id) is required' });
+        }
+        const coupon = await Coupon.findOne({ _id: req.params.id, merchant: req.merchant._id, store: storeId });
 
         if (!coupon) {
             return res.status(404).json({ message: 'Coupon not found' });
@@ -125,7 +142,11 @@ export const deleteCoupon = async (req, res) => {
 // @access  Private/Merchant
 export const toggleCouponStatus = async (req, res) => {
     try {
-        const coupon = await Coupon.findOne({ _id: req.params.id, merchant: req.merchant._id });
+        const storeId = req.headers['x-store-id'];
+        if (!storeId) {
+            return res.status(400).json({ message: 'Store ID header (x-store-id) is required' });
+        }
+        const coupon = await Coupon.findOne({ _id: req.params.id, merchant: req.merchant._id, store: storeId });
 
         if (!coupon) {
             return res.status(404).json({ message: 'Coupon not found' });

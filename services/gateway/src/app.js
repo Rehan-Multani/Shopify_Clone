@@ -117,6 +117,7 @@ app.use('/api/customers', createServiceProxy(CATALOG_SERVICE_URL));
 app.use('/api/banners', createServiceProxy(CATALOG_SERVICE_URL));
 
 // 4. Store Service Routes
+app.use('/api/themes', createServiceProxy(STORE_SERVICE_URL));
 app.use('/api/stores', createServiceProxy(STORE_SERVICE_URL));
 app.use('/api/store-pages', createServiceProxy(STORE_SERVICE_URL));
 

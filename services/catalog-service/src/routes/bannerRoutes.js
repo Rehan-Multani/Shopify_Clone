@@ -1,10 +1,10 @@
 import express from 'express';
 import { getBanners, createBanner, getBanner, updateBanner, deleteBanner, uploadBannerImage } from '../controllers/bannerController.js';
-import { uploadProductImagesMiddleware } from '../../../shared/uploadMiddleware.js';
+import { uploadCategoryImageMiddleware } from '../../../shared/uploadMiddleware.js';
 
 const router = express.Router();
 
-router.post('/upload', uploadProductImagesMiddleware, uploadBannerImage);
+router.post('/upload', uploadCategoryImageMiddleware, uploadBannerImage);
 
 router.route('/')
     .get(getBanners)

@@ -1,15 +1,34 @@
 import express from 'express';
-import { createStore, getMyStores, getStoreById, updateStore, deleteStore, getAllStores, getDashboardStats, getAnalyticsStats, createStoreInternal } from '../controllers/storeController.js';
+import { 
+    createStore, 
+    getMyStores, 
+    getStoreById, 
+    updateStore, 
+    deleteStore, 
+    getAllStores, 
+    getDashboardStats, 
+    getAnalyticsStats, 
+    createStoreInternal,
+    updateStoreDomain,
+    checkDomainDNS,
+    getPlatformSettings,
+    updatePlatformSettings
+} from '../controllers/storeController.js';
 
 const router = express.Router();
 
 // Admin routes
 router.get('/admin/all', getAllStores);
+router.get('/admin/settings', getPlatformSettings);
+router.put('/admin/settings', updatePlatformSettings);
 
 // Internal routes (e.g. for billing-service store creation)
 router.post('/internal/create', createStoreInternal);
 
 // Merchant routes
+router.get('/domain/dns-check', checkDomainDNS);
+router.put('/:id/domain', updateStoreDomain);
+
 router.get('/dashboard-stats', getDashboardStats);
 router.get('/analytics-stats', getAnalyticsStats);
 router.get('/my-stores', getMyStores);

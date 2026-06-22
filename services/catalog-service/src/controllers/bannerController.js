@@ -117,7 +117,7 @@ export const deleteBanner = async (req, res) => {
 // @route   POST /api/banners/upload
 export const uploadBannerImage = async (req, res) => {
     try {
-        if (!req.files || req.files.length === 0) {
+        if (!req.file && (!req.files || req.files.length === 0)) {
             return res.status(400).json({ message: 'Please upload an image' });
         }
 
@@ -126,7 +126,7 @@ export const uploadBannerImage = async (req, res) => {
             fs.mkdirSync(uploadDir, { recursive: true });
         }
 
-        const file = req.files[0];
+        const file = req.file || req.files[0];
         const filename = `banner-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.webp`;
         const filepath = path.join(uploadDir, filename);
 

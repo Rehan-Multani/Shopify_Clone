@@ -6,6 +6,11 @@ const couponSchema = new mongoose.Schema({
         ref: 'Merchant',
         required: [true, 'Coupon must belong to a merchant']
     },
+    store: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Store',
+        required: [true, 'Coupon must belong to a store']
+    },
     code: {
         type: String,
         required: [true, 'Please add a coupon code'],
@@ -58,7 +63,7 @@ const couponSchema = new mongoose.Schema({
     timestamps: true
 });
 
-couponSchema.index({ merchant: 1, code: 1 }, { unique: true });
+couponSchema.index({ store: 1, code: 1 }, { unique: true });
 
 couponSchema.virtual('isValid').get(function () {
     const now = new Date();

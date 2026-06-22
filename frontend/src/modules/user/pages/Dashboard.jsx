@@ -58,6 +58,8 @@ import AnalyticsTab from '../components/dashboard/AnalyticsTab';
 import SupportTab from '../components/dashboard/SupportTab';
 import BannersTab from '../components/dashboard/BannersTab';
 import AddBanner from '../components/dashboard/AddBanner';
+import ThemeCustomizer from '../components/dashboard/ThemeCustomizer';
+import DomainsTab from '../components/dashboard/DomainsTab';
 
 const Dashboard = () => {
     const { tab } = useParams();
@@ -125,6 +127,10 @@ const Dashboard = () => {
 
         if (tab === 'websites') {
             return <ThemesTab />;
+        }
+
+        if (tab === 'theme-customizer') {
+            return <ThemeCustomizer />;
         }
 
         if (tab === 'profile') {
@@ -199,6 +205,10 @@ const Dashboard = () => {
             if (location.pathname.includes('/pages/edit/')) return <EditPageTab />;
             if (location.pathname.endsWith('/pages')) return <PagesTab />;
             return <ThemesTab />;
+        }
+
+        if (tab === 'domains') {
+            return <DomainsTab />;
         }
 
         if (tab === 'support') {

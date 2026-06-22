@@ -32,8 +32,12 @@ const CreateCoupon = () => {
         if (!isEdit || !couponId) return;
         const fetchCoupon = async () => {
             try {
+                const storeId = localStorage.getItem('activeStoreId');
                 const res = await fetch(`${API_URL}/coupons`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'x-store-id': storeId
+                    }
                 });
                 const data = await res.json();
                 if (res.ok) {
@@ -97,9 +101,14 @@ const CreateCoupon = () => {
             const url = isEdit ? `${API_URL}/coupons/${couponId}` : `${API_URL}/coupons`;
             const method = isEdit ? 'PUT' : 'POST';
 
+            const storeId = localStorage.getItem('activeStoreId');
             const res = await fetch(url, {
                 method,
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'Authorization': `Bearer ${token}`,
+                    'x-store-id': storeId
+                },
                 body: JSON.stringify(payload)
             });
             const data = await res.json();

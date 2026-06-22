@@ -1,46 +1,108 @@
 import React, { useState, useEffect } from 'react';
 
+const STORE_API_URL = import.meta.env.VITE_STORE_API_URL || 'http://localhost:5004/api';
+
 const ProfileTab = () => {
-    const [merchant, setMerchant] = useState(() => {
-        const stored = localStorage.getItem('merchantInfo');
-        if (stored) {
-            try {
-                return JSON.parse(stored);
-            } catch (e) {
-                console.error('Error parsing merchantInfo:', e);
-            }
-        }
-        return {
-            name: localStorage.getItem('shopStoreName') || 'Merchant Partner',
-            email: localStorage.getItem('shopEmail') || 'merchant@storify.com',
-            mobile: localStorage.getItem('shopPhone') || '9876543210',
-            address: localStorage.getItem('shopAddress') || '123 E-Commerce Way, Suite A',
-            planType: localStorage.getItem('adminPanelType') === 'multi' ? 'Multi Vendor' : 'Single Vendor',
-            status: 'active',
-            gstNumber: ''
-        };
+    const activeStoreId = localStorage.getItem('activeStoreId');
+    const token = localStorage.getItem('merchantToken');
+
+    const [merchant, setMerchant] = useState({
+        name: localStorage.getItem('shopStoreName') || 'My Store',
+        email: localStorage.getItem('shopEmail') || 'merchant@storify.com',
+        mobile: localStorage.getItem('shopPhone') || '9876543210',
+        address: localStorage.getItem('shopAddress') || '',
+        planType: localStorage.getItem('adminPanelType') === 'multi' ? 'Multi Vendor' : 'Single Vendor',
+        status: 'active',
+        gstNumber: ''
+    });
+
+    const [paymentSettings, setPaymentSettings] = useState({
+        codEnabled: true,
+        onlineEnabled: true
     });
 
     const [isSaving, setIsSaving] = useState(false);
     const [successMsg, setSuccessMsg] = useState('');
+    const [errorMsg, setErrorMsg] = useState('');
 
-    const handleSave = () => {
+    useEffect(() => {
+        if (!activeStoreId || !token) return;
+
+        const fetchStoreData = async () => {
+            try {
+                const res = await fetch(`${STORE_API_URL}/stores/${activeStoreId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const storeData = await res.json();
+                    setMerchant(prev => ({
+                        ...prev,
+                        name: storeData.storeName || prev.name,
+                        email: storeData.contactEmail || prev.email,
+                        mobile: storeData.contactPhone || prev.mobile,
+                        address: storeData.address || prev.address,
+                        planType: storeData.planType || prev.planType
+                    }));
+                    if (storeData.paymentSettings) {
+                        setPaymentSettings({
+                            codEnabled: storeData.paymentSettings.codEnabled !== false,
+                            onlineEnabled: storeData.paymentSettings.onlineEnabled !== false
+                        });
+                    }
+                }
+            } catch (err) {
+                console.error('Error fetching store details:', err);
+            }
+        };
+
+        fetchStoreData();
+    }, [activeStoreId, token]);
+
+    const handleSave = async () => {
         setIsSaving(true);
-        setTimeout(() => {
-            // Update local storage items
+        setErrorMsg('');
+        setSuccessMsg('');
+
+        try {
+            // 1. Update backend store details
+            if (activeStoreId && token) {
+                const res = await fetch(`${STORE_API_URL}/stores/${activeStoreId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        storeName: merchant.name,
+                        contactEmail: merchant.email,
+                        contactPhone: merchant.mobile,
+                        address: merchant.address,
+                        paymentSettings: paymentSettings
+                    })
+                });
+
+                if (!res.ok) {
+                    const data = await res.json();
+                    throw new Error(data.message || 'Failed to update store in database');
+                }
+            }
+
+            // 2. Update local storage items
             localStorage.setItem('merchantInfo', JSON.stringify(merchant));
             localStorage.setItem('shopStoreName', merchant.name);
             localStorage.setItem('shopEmail', merchant.email);
             localStorage.setItem('shopPhone', merchant.mobile);
             localStorage.setItem('shopAddress', merchant.address);
             
+            setSuccessMsg('Store profile and payment settings updated successfully!');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } catch (err) {
+            setErrorMsg(err.message || 'Failed to save settings.');
+        } finally {
             setIsSaving(false);
-            setSuccessMsg('Merchant profile updated successfully!');
-            setTimeout(() => setSuccessMsg(''), 3000);
-            
-            // Reload page to reflect store name changes in header/sidebar instantly
-            window.location.reload();
-        }, 800);
+        }
     };
 
     return (
@@ -53,6 +115,12 @@ const ProfileTab = () => {
             {successMsg && (
                 <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs font-semibold">
                     {successMsg}
+                </div>
+            )}
+
+            {errorMsg && (
+                <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-800 text-xs font-semibold">
+                    {errorMsg}
                 </div>
             )}
 
@@ -136,6 +204,40 @@ const ProfileTab = () => {
                             rows={3}
                             className="w-full px-3 py-2 border border-[#d3d3d3] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30 bg-white resize-none" 
                         />
+                    </div>
+                </div>
+
+                {/* Payment Settings Section */}
+                <div className="pt-6 border-t border-gray-100 space-y-4">
+                    <h3 className="text-sm font-bold text-[#202223]">Payment Settings</h3>
+                    <p className="text-xs text-[#5c5f62]">Configure which payment methods are enabled for your storefront checkout.</p>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="flex items-center justify-between p-4 bg-gray-50 border border-gray-100 rounded-xl">
+                            <div>
+                                <h4 className="text-xs font-bold text-gray-800">Cash on Delivery (COD)</h4>
+                                <p className="text-[10px] text-gray-500 mt-0.5">Allow users to pay with cash at delivery.</p>
+                            </div>
+                            <button
+                                onClick={() => setPaymentSettings(p => ({ ...p, codEnabled: !p.codEnabled }))}
+                                className={`relative w-11 h-6 rounded-full transition-colors ${paymentSettings.codEnabled ? 'bg-emerald-500' : 'bg-gray-300'}`}
+                            >
+                                <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${paymentSettings.codEnabled ? 'translate-x-5' : ''}`}></span>
+                            </button>
+                        </div>
+
+                        <div className="flex items-center justify-between p-4 bg-gray-50 border border-gray-100 rounded-xl">
+                            <div>
+                                <h4 className="text-xs font-bold text-gray-800">Online Payment</h4>
+                                <p className="text-[10px] text-gray-500 mt-0.5">Enable checkout via Razorpay Gateway.</p>
+                            </div>
+                            <button
+                                onClick={() => setPaymentSettings(p => ({ ...p, onlineEnabled: !p.onlineEnabled }))}
+                                className={`relative w-11 h-6 rounded-full transition-colors ${paymentSettings.onlineEnabled ? 'bg-emerald-500' : 'bg-gray-300'}`}
+                            >
+                                <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${paymentSettings.onlineEnabled ? 'translate-x-5' : ''}`}></span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 

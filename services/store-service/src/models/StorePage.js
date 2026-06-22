@@ -22,7 +22,47 @@ const storePageSchema = new mongoose.Schema({
     content: {
         type: String,
         default: ''
-    }
+    },
+    isHomePage: {
+        type: Boolean,
+        default: false
+    },
+    sections: [{
+        sectionId: {
+            type: mongoose.Schema.Types.ObjectId,
+            default: () => new mongoose.Types.ObjectId()
+        },
+        type: {
+            type: String,
+            required: true
+        },
+        order: {
+            type: Number,
+            default: 0
+        },
+        enabled: {
+            type: Boolean,
+            default: true
+        },
+        settings: {
+            type: mongoose.Schema.Types.Mixed,
+            default: {}
+        },
+        blocks: [{
+            blockId: {
+                type: String,
+                default: () => new mongoose.Types.ObjectId().toString()
+            },
+            type: {
+                type: String,
+                required: true
+            },
+            settings: {
+                type: mongoose.Schema.Types.Mixed,
+                default: {}
+            }
+        }]
+    }]
 }, {
     timestamps: true
 });

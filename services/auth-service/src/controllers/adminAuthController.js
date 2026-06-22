@@ -49,3 +49,36 @@ export const logoutAdmin = (req, res) => {
     });
     res.status(200).json({ message: 'Logged out successfully' });
 };
+
+// @desc    Change Admin Password
+// @route   PUT /api/auth/admin/change-password
+// @access  Private/Admin
+export const changeAdminPassword = async (req, res) => {
+    try {
+        const adminId = req.headers['x-admin-id'];
+        if (!adminId) {
+            return res.status(401).json({ message: 'Unauthorized. Admin ID header required.' });
+        }
+
+        const { currentPassword, newPassword } = req.body;
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({ message: 'Please provide current and new passwords' });
+        }
+
+        const admin = await MasterAdmin.findById(adminId).select('+password');
+        if (!admin) {
+            return res.status(444).json({ message: 'Admin not found' });
+        }
+
+        if (!(await admin.matchPassword(currentPassword))) {
+            return res.status(400).json({ message: 'Current password is incorrect' });
+        }
+
+        admin.password = newPassword;
+        await admin.save();
+
+        res.json({ success: true, message: 'Password updated successfully' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};

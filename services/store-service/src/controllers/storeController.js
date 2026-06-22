@@ -1,5 +1,7 @@
 import Store from '../models/Store.js';
 import Merchant from '../models/Merchant.js';
+import PlatformSetting from '../models/PlatformSetting.js';
+import dns from 'dns';
 
 const getLast6MonthsMockData = (totalRevenue) => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -111,7 +113,7 @@ export const updateStore = async (req, res) => {
             return res.status(404).json({ message: 'Store not found' });
         }
 
-        const { storeName, storeDescription, contactEmail, contactPhone, address, city, state, pincode, storeLogo, storeBanner, socialLinks, isActive } = req.body;
+        const { storeName, storeDescription, contactEmail, contactPhone, address, city, state, pincode, storeLogo, storeBanner, socialLinks, isActive, paymentSettings } = req.body;
 
         if (storeName !== undefined && storeName.trim() !== store.storeName) {
             const nameExists = await Store.findOne({ 
@@ -155,6 +157,7 @@ export const updateStore = async (req, res) => {
         if (storeBanner !== undefined) store.storeBanner = storeBanner;
         if (socialLinks !== undefined) store.socialLinks = socialLinks;
         if (isActive !== undefined) store.isActive = isActive;
+        if (paymentSettings !== undefined) store.paymentSettings = paymentSettings;
 
         const updatedStore = await store.save();
         res.json(updatedStore);
@@ -431,6 +434,132 @@ export const createStoreInternal = async (req, res) => {
         });
         
         res.status(201).json(store);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Update store custom domain
+// @route   PUT /api/stores/:id/domain
+// @access  Private/Merchant
+export const updateStoreDomain = async (req, res) => {
+    try {
+        const store = await Store.findOne({ _id: req.params.id, merchantId: req.merchant._id });
+        if (!store) {
+            return res.status(404).json({ success: false, message: 'Store not found' });
+        }
+
+        const { customDomain } = req.body;
+        store.customDomain = customDomain !== undefined ? customDomain.trim().toLowerCase() : store.customDomain;
+        await store.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Custom domain updated successfully',
+            store
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Check custom domain DNS records
+// @route   GET /api/stores/domain/dns-check
+// @access  Private/Merchant
+export const checkDomainDNS = async (req, res) => {
+    try {
+        const { domain } = req.query;
+        if (!domain) {
+            return res.status(400).json({ success: false, message: 'Domain parameter is required' });
+        }
+
+        // Clean protocol, www, and paths
+        let cleanDomain = domain.replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0].split(':')[0];
+
+        let settings = await PlatformSetting.findOne();
+        if (!settings) {
+            settings = await PlatformSetting.create({});
+        }
+        const expectedIP = settings.expectedStoreIP;
+
+        dns.resolve4(cleanDomain, (err, addresses) => {
+            if (err) {
+                // Fallback to system dns.lookup (matches ping behavior)
+                dns.lookup(cleanDomain, { all: true, family: 4 }, (lookupErr, lookupAddresses) => {
+                    if (lookupErr) {
+                        return res.status(200).json({
+                            success: true,
+                            resolved: false,
+                            message: 'Could not resolve domain. Verify DNS settings or registrar details.',
+                            addresses: [],
+                            expectedIP
+                        });
+                    }
+
+                    const ips = lookupAddresses.map(addr => addr.address);
+                    const isLinked = ips.includes(expectedIP);
+                    return res.status(200).json({
+                        success: true,
+                        resolved: true,
+                        isLinked,
+                        addresses: ips,
+                        expectedIP
+                    });
+                });
+                return;
+            }
+
+            const isLinked = addresses.includes(expectedIP);
+            res.status(200).json({
+                success: true,
+                resolved: true,
+                isLinked,
+                addresses,
+                expectedIP
+            });
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Get platform settings
+// @route   GET /api/stores/admin/settings
+// @access  Private/Admin
+export const getPlatformSettings = async (req, res) => {
+    try {
+        let settings = await PlatformSetting.findOne();
+        if (!settings) {
+            settings = await PlatformSetting.create({});
+        }
+        res.json(settings);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Update platform settings
+// @route   PUT /api/stores/admin/settings
+// @access  Private/Admin
+export const updatePlatformSettings = async (req, res) => {
+    try {
+        let settings = await PlatformSetting.findOne();
+        if (!settings) {
+            settings = new PlatformSetting();
+        }
+        const { expectedStoreIP, platformName, supportEmail, adminEmail, maxStoresPerMerchant, trialDays, defaultCurrency, maintenanceMode } = req.body;
+        
+        if (expectedStoreIP !== undefined) settings.expectedStoreIP = expectedStoreIP.trim();
+        if (platformName !== undefined) settings.platformName = platformName;
+        if (supportEmail !== undefined) settings.supportEmail = supportEmail;
+        if (adminEmail !== undefined) settings.adminEmail = adminEmail;
+        if (maxStoresPerMerchant !== undefined) settings.maxStoresPerMerchant = Number(maxStoresPerMerchant);
+        if (trialDays !== undefined) settings.trialDays = Number(trialDays);
+        if (defaultCurrency !== undefined) settings.defaultCurrency = defaultCurrency;
+        if (maintenanceMode !== undefined) settings.maintenanceMode = maintenanceMode;
+
+        await settings.save();
+        res.json(settings);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

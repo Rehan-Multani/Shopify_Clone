@@ -16,8 +16,12 @@ const CouponsTab = () => {
 
     const fetchCoupons = async () => {
         try {
+            const storeId = localStorage.getItem('activeStoreId');
             const res = await fetch(`${API_URL}/coupons`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: { 
+                    'Authorization': `Bearer ${token}`,
+                    'x-store-id': storeId
+                }
             });
             const data = await res.json();
             if (res.ok) setCoupons(data);
@@ -37,9 +41,13 @@ const CouponsTab = () => {
 
     const handleToggleStatus = async (id) => {
         try {
+            const storeId = localStorage.getItem('activeStoreId');
             const res = await fetch(`${API_URL}/coupons/${id}/toggle`, {
                 method: 'PATCH',
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: { 
+                    'Authorization': `Bearer ${token}`,
+                    'x-store-id': storeId
+                }
             });
             const data = await res.json();
             if (res.ok) {
@@ -53,9 +61,13 @@ const CouponsTab = () => {
 
     const handleDelete = async () => {
         try {
+            const storeId = localStorage.getItem('activeStoreId');
             const res = await fetch(`${API_URL}/coupons/${deleteModal.id}`, {
                 method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: { 
+                    'Authorization': `Bearer ${token}`,
+                    'x-store-id': storeId
+                }
             });
             if (res.ok) {
                 setCoupons(prev => prev.filter(c => c._id !== deleteModal.id));
