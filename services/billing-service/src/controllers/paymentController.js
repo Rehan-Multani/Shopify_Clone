@@ -2,6 +2,8 @@ import Razorpay from 'razorpay';
 import crypto from 'crypto';
 import Subscription from '../models/Subscription.js';
 import Plan from '../models/Plan.js';
+import Merchant from '../models/Merchant.js';
+import Store from '../models/Store.js';
 
 const getRazorpayInstance = () => {
     return new Razorpay({
@@ -292,6 +294,51 @@ export const verifyStorePayment = async (req, res) => {
         });
     } catch (error) {
         console.error('Verify store payment error:', error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Get all payment history for admin
+// @route   GET /api/billing/admin/history
+// @access  Private/MasterAdmin
+export const getAdminPaymentHistory = async (req, res) => {
+    try {
+        if (!req.admin) {
+            return res.status(403).json({ message: 'Not authorized as admin' });
+        }
+        
+        // Fetch all subscriptions, populate merchant, store, plan
+        const subscriptions = await Subscription.find({})
+            .populate('merchant', 'name email mobile')
+            .populate('store', 'storeName')
+            .populate('plan', 'planName planPrice planType')
+            .sort({ createdAt: -1 });
+
+        // Calculate summary stats
+        const totalRevenue = subscriptions.reduce((sum, sub) => sum + (sub.amount || 0), 0);
+        // Active subscribers are subscriptions with status 'active' and not expired
+        const activeSubscriptions = subscriptions.filter(sub => sub.status === 'active' && new Date(sub.endDate) > new Date());
+        const totalSubs = activeSubscriptions.length;
+
+        // Map subscriptions to store-wise billing history
+        const billingHistory = subscriptions.map(sub => ({
+            id: sub._id,
+            merchantName: sub.merchant ? sub.merchant.name : 'N/A',
+            storeName: sub.store ? sub.store.storeName : 'N/A',
+            startDate: sub.startDate ? new Date(sub.startDate).toISOString().split('T')[0] : 'N/A',
+            endDate: sub.endDate ? new Date(sub.endDate).toISOString().split('T')[0] : 'N/A',
+            amount: `₹${(sub.amount || 0).toLocaleString()}`,
+            planName: sub.plan ? sub.plan.planName : 'N/A',
+            status: sub.status || 'inactive',
+            paymentId: sub.paymentId || 'N/A'
+        }));
+
+        res.json({
+            totalRevenue,
+            totalSubs,
+            billingHistory
+        });
+    } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
