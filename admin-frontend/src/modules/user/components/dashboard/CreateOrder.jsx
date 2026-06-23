@@ -17,7 +17,7 @@ const CreateOrder = () => {
     const [shipping, setShipping] = useState(0);
     const [notes, setNotes] = useState('');
     const [paymentStatus, setPaymentStatus] = useState('pending');
-    const [fulfillmentStatus, setFulfillmentStatus] = useState('unfulfilled');
+    const [orderStatus, setOrderStatus] = useState('pending');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
 
@@ -101,7 +101,7 @@ const CreateOrder = () => {
                     price: p.sellingPrice
                 })),
                 totalAmount,
-                status: fulfillmentStatus,
+                status: orderStatus,
                 paymentStatus,
                 notes
             };
@@ -353,17 +353,19 @@ const CreateOrder = () => {
 
                     {/* Order Status Card */}
                     <div className="bg-white rounded-xl border border-[#e3e3e3] shadow-sm p-4 space-y-4">
-                        <h2 className="font-bold text-sm text-[#202223]">Fulfillment & Payment</h2>
+                        <h2 className="font-bold text-sm text-[#202223]">Order & Payment Status</h2>
                         <div className="space-y-3">
                             <div className="space-y-1">
-                                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Fulfillment Status</label>
+                                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Order Status</label>
                                 <select 
-                                    value={fulfillmentStatus} 
-                                    onChange={(e) => setFulfillmentStatus(e.target.value)}
+                                    value={orderStatus} 
+                                    onChange={(e) => setOrderStatus(e.target.value)}
                                     className="w-full bg-white border border-[#d3d3d3] rounded-lg py-1.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-black/10"
                                 >
-                                    <option value="unfulfilled">Unfulfilled</option>
-                                    <option value="fulfilled">Fulfilled</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="accepted">Accepted</option>
+                                    <option value="rejected">Rejected</option>
+                                    <option value="completed">Completed</option>
                                 </select>
                             </div>
                             <div className="space-y-1">

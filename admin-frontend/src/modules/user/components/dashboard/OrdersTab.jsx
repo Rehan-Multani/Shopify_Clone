@@ -73,14 +73,32 @@ const OrdersTab = () => {
             o._id.toLowerCase().includes(search.toLowerCase());
         
         if (filter === 'all') return matchesSearch;
-        if (filter === 'unfulfilled') return matchesSearch && o.status === 'unfulfilled';
-        if (filter === 'fulfilled') return matchesSearch && o.status === 'fulfilled';
-        if (filter === 'paid') return matchesSearch && o.paymentStatus === 'paid';
-        if (filter === 'pending') return matchesSearch && o.paymentStatus === 'pending';
-        return matchesSearch;
+        return matchesSearch && o.status === filter;
     });
 
     const formatPrice = (price) => `₹${Number(price).toLocaleString('en-IN')}`;
+
+    const getStatusStyle = (status) => {
+        switch (status) {
+            case 'accepted':
+                return 'bg-blue-50 text-blue-700 border-blue-200';
+            case 'rejected':
+                return 'bg-red-50 text-red-700 border-red-200';
+            case 'completed':
+                return 'bg-green-50 text-green-700 border-green-200';
+            default:
+                return 'bg-yellow-50 text-yellow-700 border-yellow-200';
+        }
+    };
+
+    const getStatusDotColor = (status) => {
+        switch (status) {
+            case 'accepted': return 'bg-blue-500';
+            case 'rejected': return 'bg-red-500';
+            case 'completed': return 'bg-green-500';
+            default: return 'bg-yellow-500';
+        }
+    };
 
     return (
         <div className="space-y-6">
@@ -134,15 +152,15 @@ const OrdersTab = () => {
                 <div className="flex gap-1 bg-white border border-gray-200 rounded-lg p-1 overflow-x-auto">
                     {[
                         { id: 'all', label: 'All' },
-                        { id: 'pending', label: 'Pending Payment' },
-                        { id: 'paid', label: 'Paid' },
-                        { id: 'unfulfilled', label: 'Unfulfilled' },
-                        { id: 'fulfilled', label: 'Fulfilled' }
+                        { id: 'pending', label: 'Pending' },
+                        { id: 'accepted', label: 'Accepted' },
+                        { id: 'rejected', label: 'Rejected' },
+                        { id: 'completed', label: 'Completed' }
                     ].map(f => (
                         <button
                             key={f.id}
                             onClick={() => setFilter(f.id)}
-                            className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all whitespace-nowrap ${
+                            className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all whitespace-nowrap capitalize ${
                                 filter === f.id ? 'bg-[#1a1c23] text-white shadow-sm' : 'text-[#5c5f62] hover:bg-gray-50'
                             }`}
                         >
@@ -159,7 +177,7 @@ const OrdersTab = () => {
                     <table className="w-full">
                         <thead>
                             <tr className="border-b border-gray-100">
-                                {['Order ID', 'Customer', 'Date', 'Amount', 'Fulfillment', 'Payment', 'Actions'].map(h => (
+                                {['Order ID', 'Customer', 'Date', 'Amount', 'Order Status', 'Payment', 'Actions'].map(h => (
                                     <th key={h} className="text-left text-[10px] font-black text-gray-400 tracking-[0.15em] uppercase px-5 py-3">{h}</th>
                                 ))}
                             </tr>
@@ -210,7 +228,7 @@ const OrdersTab = () => {
                                     <th className="text-left text-[10px] font-black text-gray-500 tracking-[0.15em] uppercase px-5 py-3">Customer</th>
                                     <th className="text-left text-[10px] font-black text-gray-500 tracking-[0.15em] uppercase px-5 py-3">Date</th>
                                     <th className="text-right text-[10px] font-black text-gray-500 tracking-[0.15em] uppercase px-5 py-3">Total</th>
-                                    <th className="text-left text-[10px] font-black text-gray-500 tracking-[0.15em] uppercase px-5 py-3">Fulfillment</th>
+                                    <th className="text-left text-[10px] font-black text-gray-500 tracking-[0.15em] uppercase px-5 py-3">Order Status</th>
                                     <th className="text-left text-[10px] font-black text-gray-500 tracking-[0.15em] uppercase px-5 py-3">Payment</th>
                                     <th className="text-right text-[10px] font-black text-gray-500 tracking-[0.15em] uppercase px-5 py-3">Actions</th>
                                 </tr>
@@ -232,11 +250,9 @@ const OrdersTab = () => {
                                             {formatPrice(order.totalAmount)}
                                         </td>
                                         <td className="px-5 py-3.5">
-                                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                                                order.status === 'fulfilled' ? 'bg-green-50 text-green-700' : 'bg-orange-50 text-orange-700'
-                                            }`}>
-                                                <span className={`w-1.5 h-1.5 rounded-full ${order.status === 'fulfilled' ? 'bg-green-500' : 'bg-orange-500'}`} />
-                                                {order.status === 'fulfilled' ? 'Fulfilled' : 'Unfulfilled'}
+                                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold capitalize border ${getStatusStyle(order.status)}`}>
+                                                <span className={`w-1.5 h-1.5 rounded-full ${getStatusDotColor(order.status)}`} />
+                                                {order.status}
                                             </span>
                                         </td>
                                         <td className="px-5 py-3.5">
@@ -248,21 +264,37 @@ const OrdersTab = () => {
                                             </span>
                                         </td>
                                         <td className="px-5 py-3.5 text-right">
-                                            <div className="flex items-center justify-end gap-2">
+                                            <div className="flex items-center justify-end gap-2 flex-wrap">
                                                 {order.paymentStatus !== 'paid' && (
                                                     <button 
                                                         onClick={() => handleUpdateStatus(order._id, order.status, 'paid')}
-                                                        className="text-xs font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-100 transition-all active:scale-95"
+                                                        className="text-xs font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-100 transition-all active:scale-95"
                                                     >
                                                         Mark Paid
                                                     </button>
                                                 )}
-                                                {order.status !== 'fulfilled' && (
+                                                {order.status === 'pending' && (
+                                                    <>
+                                                        <button 
+                                                            onClick={() => handleUpdateStatus(order._id, 'accepted', order.paymentStatus)}
+                                                            className="text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 px-2 py-1 rounded-lg border border-blue-100 transition-all active:scale-95"
+                                                        >
+                                                            Accept
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => handleUpdateStatus(order._id, 'rejected', order.paymentStatus)}
+                                                            className="text-xs font-bold text-red-600 hover:text-red-700 bg-red-50 px-2 py-1 rounded-lg border border-red-100 transition-all active:scale-95"
+                                                        >
+                                                            Reject
+                                                        </button>
+                                                    </>
+                                                )}
+                                                {order.status === 'accepted' && (
                                                     <button 
-                                                        onClick={() => handleUpdateStatus(order._id, 'fulfilled', order.paymentStatus)}
-                                                        className="text-xs font-bold text-orange-600 hover:text-orange-700 bg-orange-50 px-2.5 py-1.5 rounded-lg border border-orange-100 transition-all active:scale-95"
+                                                        onClick={() => handleUpdateStatus(order._id, 'completed', order.paymentStatus)}
+                                                        className="text-xs font-bold text-green-600 hover:text-green-700 bg-green-50 px-2 py-1 rounded-lg border border-green-100 transition-all active:scale-95"
                                                     >
-                                                        Fulfill
+                                                        Complete
                                                     </button>
                                                 )}
                                             </div>
