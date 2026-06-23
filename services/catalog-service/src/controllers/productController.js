@@ -8,11 +8,15 @@ import fs from 'fs';
 // @access  Private/Merchant (Header-based)
 export const getProducts = async (req, res) => {
     try {
-        const storeId = req.headers['x-store-id'];
+        const storeId = req.headers['x-store-id'] || req.query.storeId;
         if (!storeId) {
-            return res.status(400).json({ message: 'Store ID header (x-store-id) is required' });
+            return res.status(400).json({ message: 'Store ID is required' });
         }
-        const products = await Product.find({ merchant: req.merchant._id, store: storeId })
+        const filter = req.merchant 
+            ? { merchant: req.merchant._id, store: storeId } 
+            : { store: storeId, isActive: true };
+
+        const products = await Product.find(filter)
             .populate('category', 'name')
             .sort({ createdAt: -1 });
         res.json(products);
@@ -26,11 +30,15 @@ export const getProducts = async (req, res) => {
 // @access  Private/Merchant (Header-based)
 export const getProduct = async (req, res) => {
     try {
-        const storeId = req.headers['x-store-id'];
+        const storeId = req.headers['x-store-id'] || req.query.storeId;
         if (!storeId) {
-            return res.status(400).json({ message: 'Store ID header (x-store-id) is required' });
+            return res.status(400).json({ message: 'Store ID is required' });
         }
-        const product = await Product.findOne({ _id: req.params.id, merchant: req.merchant._id, store: storeId })
+        const filter = req.merchant 
+            ? { _id: req.params.id, merchant: req.merchant._id, store: storeId } 
+            : { _id: req.params.id, store: storeId };
+
+        const product = await Product.findOne(filter)
             .populate('category', 'name');
 
         if (!product) {

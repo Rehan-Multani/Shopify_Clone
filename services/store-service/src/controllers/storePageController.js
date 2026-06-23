@@ -15,13 +15,13 @@ const DEFAULT_PAGES = [
 // @access  Private (Merchant)
 export const getPages = async (req, res) => {
     try {
-        const merchantId = req.merchant._id;
-        const storeId = req.headers['x-store-id'];
+        const storeId = req.headers['x-store-id'] || req.query.storeId;
         if (!storeId) {
-            return res.status(400).json({ success: false, message: 'Store ID (x-store-id) is required' });
+            return res.status(400).json({ success: false, message: 'Store ID is required' });
         }
 
-        let pages = await StorePage.find({ merchantId, storeId });
+        const filter = req.merchant ? { merchantId: req.merchant._id, storeId } : { storeId };
+        let pages = await StorePage.find(filter);
 
         const formattedPages = pages.map(p => {
             const obj = p.toObject();
@@ -60,13 +60,13 @@ export const getPages = async (req, res) => {
 export const getPageBySlug = async (req, res) => {
     try {
         const { slug } = req.params;
-        const merchantId = req.merchant._id;
-        const storeId = req.headers['x-store-id'];
+        const storeId = req.headers['x-store-id'] || req.query.storeId;
         if (!storeId) {
-            return res.status(400).json({ success: false, message: 'Store ID (x-store-id) is required' });
+            return res.status(400).json({ success: false, message: 'Store ID is required' });
         }
 
-        let page = await StorePage.findOne({ merchantId, storeId, slug });
+        const filter = req.merchant ? { merchantId: req.merchant._id, storeId, slug } : { storeId, slug };
+        let page = await StorePage.findOne(filter);
 
         if (!page) {
             const defaultPage = DEFAULT_PAGES.find(p => p.slug === slug);

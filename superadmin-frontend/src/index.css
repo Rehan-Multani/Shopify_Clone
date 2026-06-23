@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-brand: "Outfit", sans-serif;
+  --color-storify: #14B8A6;
+  --color-storify-dark: #0F766E;
+  --color-storify-deep: #115E59;
+  --color-storify-glow: #2DD4BF;
+  --color-storify-hover: #5EEAD4;
+  
+  --bg-main: #0B0F14;
+  --bg-card: #111827;
+  --bg-secondary: #1F2937;
+  
+  --text-primary: #FFFFFF;
+  --text-secondary: #9CA3AF;
+  --text-muted: #6B7280;
+}
+
+@layer base {
+  body {
+    @apply font-sans antialiased text-[#202223] bg-[#0B0F14];
+  }
+  input, textarea, select {
+    @apply text-[#202223] placeholder-gray-400;
+  }
+  .container {
+    max-width: 1400px !important;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+@layer utilities {
+  .teal-gradient {
+    background: linear-gradient(135deg, #14B8A6, #0F766E);
+  }
+  .teal-glow {
+    box-shadow: 0 0 20px rgba(20, 184, 166, 0.3);
+  }
+  .brand-text {
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-weight: 800;
+    font-style: italic;
+    text-transform: lowercase;
+    background: linear-gradient(135deg, #14B8A6, #0F766E, #115E59);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.04em;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.05));
+  }
+  .glass {
+    @apply bg-white/5 backdrop-blur-md border-b border-white/5;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #e2e8f0;
+    border-radius: 10px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-300;
+  }
+  
+  @keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  .animate-marquee {
+    animation: marquee 40s linear infinite;
+  }
+}

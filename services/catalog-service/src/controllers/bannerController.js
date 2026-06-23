@@ -7,11 +7,15 @@ import fs from 'fs';
 // @route   GET /api/banners
 export const getBanners = async (req, res) => {
     try {
-        const storeId = req.headers['x-store-id'];
+        const storeId = req.headers['x-store-id'] || req.query.storeId;
         if (!storeId) {
-            return res.status(400).json({ message: 'Store ID header (x-store-id) is required' });
+            return res.status(400).json({ message: 'Store ID is required' });
         }
-        const banners = await Banner.find({ merchant: req.merchant._id, store: storeId }).sort({ createdAt: -1 });
+        const filter = req.merchant 
+            ? { merchant: req.merchant._id, store: storeId } 
+            : { store: storeId, isActive: true };
+
+        const banners = await Banner.find(filter).sort({ createdAt: -1 });
         res.json(banners);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -22,11 +26,15 @@ export const getBanners = async (req, res) => {
 // @route   GET /api/banners/:id
 export const getBanner = async (req, res) => {
     try {
-        const storeId = req.headers['x-store-id'];
+        const storeId = req.headers['x-store-id'] || req.query.storeId;
         if (!storeId) {
-            return res.status(400).json({ message: 'Store ID header (x-store-id) is required' });
+            return res.status(400).json({ message: 'Store ID is required' });
         }
-        const banner = await Banner.findOne({ _id: req.params.id, merchant: req.merchant._id, store: storeId });
+        const filter = req.merchant 
+            ? { _id: req.params.id, merchant: req.merchant._id, store: storeId } 
+            : { _id: req.params.id, store: storeId };
+
+        const banner = await Banner.findOne(filter);
         if (!banner) {
             return res.status(404).json({ message: 'Banner not found' });
         }

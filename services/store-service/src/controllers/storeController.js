@@ -93,7 +93,8 @@ export const getMyStores = async (req, res) => {
 // @access  Private/Merchant
 export const getStoreById = async (req, res) => {
     try {
-        const store = await Store.findOne({ _id: req.params.id, merchantId: req.merchant._id });
+        const query = req.merchant ? { _id: req.params.id, merchantId: req.merchant._id } : { _id: req.params.id };
+        const store = await Store.findOne(query);
         if (!store) {
             return res.status(404).json({ message: 'Store not found' });
         }

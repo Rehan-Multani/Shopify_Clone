@@ -17,6 +17,8 @@ export const gatewayAuthMiddleware = async (req, res, next) => {
         ];
         if (publicMerchantPaths.includes(path)) {
             requiredAuth = null;
+        } else if (method === 'PUT' && path.match(/^\/api\/merchants\/[a-f0-9]{24}$/i)) {
+            requiredAuth = 'merchant_or_admin';
         } else {
             requiredAuth = 'admin'; // e.g. admin managing merchants
         }
@@ -29,15 +31,20 @@ export const gatewayAuthMiddleware = async (req, res, next) => {
     } else if (path === '/api/stores/admin/all') {
         requiredAuth = 'admin';
     } else if (path.startsWith('/api/stores')) {
-        requiredAuth = 'merchant';
+        // GET specific store is public; other actions (or list my-stores, dashboard-stats etc.) require merchant
+        if (method === 'GET' && path.match(/^\/api\/stores\/[a-f0-9]{24}$/i)) {
+            requiredAuth = null;
+        } else {
+            requiredAuth = 'merchant';
+        }
     } else if (path.startsWith('/api/products')) {
-        requiredAuth = 'merchant';
+        requiredAuth = method === 'GET' ? null : 'merchant';
     } else if (path.startsWith('/api/categories')) {
-        requiredAuth = 'merchant';
+        requiredAuth = method === 'GET' ? null : 'merchant';
     } else if (path.startsWith('/api/coupons')) {
-        requiredAuth = 'merchant';
+        requiredAuth = method === 'GET' ? null : 'merchant';
     } else if (path.startsWith('/api/store-pages')) {
-        requiredAuth = 'merchant';
+        requiredAuth = method === 'GET' ? null : 'merchant';
     } else if (path.startsWith('/api/payments') || path.startsWith('/api/billing')) {
         requiredAuth = 'merchant';
     }
@@ -79,6 +86,9 @@ export const gatewayAuthMiddleware = async (req, res, next) => {
         }
         if (requiredAuth === 'merchant' && verified.type !== 'merchant') {
             return res.status(401).json({ message: 'Not authorized, merchant privileges required' });
+        }
+        if (requiredAuth === 'merchant_or_admin' && verified.type !== 'merchant' && verified.type !== 'admin') {
+            return res.status(401).json({ message: 'Not authorized' });
         }
         
         // Inject trusted headers for downstream services

@@ -8,11 +8,15 @@ import fs from 'fs';
 // @access  Private/Merchant
 export const getCategories = async (req, res) => {
     try {
-        const storeId = req.headers['x-store-id'];
+        const storeId = req.headers['x-store-id'] || req.query.storeId;
         if (!storeId) {
-            return res.status(400).json({ message: 'Store ID header (x-store-id) is required' });
+            return res.status(400).json({ message: 'Store ID is required' });
         }
-        const categories = await Category.find({ merchant: req.merchant._id, store: storeId }).sort({ createdAt: -1 });
+        const filter = req.merchant 
+            ? { merchant: req.merchant._id, store: storeId } 
+            : { store: storeId, isActive: true };
+
+        const categories = await Category.find(filter).sort({ createdAt: -1 });
         res.json(categories);
     } catch (error) {
         res.status(500).json({ message: error.message });

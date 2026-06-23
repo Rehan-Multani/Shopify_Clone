@@ -144,3 +144,36 @@ export const merchantResetPassword = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+// @desc    Change Merchant Password
+// @route   PUT /api/auth/merchant/change-password
+// @access  Private/Merchant
+export const changeMerchantPassword = async (req, res) => {
+    try {
+        const merchantId = req.headers['x-merchant-id'];
+        if (!merchantId) {
+            return res.status(401).json({ message: 'Unauthorized. Merchant ID header required.' });
+        }
+
+        const { currentPassword, newPassword } = req.body;
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({ message: 'Please provide current and new passwords' });
+        }
+
+        const merchant = await Merchant.findById(merchantId).select('+password');
+        if (!merchant) {
+            return res.status(404).json({ message: 'Merchant not found' });
+        }
+
+        if (!(await merchant.matchPassword(currentPassword))) {
+            return res.status(400).json({ message: 'Current password is incorrect' });
+        }
+
+        merchant.password = newPassword;
+        await merchant.save();
+
+        res.json({ success: true, message: 'Password updated successfully' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
