@@ -1,85 +1,282 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
 const OrdersTab = () => {
+    const navigate = useNavigate();
+    const [orders, setOrders] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [search, setSearch] = useState('');
+    const [filter, setFilter] = useState('all');
+    const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+
+    const token = localStorage.getItem('merchantToken');
+    const storeId = localStorage.getItem('activeStoreId') || '';
+    const API_URL = import.meta.env.VITE_STORE_API_URL || 'http://localhost:5004/api';
+
+    const showToast = (message, type = 'success') => {
+        setToast({ show: true, message, type });
+        setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3000);
+    };
+
+    const fetchOrders = async () => {
+        try {
+            setLoading(true);
+            const res = await fetch(`${API_URL.replace('/stores', '')}/orders?storeId=${storeId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setOrders(data || []);
+            } else {
+                showToast(data.message || 'Failed to fetch orders', 'error');
+            }
+        } catch (err) {
+            console.error('Error fetching orders:', err);
+            showToast('Network error while fetching orders', 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchOrders();
+    }, [storeId]);
+
+    const handleUpdateStatus = async (id, status, paymentStatus) => {
+        try {
+            const res = await fetch(`${API_URL.replace('/stores', '')}/orders/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ status, paymentStatus })
+            });
+            if (res.ok) {
+                const updated = await res.json();
+                setOrders(prev => prev.map(o => o._id === id ? updated : o));
+                showToast('Order updated successfully');
+            } else {
+                const data = await res.json();
+                showToast(data.message || 'Failed to update order', 'error');
+            }
+        } catch (err) {
+            showToast('Network error while updating order', 'error');
+        }
+    };
+
+    const filteredOrders = orders.filter(o => {
+        const matchesSearch = o.customerName.toLowerCase().includes(search.toLowerCase()) || 
+            (o.customerEmail && o.customerEmail.toLowerCase().includes(search.toLowerCase())) ||
+            o._id.toLowerCase().includes(search.toLowerCase());
+        
+        if (filter === 'all') return matchesSearch;
+        if (filter === 'unfulfilled') return matchesSearch && o.status === 'unfulfilled';
+        if (filter === 'fulfilled') return matchesSearch && o.status === 'fulfilled';
+        if (filter === 'paid') return matchesSearch && o.paymentStatus === 'paid';
+        if (filter === 'pending') return matchesSearch && o.paymentStatus === 'pending';
+        return matchesSearch;
+    });
+
+    const formatPrice = (price) => `₹${Number(price).toLocaleString('en-IN')}`;
+
     return (
         <div className="space-y-6">
-            {/* Header section */}
-            <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                    <svg className="w-5 h-5 text-[#202223]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                    </svg>
-                    <h1 className="text-xl font-bold text-[#202223]">Orders</h1>
-                </div>
-                <button className="flex items-center gap-2 px-3 py-1.5 bg-[#ffffff] border border-[#d3d3d3] rounded-lg text-sm font-semibold text-[#202223] hover:bg-gray-50 transition-all shadow-sm active:scale-95">
-                    More actions
+            {toast.show && (
+                <div className={`fixed top-4 right-4 z-50 px-5 py-3 rounded-xl shadow-2xl text-sm font-bold flex items-center gap-2 animate-in slide-in-from-top-4 duration-300 ${
+                    toast.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'
+                }`}>
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        {toast.type === 'success'
+                            ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                            : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                        }
                     </svg>
-                </button>
-            </div>
+                    {toast.message}
+                </div>
+            )}
 
-            {/* Main Content Card */}
-            <div className="bg-white rounded-[12px] border border-[#e3e3e3] shadow-sm overflow-hidden min-h-[500px] flex flex-col items-center justify-center p-8 text-center">
-                <div className="max-w-md mx-auto space-y-6 flex flex-col items-center">
-                    {/* Empty State Illustration */}
-                    <div className="relative w-48 h-48 mb-2">
-                        {/* Stacked Documents SVG */}
-                        <svg className="w-full h-full" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            {/* Background shadow/blob */}
-                            <circle cx="100" cy="110" r="60" fill="#f1f1f1" />
-                            
-                            {/* Document 1 (Back) */}
-                            <rect x="65" y="45" width="70" height="90" rx="4" fill="white" stroke="#e3e3e3" strokeWidth="1" />
-                            <rect x="75" y="60" width="30" height="4" rx="2" fill="#e3e3e3" />
-                            <rect x="75" y="70" width="50" height="4" rx="2" fill="#f5f5f5" />
-                            
-                            {/* Document 2 (Middle) */}
-                            <rect x="55" y="55" width="70" height="90" rx="4" fill="white" stroke="#d3d3d3" strokeWidth="1" transform="rotate(-2, 90, 100)" />
-                            
-                            {/* Main Document (Front) */}
-                            <g transform="translate(10, 0)">
-                                <rect x="50" y="40" width="80" height="100" rx="6" fill="white" stroke="#e3e3e3" strokeWidth="1.5" />
-                                {/* Blue Header on doc */}
-                                <rect x="60" y="55" width="20" height="4" rx="2" fill="#4a90e2" />
-                                
-                                {/* Item 1 */}
-                                <rect x="60" y="70" width="25" height="15" rx="3" fill="#e8f4f8" />
-                                <rect x="90" y="70" width="30" height="4" rx="2" fill="#f1f1f1" />
-                                <rect x="90" y="78" width="20" height="3" rx="1.5" fill="#f9f9f9" />
-                                
-                                {/* Item 2 */}
-                                <rect x="60" y="95" width="15" height="20" rx="3" fill="#fff0ed" />
-                                <rect x="85" y="95" width="35" height="4" rx="2" fill="#f1f1f1" />
-                                <rect x="85" y="103" width="25" height="3" rx="1.5" fill="#f9f9f9" />
-                                
-                                {/* Tray/Box at bottom of doc */}
-                                <path d="M50 120 C 50 120, 50 140, 50 140 L 130 140 L 130 120 H 115 L 110 125 H 70 L 65 120 H 50" fill="#2d9393" />
-                            </g>
+            {/* Header section */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-xl lg:text-2xl font-bold text-[#202223] tracking-tight">Orders</h1>
+                    <p className="text-sm text-[#5c5f62] mt-1">{orders.length} orders total</p>
+                </div>
+                <div className="flex items-center gap-3">
+                    <Link 
+                        to="/dashboard/orders/new" 
+                        className="inline-flex items-center gap-2 bg-[#1a1c23] text-white px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-black transition-all shadow-md active:scale-95"
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
                         </svg>
-                    </div>
-
-                    <div className="space-y-3">
-                        <h2 className="text-base font-bold text-[#202223]">Your orders will show here</h2>
-                        <p className="text-sm text-[#5c5f62] leading-relaxed max-w-sm">
-                            To get orders and accept payments from customers, you need to select a plan. 
-                            You'll only be charged for your plan after your free trial ends.
-                        </p>
-                    </div>
-
-                    <Link to="/dashboard/plan" className="bg-[#1a1c23] text-white px-6 py-2 rounded-lg font-bold text-sm hover:bg-black transition-all shadow-md active:scale-95 block">
-                        Select plan
+                        Create Order
                     </Link>
                 </div>
             </div>
 
-            {/* Link footer */}
-            <div className="flex justify-center pt-2">
-                <button className="text-sm font-semibold text-[#5c5f62] hover:text-black transition-colors flex items-center gap-1.5 border-b border-transparent hover:border-[#5c5f62] pb-0.5">
-                    Learn more about orders
-                </button>
+            {/* Search and Filters */}
+            <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-grow">
+                    <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <input
+                        type="text"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        placeholder="Search by customer name, email or order ID..."
+                        className="w-full bg-white border border-gray-200 rounded-lg py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-transparent transition-all"
+                    />
+                </div>
+                <div className="flex gap-1 bg-white border border-gray-200 rounded-lg p-1 overflow-x-auto">
+                    {[
+                        { id: 'all', label: 'All' },
+                        { id: 'pending', label: 'Pending Payment' },
+                        { id: 'paid', label: 'Paid' },
+                        { id: 'unfulfilled', label: 'Unfulfilled' },
+                        { id: 'fulfilled', label: 'Fulfilled' }
+                    ].map(f => (
+                        <button
+                            key={f.id}
+                            onClick={() => setFilter(f.id)}
+                            className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all whitespace-nowrap ${
+                                filter === f.id ? 'bg-[#1a1c23] text-white shadow-sm' : 'text-[#5c5f62] hover:bg-gray-50'
+                            }`}
+                        >
+                            {f.label}
+                        </button>
+                    ))}
+                </div>
             </div>
+
+            {/* Content Table Card */}
+            {loading ? (
+                /* Skeleton Loading State */
+                <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+                    <table className="w-full">
+                        <thead>
+                            <tr className="border-b border-gray-100">
+                                {['Order ID', 'Customer', 'Date', 'Amount', 'Fulfillment', 'Payment', 'Actions'].map(h => (
+                                    <th key={h} className="text-left text-[10px] font-black text-gray-400 tracking-[0.15em] uppercase px-5 py-3">{h}</th>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {[1, 2, 3, 4, 5].map(i => (
+                                <tr key={`skel-${i}`} className="border-b border-gray-50 last:border-0 animate-pulse">
+                                    <td className="px-5 py-4"><div className="h-4 bg-gray-200 rounded w-24"></div></td>
+                                    <td className="px-5 py-4"><div className="h-4 bg-gray-100 rounded w-32"></div></td>
+                                    <td className="px-5 py-4"><div className="h-4 bg-gray-100 rounded w-20"></div></td>
+                                    <td className="px-5 py-4"><div className="h-4 bg-gray-200 rounded w-16"></div></td>
+                                    <td className="px-5 py-4"><div className="h-4 bg-gray-100 rounded w-24"></div></td>
+                                    <td className="px-5 py-4"><div className="h-4 bg-gray-100 rounded w-20"></div></td>
+                                    <td className="px-5 py-4"><div className="h-4 bg-gray-200 rounded w-28"></div></td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            ) : filteredOrders.length === 0 ? (
+                /* Empty State */
+                <div className="bg-white rounded-[12px] border border-[#e3e3e3] shadow-sm overflow-hidden min-h-[400px] flex flex-col items-center justify-center p-8 text-center">
+                    <div className="max-w-md mx-auto space-y-6 flex flex-col items-center">
+                        <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mb-2 text-gray-400">
+                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                            </svg>
+                        </div>
+                        <div className="space-y-2">
+                            <h2 className="text-base font-bold text-[#202223]">No orders found</h2>
+                            <p className="text-sm text-[#5c5f62] leading-relaxed max-w-sm">
+                                Create an order manually or drive sales to your store to see customers' orders here.
+                            </p>
+                        </div>
+                        <Link to="/dashboard/orders/new" className="bg-[#1a1c23] text-white px-6 py-2.5 rounded-lg font-bold text-sm hover:bg-black transition-all shadow-md active:scale-95 block">
+                            Create order
+                        </Link>
+                    </div>
+                </div>
+            ) : (
+                /* Data Table State */
+                <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+                    <div className="overflow-x-auto">
+                        <table className="w-full">
+                            <thead>
+                                <tr className="border-b border-gray-100">
+                                    <th className="text-left text-[10px] font-black text-gray-500 tracking-[0.15em] uppercase px-5 py-3">Order ID</th>
+                                    <th className="text-left text-[10px] font-black text-gray-500 tracking-[0.15em] uppercase px-5 py-3">Customer</th>
+                                    <th className="text-left text-[10px] font-black text-gray-500 tracking-[0.15em] uppercase px-5 py-3">Date</th>
+                                    <th className="text-right text-[10px] font-black text-gray-500 tracking-[0.15em] uppercase px-5 py-3">Total</th>
+                                    <th className="text-left text-[10px] font-black text-gray-500 tracking-[0.15em] uppercase px-5 py-3">Fulfillment</th>
+                                    <th className="text-left text-[10px] font-black text-gray-500 tracking-[0.15em] uppercase px-5 py-3">Payment</th>
+                                    <th className="text-right text-[10px] font-black text-gray-500 tracking-[0.15em] uppercase px-5 py-3">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredOrders.map((order, idx) => (
+                                    <tr key={order._id} className={`group hover:bg-gray-50/80 transition-colors ${idx !== filteredOrders.length - 1 ? 'border-b border-gray-50' : ''}`}>
+                                        <td className="px-5 py-3.5 text-sm font-mono text-gray-500">
+                                            #{order._id.slice(-6).toUpperCase()}
+                                        </td>
+                                        <td className="px-5 py-3.5">
+                                            <div className="text-sm font-bold text-[#202223]">{order.customerName}</div>
+                                            {order.customerEmail && <div className="text-xs text-gray-400">{order.customerEmail}</div>}
+                                        </td>
+                                        <td className="px-5 py-3.5 text-sm text-[#5c5f62]">
+                                            {new Date(order.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                        </td>
+                                        <td className="px-5 py-3.5 text-sm font-bold text-right text-[#202223]">
+                                            {formatPrice(order.totalAmount)}
+                                        </td>
+                                        <td className="px-5 py-3.5">
+                                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                                                order.status === 'fulfilled' ? 'bg-green-50 text-green-700' : 'bg-orange-50 text-orange-700'
+                                            }`}>
+                                                <span className={`w-1.5 h-1.5 rounded-full ${order.status === 'fulfilled' ? 'bg-green-500' : 'bg-orange-500'}`} />
+                                                {order.status === 'fulfilled' ? 'Fulfilled' : 'Unfulfilled'}
+                                            </span>
+                                        </td>
+                                        <td className="px-5 py-3.5">
+                                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                                                order.paymentStatus === 'paid' ? 'bg-emerald-50 text-emerald-700' : 'bg-yellow-50 text-yellow-700'
+                                            }`}>
+                                                <span className={`w-1.5 h-1.5 rounded-full ${order.paymentStatus === 'paid' ? 'bg-emerald-500' : 'bg-yellow-500'}`} />
+                                                {order.paymentStatus === 'paid' ? 'Paid' : 'Pending'}
+                                            </span>
+                                        </td>
+                                        <td className="px-5 py-3.5 text-right">
+                                            <div className="flex items-center justify-end gap-2">
+                                                {order.paymentStatus !== 'paid' && (
+                                                    <button 
+                                                        onClick={() => handleUpdateStatus(order._id, order.status, 'paid')}
+                                                        className="text-xs font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-100 transition-all active:scale-95"
+                                                    >
+                                                        Mark Paid
+                                                    </button>
+                                                )}
+                                                {order.status !== 'fulfilled' && (
+                                                    <button 
+                                                        onClick={() => handleUpdateStatus(order._id, 'fulfilled', order.paymentStatus)}
+                                                        className="text-xs font-bold text-orange-600 hover:text-orange-700 bg-orange-50 px-2.5 py-1.5 rounded-lg border border-orange-100 transition-all active:scale-95"
+                                                    >
+                                                        Fulfill
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div className="px-5 py-3 border-t border-gray-100 text-xs text-[#5c5f62] font-medium">
+                        Showing {filteredOrders.length} of {orders.length} orders
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -120,6 +120,7 @@ app.use('/api/banners', createServiceProxy(CATALOG_SERVICE_URL));
 app.use('/api/themes', createServiceProxy(STORE_SERVICE_URL));
 app.use('/api/stores', createServiceProxy(STORE_SERVICE_URL));
 app.use('/api/store-pages', createServiceProxy(STORE_SERVICE_URL));
+app.use('/api/orders', createServiceProxy(STORE_SERVICE_URL));
 
 // 5. Billing Service Routes
 // Remap /api/payments to /api/billing
