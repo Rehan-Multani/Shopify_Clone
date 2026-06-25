@@ -9,9 +9,20 @@ import { gatewayAuthMiddleware } from './middleware/auth.js';
 
 const app = express();
 
+const allowedOrigins = [
+    'http://localhost:5173', 
+    'http://127.0.0.1:5173', 
+    'http://localhost:5174', 
+    'http://127.0.0.1:5174',
+    'https://admin.cloudedata.in',
+    'https://storify.cloudedata.in',
+    'http://admin.cloudedata.in',
+    'http://storify.cloudedata.in'
+];
+
 // Global Middlewares (No body parser here to avoid proxy issues with POST/PUT requests)
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:5174', 'http://127.0.0.1:5174'],
+    origin: allowedOrigins,
     credentials: true,
 }));
 
@@ -55,6 +66,13 @@ const createServiceProxy = (target, pathRewrite = null) => {
                 }
                 if (req.headers['x-merchant-id']) {
                     proxyReq.setHeader('x-merchant-id', req.headers['x-merchant-id']);
+                }
+            },
+            proxyRes: (proxyRes, req, res) => {
+                const origin = req.headers.origin;
+                if (allowedOrigins.includes(origin)) {
+                    proxyRes.headers['access-control-allow-origin'] = origin;
+                    proxyRes.headers['access-control-allow-credentials'] = 'true';
                 }
             },
             error: (err, req, res) => {
