@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import mongoose from 'mongoose';
 import connectDB from '../../shared/connectDB.js';
 import app from './app.js';
 
@@ -6,7 +7,7 @@ import app from './app.js';
 dotenv.config();
 
 // Connect to database
-connectDB();
+connectDB(mongoose);
 
 const PORT = process.env.PORT || 5002;
 
