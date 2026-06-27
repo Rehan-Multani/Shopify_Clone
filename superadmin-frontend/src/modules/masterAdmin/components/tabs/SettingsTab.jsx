@@ -35,7 +35,9 @@ const SettingsTab = () => {
         trialDays: '14',
         defaultCurrency: 'INR',
         maintenanceMode: false,
-        expectedStoreIP: '76.76.21.21'
+        expectedStoreIP: '76.76.21.21',
+        sshUser: 'root',
+        sshPassword: ''
     });
 
     const [passwordData, setPasswordData] = useState({
@@ -79,7 +81,9 @@ const SettingsTab = () => {
                         trialDays: String(data.trialDays || 14),
                         defaultCurrency: data.defaultCurrency || 'INR',
                         maintenanceMode: data.maintenanceMode || false,
-                        expectedStoreIP: data.expectedStoreIP || '76.76.21.21'
+                        expectedStoreIP: data.expectedStoreIP || '76.76.21.21',
+                        sshUser: data.sshUser || 'root',
+                        sshPassword: data.sshPassword || ''
                     });
                 }
             } catch (err) {
@@ -209,13 +213,18 @@ const SettingsTab = () => {
                                         { key: 'platformName', label: 'Platform Name' },
                                         { key: 'supportEmail', label: 'Support Email' },
                                         { key: 'adminEmail', label: 'Admin Email' },
-                                        { key: 'expectedStoreIP', label: 'Expected Store A-Record IP' },
+                                        { key: 'expectedStoreIP', label: 'Expected Store A-Record IP (SERVER_IP)' },
+                                        { key: 'sshUser', label: 'SSH Deploy Username' },
+                                        { key: 'sshPassword', label: 'SSH Deploy Password' },
                                     ].map(f => (
                                         <div key={f.key}>
                                             <label className="block text-xs font-semibold text-[#5c5f62] mb-1.5">{f.label}</label>
-                                            <input type="text" value={platformConfig[f.key] || ''}
+                                            <input 
+                                                type={f.key === 'sshPassword' ? 'password' : 'text'} 
+                                                value={platformConfig[f.key] || ''}
                                                 onChange={e => setPlatformConfig(prev => ({ ...prev, [f.key]: e.target.value }))}
-                                                className="w-full px-3 py-2 border border-[#d3d3d3] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30 font-semibold" />
+                                                className="w-full px-3 py-2 border border-[#d3d3d3] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30 font-semibold" 
+                                            />
                                         </div>
                                     ))}
                                 </div>

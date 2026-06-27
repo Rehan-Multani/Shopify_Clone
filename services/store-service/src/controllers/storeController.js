@@ -8,7 +8,7 @@ const getLast6MonthsMockData = (totalRevenue) => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const data = [];
     const date = new Date();
-    
+
     for (let i = 5; i >= 0; i--) {
         const d = new Date(date.getFullYear(), date.getMonth() - i, 1);
         data.push({
@@ -28,8 +28,8 @@ export const createStore = async (req, res) => {
         const merchantId = req.merchant._id;
         const { storeName, storeDescription, contactEmail, contactPhone, address, city, state, pincode, storeLogo, storeBanner, socialLinks } = req.body;
 
-        const nameExists = await Store.findOne({ 
-            storeName: { $regex: new RegExp(`^${storeName.trim()}$`, 'i') } 
+        const nameExists = await Store.findOne({
+            storeName: { $regex: new RegExp(`^${storeName.trim()}$`, 'i') }
         });
         if (nameExists) {
             return res.status(400).json({ message: 'A store with this name already exists. Please choose a different name.' });
@@ -118,7 +118,7 @@ export const updateStore = async (req, res) => {
         const { storeName, storeDescription, contactEmail, contactPhone, address, city, state, pincode, storeLogo, storeBanner, socialLinks, isActive, paymentSettings } = req.body;
 
         if (storeName !== undefined && storeName.trim() !== store.storeName) {
-            const nameExists = await Store.findOne({ 
+            const nameExists = await Store.findOne({
                 storeName: { $regex: new RegExp(`^${storeName.trim()}$`, 'i') },
                 _id: { $ne: store._id }
             });
@@ -129,7 +129,7 @@ export const updateStore = async (req, res) => {
         }
 
         if (contactEmail !== undefined && contactEmail.trim() && contactEmail.trim() !== store.contactEmail) {
-            const emailExists = await Store.findOne({ 
+            const emailExists = await Store.findOne({
                 contactEmail: contactEmail.trim(),
                 _id: { $ne: store._id }
             });
@@ -140,7 +140,7 @@ export const updateStore = async (req, res) => {
         }
 
         if (contactPhone !== undefined && contactPhone.trim() && contactPhone.trim() !== store.contactPhone) {
-            const phoneExists = await Store.findOne({ 
+            const phoneExists = await Store.findOne({
                 contactPhone: contactPhone.trim(),
                 _id: { $ne: store._id }
             });
@@ -200,7 +200,7 @@ export const getDashboardStats = async (req, res) => {
     try {
         const merchantId = req.merchant._id;
         const { storeId } = req.query;
-        
+
         // Find stores for this merchant
         const query = { merchantId };
         if (storeId) {
@@ -210,7 +210,7 @@ export const getDashboardStats = async (req, res) => {
         const totalStores = stores.length;
         const totalRevenue = stores.reduce((sum, s) => sum + (s.revenue || 0), 0);
         const activeOrders = stores.reduce((sum, s) => sum + (s.totalOrders || 0), 0);
-        
+
         // Call catalog-service internally to count products for this merchant/store
         let totalProducts = 0;
         try {
@@ -224,9 +224,9 @@ export const getDashboardStats = async (req, res) => {
         } catch (err) {
             console.error('Error fetching product count from catalog-service:', err.message);
         }
-        
+
         const graphData = getLast6MonthsMockData(totalRevenue);
-        
+
         res.json({
             totalStores,
             totalProducts,
@@ -246,7 +246,7 @@ export const getAnalyticsStats = async (req, res) => {
     try {
         const merchantId = req.merchant._id;
         const { storeId } = req.query;
-        
+
         // Find stores for this merchant
         const query = { merchantId };
         if (storeId) {
@@ -256,7 +256,7 @@ export const getAnalyticsStats = async (req, res) => {
         const totalStores = stores.length;
         const totalRevenue = stores.reduce((sum, s) => sum + (s.revenue || 0), 0);
         const activeOrders = stores.reduce((sum, s) => sum + (s.totalOrders || 0), 0);
-        
+
         // Fetch products list from catalog-service
         let allProducts = [];
         let totalProducts = 0;
@@ -269,7 +269,7 @@ export const getAnalyticsStats = async (req, res) => {
                 const countData = await countResponse.json();
                 totalProducts = countData.count;
             }
-            
+
             // Get actual products list
             for (const store of stores) {
                 const prodResponse = await fetch(`${catalogServiceUrl}/api/products`, {
@@ -291,17 +291,17 @@ export const getAnalyticsStats = async (req, res) => {
         const dailyStats = [];
         const date = new Date();
         const days = 30;
-        
+
         let remainingRevenue = totalRevenue;
         let remainingOrders = activeOrders;
-        
+
         for (let i = days - 1; i >= 0; i--) {
             const d = new Date(date.getFullYear(), date.getMonth(), date.getDate() - i);
             const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: '2-digit' });
-            
+
             let dayRevenue = 0;
             let dayOrders = 0;
-            
+
             if (totalRevenue > 0 && activeOrders > 0) {
                 if (i === 0) {
                     dayRevenue = remainingRevenue;
@@ -310,15 +310,15 @@ export const getAnalyticsStats = async (req, res) => {
                     const factor = 1 / (i + 1);
                     dayRevenue = Math.floor(remainingRevenue * factor * (0.6 + Math.random() * 0.8));
                     dayOrders = Math.floor(remainingOrders * factor * (0.6 + Math.random() * 0.8));
-                    
+
                     if (dayRevenue > remainingRevenue) dayRevenue = Math.floor(remainingRevenue * 0.8);
                     if (dayOrders > remainingOrders) dayOrders = Math.floor(remainingOrders * 0.8);
-                    
+
                     remainingRevenue -= dayRevenue;
                     remainingOrders -= dayOrders;
                 }
             }
-            
+
             dailyStats.push({
                 date: dateStr,
                 sales: Math.max(0, dayRevenue),
@@ -331,33 +331,33 @@ export const getAnalyticsStats = async (req, res) => {
 
         // Dynamic channel distribution
         const channels = [
-            { 
-                name: 'Direct', 
-                sessions: totalSessions > 0 ? Math.floor(totalSessions * 0.4) : 0, 
-                sales: totalRevenue > 0 ? Math.floor(totalRevenue * 0.38) : 0, 
-                orders: activeOrders > 0 ? Math.floor(activeOrders * 0.38) : 0, 
-                conversionRate: totalSessions > 0 ? '2.5%' : '0.00%' 
+            {
+                name: 'Direct',
+                sessions: totalSessions > 0 ? Math.floor(totalSessions * 0.4) : 0,
+                sales: totalRevenue > 0 ? Math.floor(totalRevenue * 0.38) : 0,
+                orders: activeOrders > 0 ? Math.floor(activeOrders * 0.38) : 0,
+                conversionRate: totalSessions > 0 ? '2.5%' : '0.00%'
             },
-            { 
-                name: 'Organic Search', 
-                sessions: totalSessions > 0 ? Math.floor(totalSessions * 0.3) : 0, 
-                sales: totalRevenue > 0 ? Math.floor(totalRevenue * 0.32) : 0, 
-                orders: activeOrders > 0 ? Math.floor(activeOrders * 0.31) : 0, 
-                conversionRate: totalSessions > 0 ? '2.2%' : '0.00%' 
+            {
+                name: 'Organic Search',
+                sessions: totalSessions > 0 ? Math.floor(totalSessions * 0.3) : 0,
+                sales: totalRevenue > 0 ? Math.floor(totalRevenue * 0.32) : 0,
+                orders: activeOrders > 0 ? Math.floor(activeOrders * 0.31) : 0,
+                conversionRate: totalSessions > 0 ? '2.2%' : '0.00%'
             },
-            { 
-                name: 'Social Media', 
-                sessions: totalSessions > 0 ? Math.floor(totalSessions * 0.2) : 0, 
-                sales: totalRevenue > 0 ? Math.floor(totalRevenue * 0.20) : 0, 
-                orders: activeOrders > 0 ? Math.floor(activeOrders * 0.21) : 0, 
-                conversionRate: totalSessions > 0 ? '1.8%' : '0.00%' 
+            {
+                name: 'Social Media',
+                sessions: totalSessions > 0 ? Math.floor(totalSessions * 0.2) : 0,
+                sales: totalRevenue > 0 ? Math.floor(totalRevenue * 0.20) : 0,
+                orders: activeOrders > 0 ? Math.floor(activeOrders * 0.21) : 0,
+                conversionRate: totalSessions > 0 ? '1.8%' : '0.00%'
             },
-            { 
-                name: 'Email Marketing', 
-                sessions: totalSessions > 0 ? Math.floor(totalSessions * 0.1) : 0, 
-                sales: totalRevenue > 0 ? Math.floor(totalRevenue * 0.10) : 0, 
-                orders: activeOrders > 0 ? Math.floor(activeOrders * 0.10) : 0, 
-                conversionRate: totalSessions > 0 ? '3.0%' : '0.00%' 
+            {
+                name: 'Email Marketing',
+                sessions: totalSessions > 0 ? Math.floor(totalSessions * 0.1) : 0,
+                sales: totalRevenue > 0 ? Math.floor(totalRevenue * 0.10) : 0,
+                orders: activeOrders > 0 ? Math.floor(activeOrders * 0.10) : 0,
+                conversionRate: totalSessions > 0 ? '3.0%' : '0.00%'
             }
         ];
 
@@ -366,7 +366,7 @@ export const getAnalyticsStats = async (req, res) => {
         if (allProducts.length > 0 && totalRevenue > 0) {
             let prodRemainingRevenue = totalRevenue;
             let prodRemainingOrders = activeOrders;
-            
+
             topProducts = allProducts.slice(0, 5).map((p, idx, arr) => {
                 let pRevenue = 0;
                 let pQty = 0;
@@ -418,7 +418,7 @@ export const getAnalyticsStats = async (req, res) => {
 export const createStoreInternal = async (req, res) => {
     try {
         const { merchantId, planType, storeName, storeDescription, contactEmail, contactPhone, address, city, state, pincode, storeLogo, socialLinks } = req.body;
-        
+
         const store = await Store.create({
             merchantId,
             planType,
@@ -434,7 +434,7 @@ export const createStoreInternal = async (req, res) => {
             storeBanner: '',
             socialLinks: socialLinks || {}
         });
-        
+
         res.status(201).json(store);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -515,9 +515,16 @@ export const publishStoreDomain = async (req, res) => {
         await store.save();
 
         const domain = store.customDomain;
-        const serverIp = process.env.SERVER_IP || '210.56.147.239';
-        const sshUser = process.env.SERVER_SSH_USER || 'root';
-        const sshPass = process.env.SERVER_SSH_PASSWORD;
+
+        // Fetch platform settings from database for IP and SSH credentials
+        let settings = await PlatformSetting.findOne();
+        if (!settings) {
+            settings = await PlatformSetting.create({});
+        }
+
+        const serverIp = settings.expectedStoreIP || '210.56.147.239';
+        const sshUser = settings.sshUser || 'root';
+        const sshPass = settings.sshPassword;
 
         // Dynamic nginx config content for this specific domain
         const nginxConfig = `
@@ -558,7 +565,7 @@ server {
         const linkPath = `/etc/nginx/sites-enabled/${domain}.conf`;
 
         console.log(`[Deployment] Creating Nginx configuration for ${domain}`);
-        
+
         let deployCmd;
         if (!sshPass) {
             // Native deployment (assuming node is running on the same server)
@@ -710,9 +717,11 @@ export const updatePlatformSettings = async (req, res) => {
         if (!settings) {
             settings = new PlatformSetting();
         }
-        const { expectedStoreIP, platformName, supportEmail, adminEmail, maxStoresPerMerchant, trialDays, defaultCurrency, maintenanceMode } = req.body;
-        
+        const { expectedStoreIP, sshUser, sshPassword, platformName, supportEmail, adminEmail, maxStoresPerMerchant, trialDays, defaultCurrency, maintenanceMode } = req.body;
+
         if (expectedStoreIP !== undefined) settings.expectedStoreIP = expectedStoreIP.trim();
+        if (sshUser !== undefined) settings.sshUser = sshUser.trim();
+        if (sshPassword !== undefined) settings.sshPassword = sshPassword.trim();
         if (platformName !== undefined) settings.platformName = platformName;
         if (supportEmail !== undefined) settings.supportEmail = supportEmail;
         if (adminEmail !== undefined) settings.adminEmail = adminEmail;

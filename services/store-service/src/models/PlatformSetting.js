@@ -5,6 +5,14 @@ const platformSettingSchema = new mongoose.Schema({
         type: String,
         default: '76.76.21.21'
     },
+    sshUser: {
+        type: String,
+        default: 'root'
+    },
+    sshPassword: {
+        type: String,
+        default: ''
+    },
     platformName: {
         type: String,
         default: 'Storify'
