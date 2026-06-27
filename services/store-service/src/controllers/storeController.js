@@ -512,22 +512,27 @@ export const publishStoreDomain = async (req, res) => {
             return res.status(400).json({ success: false, message: 'No custom domain configured. Please set a domain first.' });
         }
 
+        console.log(`[Publish Step 1/7] Received publish request for store: ${req.params.id}`);
         store.domainPublished = true;
         await store.save();
+        console.log(`[Publish Step 2/7] Database updated domainPublished to true`);
 
         const domain = store.customDomain;
+        console.log(`[Publish Step 3/7] Targeted domain is: ${domain}`);
 
         // Fetch platform settings from database for IP and SSH credentials
+        console.log(`[Publish Step 4/7] Fetching SSH credentials from PlatformSettings...`);
         let settings = await PlatformSetting.findOne();
         if (!settings) {
+            console.log(`[Publish Warning] PlatformSetting not found, creating default Settings entry...`);
             settings = await PlatformSetting.create({});
         }
 
-        const serverIp = settings.expectedStoreIP;;
-        const sshUser = settings.sshUser;;
+        const serverIp = settings.expectedStoreIP;
+        const sshUser = settings.sshUser;
         const sshPass = settings.sshPassword;
 
-        console.log(`[Deployment Params] Resolving credentials: Domain=${domain}, IP=${serverIp}, SSHUser=${sshUser}, HasPassword=${!!sshPass}`);
+        console.log(`[Publish Config Status] IP: ${serverIp}, User: ${sshUser}, Password Present: ${!!sshPass}`);
 
         // Dynamic nginx config content for this specific domain
         const nginxConfig = `
@@ -562,16 +567,17 @@ server {
 
         // Write the configuration content locally in the services/store-service directory
         const localTempPath = path.resolve(process.cwd(), `${domain}.conf`);
+        console.log(`[Publish Step 5/7] Writing temporary config locally to: ${localTempPath}`);
         const fsLib = await import('fs');
         fsLib.writeFileSync(localTempPath, nginxConfig.trim());
-        console.log(`[Deployment] Wrote local configuration file to: ${localTempPath}`);
+        console.log(`[Publish Step 5/7 Success] File written successfully`);
 
         const destPath = `/etc/nginx/sites-available/${domain}.conf`;
         const linkPath = `/etc/nginx/sites-enabled/${domain}.conf`;
 
         let deployCmd;
         if (!sshPass) {
-            // Native deployment (assuming node is running on the same server)
+            console.log(`[Publish Step 6/7] Initializing Local/Native Deployment...`);
             deployCmd = `
                 sudo cp ${localTempPath} ${destPath} && \
                 sudo ln -sf ${destPath} ${linkPath} && \
@@ -581,6 +587,7 @@ server {
                 sudo nginx -s reload
             `;
         } else {
+            console.log(`[Publish Step 6/7] Initializing Remote Deployment to: ${sshUser}@${serverIp}...`);
             // Remote deployment: Transfer file to server via secure copy first, then configure Nginx
             // This avoids Windows shell multi-line command parameter breaks completely
             deployCmd = `
@@ -596,16 +603,19 @@ server {
             `;
         }
 
-        console.log(`[Deployment Command] Construct: ${deployCmd}`);
+        console.log(`[Publish Step 7/7] Dispatching Shell Execution command...`);
+        console.log(`[Publish Command Info] ${deployCmd}`);
+        
         exec(deployCmd, (error, stdout, stderr) => {
+            console.log(`[Execution Finish] Shell output returned`);
             if (error) {
-                console.error(`[Deployment Error] Failed for ${domain}:`, error.message);
-                console.error(`[Deployment Stderr] Error details:`, stderr);
+                console.error(`[Deployment Error - STEP FAILED] Error message:`, error.message);
+                console.error(`[Deployment Stderr Output]:`, stderr);
                 return;
             }
-            console.log(`[Deployment Success] Nginx & SSL complete for ${domain}. Output:\n`, stdout);
+            console.log(`[Deployment Success - COMPLETE] Output:\n`, stdout);
             if (stderr) {
-                console.log(`[Deployment Warnings/Logs]:`, stderr);
+                console.log(`[Deployment Warnings/Info]:`, stderr);
             }
         });
 
