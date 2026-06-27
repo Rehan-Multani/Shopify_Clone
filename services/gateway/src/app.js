@@ -54,8 +54,19 @@ const CATALOG_SERVICE_URL = process.env.CATALOG_SERVICE_URL || 'http://localhost
 const STORE_SERVICE_URL = process.env.STORE_SERVICE_URL || 'http://localhost:5004';
 const BILLING_SERVICE_URL = process.env.BILLING_SERVICE_URL || 'http://localhost:5005';
 
+// Helper function to resolve service name from target URL
+const getServiceName = (targetUrl) => {
+    if (targetUrl.includes('5001')) return 'auth-service';
+    if (targetUrl.includes('5002')) return 'merchant-admin-service';
+    if (targetUrl.includes('5003')) return 'catalog-service';
+    if (targetUrl.includes('5004')) return 'store-service';
+    if (targetUrl.includes('5005')) return 'billing-service';
+    return 'unknown-service';
+};
+
 // Helper function to create proxies
 const createServiceProxy = (target, pathRewrite = null) => {
+    const serviceName = getServiceName(target);
     return createProxyMiddleware({
         target,
         changeOrigin: true,
@@ -76,10 +87,45 @@ const createServiceProxy = (target, pathRewrite = null) => {
                     proxyRes.headers['access-control-allow-origin'] = origin;
                     proxyRes.headers['access-control-allow-credentials'] = 'true';
                 }
+                // Add source service name in headers so frontend or inspector can trace it instantly
+                proxyRes.headers['x-handled-by-service'] = serviceName;
+
+                // Intercept data if downstream returns a non-2xx status to append service name in the response payload
+                if (proxyRes.statusCode >= 400) {
+                    const originalWrite = res.write;
+                    const originalEnd = res.end;
+                    let body = '';
+
+                    // Override write and end to capture response chunk by chunk
+                    res.write = function (chunk) {
+                        body += chunk;
+                    };
+
+                    res.end = function (chunk) {
+                        if (chunk) body += chunk;
+                        try {
+                            // Try to parse the JSON and add the service parameter
+                            const json = JSON.parse(body);
+                            json.service = serviceName;
+                            const modifiedBody = JSON.stringify(json);
+                            
+                            res.setHeader('content-length', Buffer.byteLength(modifiedBody));
+                            originalEnd.call(this, modifiedBody);
+                        } catch (e) {
+                            // If not JSON or fails parsing, fall back to default response
+                            originalEnd.call(this, body);
+                        }
+                    };
+                }
             },
             error: (err, req, res) => {
-                console.error(`Proxy error for target ${target}:`, err.message);
-                res.status(502).json({ message: 'Bad Gateway: Service unavailable' });
+                console.error(`Proxy error for target ${target} (${serviceName}):`, err.message);
+                res.status(502).json({ 
+                    success: false, 
+                    message: 'Bad Gateway: Service unavailable',
+                    service: serviceName,
+                    error: err.message
+                });
             }
         }
     });
