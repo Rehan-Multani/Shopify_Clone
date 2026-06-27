@@ -2,6 +2,7 @@ import Store from '../models/Store.js';
 import Merchant from '../models/Merchant.js';
 import PlatformSetting from '../models/PlatformSetting.js';
 import dns from 'dns';
+import { exec } from 'child_process';
 
 const getLast6MonthsMockData = (totalRevenue) => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -513,9 +514,30 @@ export const publishStoreDomain = async (req, res) => {
         store.domainPublished = true;
         await store.save();
 
+        // ── AUTOMATIC SSL GENERATION (Certbot running in background) ──
+        // This runs the certbot command in background to generate SSL for this specific custom domain
+        // It requires certbot to be pre-installed on the host server.
+        const domainToSSL = store.customDomain;
+        const certbotCmd = `sudo certbot --nginx -d ${domainToSSL} -d www.${domainToSSL} --non-interactive --agree-tos -m admin@storify.com --redirect`;
+        
+        console.log(`[SSL Auto-Deploy] Executing SSL setup for: ${domainToSSL}`);
+        exec(certbotCmd, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`[SSL Error] Failed to generate certificate for ${domainToSSL}:`, error.message);
+                return;
+            }
+            console.log(`[SSL Success] Certificate generated successfully for ${domainToSSL}. Output:\n`, stdout);
+            
+            // Reload nginx to apply the new cert
+            exec('sudo nginx -s reload', (reloadErr) => {
+                if (reloadErr) console.error('[SSL Error] Nginx reload failed:', reloadErr.message);
+                else console.log('[SSL Success] Nginx configuration reloaded successfully.');
+            });
+        });
+
         res.status(200).json({
             success: true,
-            message: `Store published on ${store.customDomain}`,
+            message: `Store published on ${store.customDomain} (SSL certificate generation initiated in the background)`,
             store
         });
     } catch (error) {
