@@ -519,7 +519,6 @@ export const publishStoreDomain = async (req, res) => {
 
         const domain = store.customDomain;
         console.log(`[Publish Step 3/7] Targeted domain is: ${domain}`);
-
         // Fetch platform settings from database for IP and SSH credentials
         console.log(`[Publish Step 4/7] Fetching SSH credentials from PlatformSettings...`);
         let settings = await PlatformSetting.findOne();
@@ -534,6 +533,9 @@ export const publishStoreDomain = async (req, res) => {
 
         console.log(`[Publish Config Status] IP: ${serverIp}, User: ${sshUser}, Password Present: ${!!sshPass}`);
 
+        // Update root path to be dynamic pointing to remote server location specific to this store domain
+        const remoteWebRoot = `/var/www/${domain}`;
+
         // Dynamic nginx config content for this specific domain
         const nginxConfig = `
 server {
@@ -541,7 +543,7 @@ server {
     listen [::]:80;
     server_name ${domain} www.${domain};
 
-    root /var/www/Shopify_Clone/admin-frontend/dist;
+    root ${remoteWebRoot}/dist;
     index index.html;
 
     location / {
@@ -565,12 +567,41 @@ server {
 }
 `;
 
-        // Write the configuration content locally in the services/store-service directory
+        // Write the Nginx configuration locally in the services/store-service directory
         const localTempPath = path.resolve(process.cwd(), `${domain}.conf`);
         console.log(`[Publish Step 5/7] Writing temporary config locally to: ${localTempPath}`);
         const fsLib = await import('fs');
         fsLib.writeFileSync(localTempPath, nginxConfig.trim());
         console.log(`[Publish Step 5/7 Success] File written successfully`);
+
+        // Phase: Generate admin-frontend Production Build dynamically before transfer
+        console.log(`[Frontend Build] Starting production build for admin-frontend...`);
+        const frontendPath = path.resolve(process.cwd(), '../../admin-frontend');
+        
+        await new Promise((resolveBuild, rejectBuild) => {
+            exec('npm run build', { cwd: frontendPath }, (buildErr, buildStdout, buildStderr) => {
+                if (buildErr) {
+                    console.error(`[Build Error] Frontend build compilation failed:`, buildErr.message);
+                    return rejectBuild(buildErr);
+                }
+                console.log(`[Build Success] Frontend build compiled successfully:\n`, buildStdout);
+                resolveBuild();
+            });
+        });
+
+        // Pack the compiled build into a zip/tarball file to transfer cleanly over SFTP
+        const { execSync } = await import('child_process');
+        const zipName = `${domain}-dist.tar.gz`;
+        const localZipPath = path.resolve(process.cwd(), zipName);
+        console.log(`[Compression] Packing dist folder to: ${localZipPath}`);
+        
+        // Execute tar compression depending on OS platform
+        if (process.platform === 'win32') {
+            execSync(`tar -czf "${localZipPath}" -C "${frontendPath}/dist" .`);
+        } else {
+            execSync(`tar -czf "${localZipPath}" -C "${frontendPath}/dist" .`);
+        }
+        console.log(`[Compression Success] Pack file created`);
 
         const destPath = `/etc/nginx/sites-available/${domain}.conf`;
         const linkPath = `/etc/nginx/sites-enabled/${domain}.conf`;
@@ -579,6 +610,8 @@ server {
         if (!sshPass) {
             console.log(`[Publish Step 6/7] Initializing Local/Native Deployment...`);
             deployCmd = `
+                sudo mkdir -p ${remoteWebRoot}/dist && \
+                sudo tar -xzf ${localZipPath} -C ${remoteWebRoot}/dist && \
                 sudo cp ${localTempPath} ${destPath} && \
                 sudo ln -sf ${destPath} ${linkPath} && \
                 sudo nginx -t && \
@@ -604,7 +637,7 @@ server {
             const conn = new Client();
 
             conn.on('ready', () => {
-                console.log(`[SSH2 Ready] Connection established. Uploading config file via SFTP...`);
+                console.log(`[SSH2 Ready] Connection established. Initializing SFTP...`);
                 
                 conn.sftp((err, sftp) => {
                     if (err) {
@@ -614,42 +647,45 @@ server {
                     }
 
                     const remoteTempPath = `/tmp/${domain}.conf`;
+                    const remoteZipPath = `/tmp/${zipName}`;
+
+                    console.log(`[SFTP Upload] Transferring configuration file: ${localTempPath} -> ${remoteTempPath}`);
                     sftp.fastPut(localTempPath, remoteTempPath, {}, (uploadErr) => {
                         if (uploadErr) {
-                            console.error(`[SFTP Upload Error - STEP 6/7 FAILED]`, uploadErr.message);
+                            console.error(`[SFTP Config Upload Error]`, uploadErr.message);
                             conn.end();
                             return;
                         }
-                        console.log(`[SFTP Success] Config file transferred to remote: ${remoteTempPath}`);
+                        console.log(`[SFTP Success] Config file transferred successfully.`);
 
-                        // Phase 2: Execute remote link and reload commands
-                        console.log(`[SSH2 Process] Executing configuration deployment commands...`);
-                        const deployCmds = [
-                            `sudo mv -f ${remoteTempPath} ${destPath}`,
-                            `sudo ln -sf ${destPath} ${linkPath}`,
-                            `sudo nginx -t`,
-                            `sudo nginx -s reload`,
-                            `sudo certbot --nginx -d ${domain} -d www.${domain} --non-interactive --agree-tos -m admin@storify.com --redirect`,
-                            `sudo nginx -s reload`
-                        ].join(' && ');
-
-                        console.log(`[SSH2 Execute Command]: ${deployCmds}`);
-                        conn.exec(deployCmds, (execErr, stream) => {
-                            if (execErr) {
-                                console.error(`[SSH2 Exec Error]`, execErr.message);
+                        console.log(`[SFTP Upload] Transferring frontend build archive: ${localZipPath} -> ${remoteZipPath}`);
+                        sftp.fastPut(localZipPath, remoteZipPath, {}, (zipUploadErr) => {
+                            if (zipUploadErr) {
+                                console.error(`[SFTP Build Upload Error]`, zipUploadErr.message);
                                 conn.end();
                                 return;
                             }
+                            console.log(`[SFTP Success] Frontend build archive transferred successfully.`);
 
-                            let stdoutData = '';
-                            let stderrData = '';
+                            // Phase 2: Execute remote extract, linkage and Nginx reload commands
+                            console.log(`[SSH2 Process] Deploying build and configuring Nginx on remote host...`);
+                            const deployCmds = [
+                                `sudo mkdir -p ${remoteWebRoot}/dist`,
+                                `sudo tar -xzf ${remoteZipPath} -C ${remoteWebRoot}/dist`,
+                                `sudo rm -f ${remoteZipPath}`,
+                                `sudo mv -f ${remoteTempPath} ${destPath}`,
+                                `sudo ln -sf ${destPath} ${linkPath}`,
+                                `sudo nginx -t`,
+                                `sudo nginx -s reload`,
+                                `sudo certbot --nginx -d ${domain} -d www.${domain} --non-interactive --agree-tos -m admin@storify.com --redirect`,
+                                `sudo nginx -s reload`
+                            ].join(' && ');
 
-                            stream.on('close', (code, signal) => {
-                                console.log(`[SSH2 Command Finish] Exit code: ${code}`);
-                                conn.end();
-                                if (code !== 0) {
-                                    console.error(`[Deployment Error - STEP 7/7 FAILED]`);
-                                    console.error(`[Deployment Stderr Output]:\n`, stderrData);
+                            console.log(`[SSH2 Execute Command]: ${deployCmds}`);
+                            conn.exec(deployCmds, (execErr, stream) => {
+                                if (execErr) {
+                                    console.error(`[SSH2 Exec Error]`, execErr.message);
+                                    conn.end();
                                     return;
                                 }
                                 console.log(`[Deployment Success - COMPLETE] Output:\n`, stdoutData);
