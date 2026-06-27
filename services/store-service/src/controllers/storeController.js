@@ -3,6 +3,7 @@ import Merchant from '../models/Merchant.js';
 import PlatformSetting from '../models/PlatformSetting.js';
 import dns from 'dns';
 import { exec } from 'child_process';
+import path from 'path';
 
 const getLast6MonthsMockData = (totalRevenue) => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -559,20 +560,20 @@ server {
 }
 `;
 
-        // Execution script using sshpass or direct execution if running on target server natively
-        // First we write Nginx configuration locally then push or apply it
-        const fs = await import('fs');
-        const tempPath = `/tmp/${domain}.conf`;
+        // Write the configuration content locally in the services/store-service directory
+        const localTempPath = path.resolve(process.cwd(), `${domain}.conf`);
+        const fsLib = await import('fs');
+        fsLib.writeFileSync(localTempPath, nginxConfig.trim());
+        console.log(`[Deployment] Wrote local configuration file to: ${localTempPath}`);
+
         const destPath = `/etc/nginx/sites-available/${domain}.conf`;
         const linkPath = `/etc/nginx/sites-enabled/${domain}.conf`;
-
-        console.log(`[Deployment] Creating Nginx configuration for ${domain}`);
 
         let deployCmd;
         if (!sshPass) {
             // Native deployment (assuming node is running on the same server)
             deployCmd = `
-                sudo teedest="${destPath}" node -e "require('fs').writeFileSync('${destPath}', \`${nginxConfig.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)" && \
+                sudo cp ${localTempPath} ${destPath} && \
                 sudo ln -sf ${destPath} ${linkPath} && \
                 sudo nginx -t && \
                 sudo nginx -s reload && \
@@ -580,16 +581,18 @@ server {
                 sudo nginx -s reload
             `;
         } else {
-            // Remote deployment via SSH using sshpass and EOF block mapping (solves quote escape issues)
+            // Remote deployment: Transfer file to server via secure copy first, then configure Nginx
+            // This avoids Windows shell multi-line command parameter breaks completely
             deployCmd = `
-sshpass -p "${sshPass}" ssh -o StrictHostKeyChecking=no ${sshUser}@${serverIp} "cat << 'EOF' | sudo tee ${destPath} > /dev/null
-${nginxConfig}
-EOF
-sudo ln -sf ${destPath} ${linkPath}
-sudo nginx -t
-sudo nginx -s reload
-sudo certbot --nginx -d ${domain} -d www.${domain} --non-interactive --agree-tos -m admin@storify.com --redirect
-sudo nginx -s reload"
+                sshpass -p "${sshPass}" scp -o StrictHostKeyChecking=no ${localTempPath} ${sshUser}@${serverIp}:/tmp/${domain}.conf && \
+                sshpass -p "${sshPass}" ssh -o StrictHostKeyChecking=no ${sshUser}@${serverIp} "
+                    sudo mv /tmp/${domain}.conf ${destPath} && \
+                    sudo ln -sf ${destPath} ${linkPath} && \
+                    sudo nginx -t && \
+                    sudo nginx -s reload && \
+                    sudo certbot --nginx -d ${domain} -d www.${domain} --non-interactive --agree-tos -m admin@storify.com --redirect && \
+                    sudo nginx -s reload
+                "
             `;
         }
 
