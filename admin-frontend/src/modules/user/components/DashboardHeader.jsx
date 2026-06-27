@@ -17,7 +17,7 @@ const tabLabels = {
     support: 'Support'
 };
 
-const DashboardHeader = ({ isOpen, setIsOpen, storeName: propStoreName }) => {
+const DashboardHeader = ({ isOpen, setIsOpen, storeName: propStoreName, isCollapsed, toggleCollapse }) => {
     const storeName = propStoreName || localStorage.getItem('shopStoreName') || 'My Store';
     
     // Instead of store name, we use Merchant Name as requested by the image "Rehan"
@@ -44,7 +44,7 @@ const DashboardHeader = ({ isOpen, setIsOpen, storeName: propStoreName }) => {
             try {
                 const token = localStorage.getItem('merchantToken');
                 if (!token) return;
-                const STORE_API_URL = import.meta.env.VITE_STORE_API_URL || 'http://localhost:5004/api';
+                const STORE_API_URL = import.meta.env.VITE_STORE_API_URL;
                 const response = await fetch(`${STORE_API_URL}/stores/my-stores`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -78,6 +78,17 @@ const DashboardHeader = ({ isOpen, setIsOpen, storeName: propStoreName }) => {
 
     return (
         <header className="h-14 bg-[#1a1c23] border-b border-white/5 flex items-center justify-between px-4 sticky top-0 z-[40] transition-all duration-300 shadow-xl flex-shrink-0">
+            {/* Desktop Sidebar Collapse Toggle */}
+            <button
+                onClick={toggleCollapse}
+                className="hidden lg:flex p-1.5 -ml-2.5 mr-3 text-gray-400 hover:bg-white/5 hover:text-white rounded-lg transition-all"
+                title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+            >
+                <svg className={`w-5 h-5 transition-transform duration-200 ${isCollapsed ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7M20 19l-7-7 7-7" />
+                </svg>
+            </button>
+
             {/* Mobile Menu Toggle */}
             <button 
                 onClick={() => setIsOpen(!isOpen)}

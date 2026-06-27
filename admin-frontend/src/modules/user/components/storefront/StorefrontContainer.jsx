@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Routes, Route } from 'react-router-dom';
+import { useParams, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import StorefrontHome from '../../pages/storefront/StorefrontHome';
 import StorefrontCatalog from '../../pages/storefront/StorefrontCatalog';
 import StorefrontProductDetails from '../../pages/storefront/StorefrontProductDetails';
@@ -8,14 +8,27 @@ import StorefrontCheckout from '../../pages/storefront/StorefrontCheckout';
 import StorefrontAuth from '../../pages/storefront/StorefrontAuth';
 import StorefrontPage from '../../pages/storefront/StorefrontPage';
 
-const GATEWAY_URL = 'http://localhost:5000/api';
+const GATEWAY_URL = import.meta.env.VITE_API_BASE_URL;
+
+const ProtectedRoute = ({ customer, storeId, redirect, children }) => {
+    if (!customer) {
+        return <Navigate to={`/store/${storeId}/login?redirect=${redirect}`} replace />;
+    }
+    return children;
+};
 
 const StorefrontContainer = () => {
     const { storeId } = useParams();
+    const location = useLocation();
     const [storeInfo, setStoreInfo] = useState(null);
     const [cart, setCart] = useState([]);
     const [customer, setCustomer] = useState(null);
     const [loading, setLoading] = useState(true);
+
+    // Scroll to top automatically on route change
+    useEffect(() => {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+    }, [location.pathname]);
 
     // Load store settings, cart, and customer session
     useEffect(() => {
@@ -112,8 +125,56 @@ const StorefrontContainer = () => {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-gray-50">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+            <div className="min-h-screen bg-[#fcfcfc] flex flex-col">
+                {/* Header Skeleton */}
+                <header className="bg-white border-b border-zinc-200/60 py-4.5 px-6 md:px-12 flex items-center justify-between">
+                    <div className="w-24 h-6 animate-pulse bg-zinc-200/80 rounded-xl"></div>
+                    <div className="hidden md:flex gap-8">
+                        <div className="w-12 h-3 animate-pulse bg-zinc-200/80 rounded"></div>
+                        <div className="w-14 h-3 animate-pulse bg-zinc-200/80 rounded"></div>
+                        <div className="w-14 h-3 animate-pulse bg-zinc-200/80 rounded"></div>
+                    </div>
+                    <div className="flex gap-3">
+                        <div className="w-8 h-8 animate-pulse bg-zinc-200/80 rounded-full"></div>
+                        <div className="w-8 h-8 animate-pulse bg-zinc-200/80 rounded-full"></div>
+                    </div>
+                </header>
+ 
+                {/* Main Content Skeleton */}
+                <main className="flex-grow max-w-7xl w-full mx-auto p-6 md:p-12 space-y-12">
+                    {/* Hero Banner */}
+                    <div className="w-full aspect-[21/9] animate-pulse bg-zinc-200/70 rounded-3xl"></div>
+ 
+                    {/* Collections Title */}
+                    <div className="space-y-2 flex flex-col items-center">
+                        <div className="w-36 h-6 animate-pulse bg-zinc-200/80 rounded-xl"></div>
+                        <div className="w-10 h-0.5 animate-pulse bg-zinc-200/80 rounded-full"></div>
+                    </div>
+ 
+                    {/* Collections Grid */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        {[...Array(4)].map((_, i) => (
+                            <div key={i} className="aspect-[4/3] animate-pulse bg-zinc-200/70 rounded-2xl"></div>
+                        ))}
+                    </div>
+ 
+                    {/* Products Title */}
+                    <div className="space-y-2 flex flex-col items-center pt-4">
+                        <div className="w-36 h-6 animate-pulse bg-zinc-200/80 rounded-xl"></div>
+                        <div className="w-10 h-0.5 animate-pulse bg-zinc-200/80 rounded-full"></div>
+                    </div>
+ 
+                    {/* Products Grid */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        {[...Array(4)].map((_, i) => (
+                            <div key={i} className="space-y-3">
+                                <div className="w-full aspect-square animate-pulse bg-zinc-200/70 rounded-2xl"></div>
+                                <div className="w-3/4 h-4 animate-pulse bg-zinc-200/80 rounded-lg"></div>
+                                <div className="w-1/2 h-4 animate-pulse bg-zinc-200/80 rounded-lg"></div>
+                            </div>
+                        ))}
+                    </div>
+                </main>
             </div>
         );
     }
@@ -148,25 +209,29 @@ const StorefrontContainer = () => {
                 />
             } />
             <Route path="/cart" element={
-                <StorefrontCart 
-                    cart={cart}
-                    cartCount={cartCount} 
-                    onUpdateCartQty={handleUpdateCartQty}
-                    onRemoveFromCart={handleRemoveFromCart}
-                    customer={customer}
-                    onLogout={handleLogout}
-                    storeInfo={storeInfo}
-                />
+                <ProtectedRoute customer={customer} storeId={storeId} redirect="cart">
+                    <StorefrontCart 
+                        cart={cart}
+                        cartCount={cartCount} 
+                        onUpdateCartQty={handleUpdateCartQty}
+                        onRemoveFromCart={handleRemoveFromCart}
+                        customer={customer}
+                        onLogout={handleLogout}
+                        storeInfo={storeInfo}
+                    />
+                </ProtectedRoute>
             } />
             <Route path="/checkout" element={
-                <StorefrontCheckout 
-                    cart={cart}
-                    cartCount={cartCount} 
-                    onClearCart={handleClearCart}
-                    customer={customer}
-                    onLogout={handleLogout}
-                    storeInfo={storeInfo}
-                />
+                <ProtectedRoute customer={customer} storeId={storeId} redirect="checkout">
+                    <StorefrontCheckout 
+                        cart={cart}
+                        cartCount={cartCount} 
+                        onClearCart={handleClearCart}
+                        customer={customer}
+                        onLogout={handleLogout}
+                        storeInfo={storeInfo}
+                    />
+                </ProtectedRoute>
             } />
             <Route path="/login" element={
                 <StorefrontAuth 

@@ -7,9 +7,14 @@ const themeSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
+    merchantId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Merchant',
+        required: false
+    },
     themeName: {
         type: String,
-        enum: ['Dawn', 'Modern', 'Minimal'],
+        enum: ['Dawn', 'Modern', 'Minimal', 'Vogue', 'Aura', 'Carbon', 'Nordic', 'Monolith', 'Amber', 'Cyber'],
         default: 'Dawn'
     },
     primaryColor: {

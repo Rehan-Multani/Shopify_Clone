@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import logo from '../../../assets/storify-logo.png';
 
@@ -13,35 +13,39 @@ const navItems = [
     { id: 'settings',      label: 'Settings',        icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
 ];
 
-const NavItem = ({ item, active }) => (
+const NavItem = ({ item, active, isCollapsed }) => (
     <Link
         to={`/superadmin/${item.id}`}
+        title={isCollapsed ? item.label : undefined}
         className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all group relative select-none"
         style={{
             background: active ? 'rgba(20,184,166,0.12)' : 'transparent',
             color: active ? '#fff' : '#9CA3AF',
+            justifyContent: isCollapsed ? 'center' : 'flex-start',
         }}
         onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#fff'; }}
         onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = active ? '#fff' : '#9CA3AF'; }}
     >
-        {/* Active indicator bar */}
         {active && (
             <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r" style={{ background: '#14B8A6' }} />
         )}
         <svg className="w-[18px] h-[18px] flex-shrink-0" style={{ color: active ? '#14B8A6' : 'inherit' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d={item.icon} />
         </svg>
-        <span className="flex-grow">{item.label}</span>
-        {item.badge && (
+        {!isCollapsed && <span className="flex-grow">{item.label}</span>}
+        {!isCollapsed && item.badge && (
             <span className="text-[10px] font-black text-white rounded-full flex items-center justify-center flex-shrink-0"
                 style={{ background: '#ef4444', minWidth: 18, height: 18, padding: '0 4px' }}>
                 {item.badge}
             </span>
         )}
+        {isCollapsed && item.badge && (
+            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border border-[#1a1c23]" />
+        )}
     </Link>
 );
 
-const MasterAdminSidebar = ({ isOpen, setIsOpen }) => {
+const MasterAdminSidebar = ({ isOpen, setIsOpen, isCollapsed }) => {
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -51,23 +55,29 @@ const MasterAdminSidebar = ({ isOpen, setIsOpen }) => {
     };
 
     const sidebarContent = (
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', position: 'relative' }}>
             {/* Logo */}
-            <div style={{ padding: '20px', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0 }}>
-                <Link to="/superadmin/overview" style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+            <div style={{ padding: isCollapsed ? '20px 12px' : '20px', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0 }}>
+                <Link to="/superadmin/overview" style={{ display: 'flex', alignItems: 'center', justifyContent: isCollapsed ? 'center' : 'flex-start', gap: 10, marginBottom: 14 }}>
                     <img src={logo} alt="Storify" style={{ height: 28, width: 'auto' }} />
-                    <span className="brand-text text-xl" style={{ color: 'rgba(255,255,255,0.9)' }}>storify</span>
+                    {!isCollapsed && <span className="brand-text text-xl" style={{ color: 'rgba(255,255,255,0.9)' }}>storify</span>}
                 </Link>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(20,184,166,0.1)', border: '1px solid rgba(20,184,166,0.2)', borderRadius: 8, padding: '6px 12px' }}>
-                    <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#14B8A6', flexShrink: 0 }} />
-                    <span style={{ fontSize: 11, fontWeight: 900, color: '#14B8A6', letterSpacing: '0.13em', textTransform: 'uppercase' }}>Master Admin</span>
-                </div>
+                {isCollapsed ? (
+                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                        <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#14B8A6' }} title="Master Admin Mode" />
+                    </div>
+                ) : (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(20,184,166,0.1)', border: '1px solid rgba(20,184,166,0.2)', borderRadius: 8, padding: '6px 12px' }}>
+                        <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#14B8A6', flexShrink: 0 }} />
+                        <span style={{ fontSize: 11, fontWeight: 900, color: '#14B8A6', letterSpacing: '0.13em', textTransform: 'uppercase' }}>Master Admin</span>
+                    </div>
+                )}
             </div>
 
             {/* Main Nav */}
             <nav style={{ flex: 1, padding: '12px', overflowY: 'auto' }} className="custom-scrollbar">
                 <div className="space-y-0.5">
-                    {navItems.map(item => <NavItem key={item.id} item={item} active={isActive(item.id)} />)}
+                    {navItems.map(item => <NavItem key={item.id} item={item} active={isActive(item.id)} isCollapsed={isCollapsed} />)}
                 </div>
             </nav>
 
@@ -78,35 +88,43 @@ const MasterAdminSidebar = ({ isOpen, setIsOpen }) => {
                         localStorage.clear();
                         navigate('/superadmin/login');
                     }}
+                    title={isCollapsed ? "Log Out" : undefined}
                     className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-semibold transition-all group"
-                    style={{ color: '#ef4444' }}
+                    style={{ color: '#ef4444', justifyContent: isCollapsed ? 'center' : 'flex-start' }}
                     onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; }}
                     onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
                 >
                     <svg className="w-[18px] h-[18px] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                     </svg>
-                    <span className="flex-grow text-left">Log Out</span>
+                    {!isCollapsed && <span className="flex-grow text-left">Log Out</span>}
                 </button>
             </div>
 
             {/* Admin Profile */}
             <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.06)', flexShrink: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.06)', cursor: 'pointer', transition: 'background 0.15s' }}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: isCollapsed ? 'center' : 'flex-start', gap: 12, padding: '10px 12px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.06)', cursor: 'pointer', transition: 'background 0.15s' }}
+                    title={isCollapsed ? "Master Admin (admin@storify.com)" : undefined}
                     onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
                     onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                     <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg,#14B8A6,#0F766E)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 900, color: '#fff', flexShrink: 0 }}>
                         MA
                     </div>
-                    <div style={{ flexGrow: 1, minWidth: 0 }}>
-                        <p style={{ fontSize: 13, fontWeight: 700, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Master Admin</p>
-                        <p style={{ fontSize: 11, color: '#4B5563', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>admin@storify.com</p>
-                    </div>
-                    <svg style={{ width: 16, height: 16, color: '#4B5563', flexShrink: 0 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
-                    </svg>
+                    {!isCollapsed && (
+                        <>
+                            <div style={{ flexGrow: 1, minWidth: 0 }}>
+                                <p style={{ fontSize: 13, fontWeight: 700, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Master Admin</p>
+                                <p style={{ fontSize: 11, color: '#4B5563', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>admin@storify.com</p>
+                            </div>
+                            <svg style={{ width: 16, height: 16, color: '#4B5563', flexShrink: 0 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
+                            </svg>
+                        </>
+                    )}
                 </div>
             </div>
+            
+
         </div>
     );
 
@@ -126,17 +144,18 @@ const MasterAdminSidebar = ({ isOpen, setIsOpen }) => {
             {/* Sidebar — desktop: flex child (full height via parent), mobile: fixed overlay */}
             <aside
                 style={{
-                    width: 256,
+                    width: isCollapsed ? 72 : 256,
                     background: '#1a1c23',
                     flexShrink: 0,
                     height: '100%',              /* fills the h-screen flex parent */
-                    overflowY: 'auto',
+                    overflowY: 'visible',        /* allow collapse toggle to overflow */
+                    transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 }}
                 /* Mobile transform handled via className */
                 className={`
-                    fixed inset-y-0 left-0 z-[70] w-64
+                    fixed inset-y-0 left-0 z-[70]
                     lg:relative lg:inset-auto lg:z-auto lg:h-full
-                    transform transition-transform duration-300
+                    transform transition-all duration-300
                     ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
                 `}
             >

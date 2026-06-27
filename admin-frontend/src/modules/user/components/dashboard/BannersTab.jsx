@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-const CATALOG_API_URL = import.meta.env.VITE_CATALOG_API_URL || 'http://localhost:5003/api';
+const CATALOG_API_URL = import.meta.env.VITE_CATALOG_API_URL;
 const API_URL = CATALOG_API_URL;
 
 const BannersTab = () => {
@@ -13,6 +13,12 @@ const BannersTab = () => {
     const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
 
     const token = localStorage.getItem('merchantToken');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 5;
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [search, statusFilter]);
 
     const fetchBanners = async () => {
         try {
@@ -82,10 +88,44 @@ const BannersTab = () => {
         return matchesSearch && matchesStatus;
     });
 
+    const totalPages = Math.ceil(filtered.length / itemsPerPage);
+    const paginatedItems = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
     if (loading) {
         return (
-            <div className="flex items-center justify-center py-20">
-                <div className="w-8 h-8 border-[3px] border-gray-200 border-t-black rounded-full animate-spin"></div>
+            <div className="space-y-6 animate-pulse">
+                {/* Header Skeleton */}
+                <div className="flex justify-between items-center">
+                    <div className="space-y-2">
+                        <div className="h-6 w-32 bg-gray-200 rounded-md"></div>
+                        <div className="h-4 w-48 bg-gray-200 rounded-md"></div>
+                    </div>
+                    <div className="h-10 w-32 bg-gray-200 rounded-lg"></div>
+                </div>
+                {/* Filter Skeleton */}
+                <div className="flex gap-3">
+                    <div className="h-10 flex-grow bg-gray-200 rounded-lg"></div>
+                    <div className="h-10 w-48 bg-gray-200 rounded-lg"></div>
+                </div>
+                {/* Table Skeleton */}
+                <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                    <div className="p-5 border-b border-gray-50 flex gap-4">
+                        <div className="h-4 w-12 bg-gray-200 rounded"></div>
+                        <div className="h-4 w-24 bg-gray-200 rounded"></div>
+                        <div className="h-4 w-16 bg-gray-200 rounded"></div>
+                    </div>
+                    {[...Array(5)].map((_, i) => (
+                        <div key={i} className="p-5 border-b border-gray-50 flex items-center gap-4">
+                            <div className="w-16 h-10 rounded-lg bg-gray-200"></div>
+                            <div className="h-4 w-48 bg-gray-200 rounded"></div>
+                            <div className="h-6 w-16 bg-gray-200 rounded-full"></div>
+                            <div className="ml-auto flex gap-2">
+                                <div className="w-8 h-8 rounded-lg bg-gray-200"></div>
+                                <div className="w-8 h-8 rounded-lg bg-gray-200"></div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </div>
         );
     }
@@ -183,7 +223,7 @@ const BannersTab = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {filtered.map((banner, idx) => (
+                                {paginatedItems.map((banner, idx) => (
                                     <tr key={banner._id} className={`group hover:bg-gray-50/80 transition-colors ${idx !== filtered.length - 1 ? 'border-b border-gray-50' : ''}`}>
                                         <td className="px-5 py-3">
                                             <div className="w-24 h-12 rounded-xl bg-gray-100 border border-gray-200 overflow-hidden flex-shrink-0">
@@ -241,8 +281,45 @@ const BannersTab = () => {
                             </tbody>
                         </table>
                     </div>
-                    <div className="px-5 py-3 border-t border-gray-100 text-xs text-[#5c5f62] font-medium">
-                        Showing {filtered.length} of {banners.length} banners
+                    <div className="px-5 py-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div className="text-xs text-[#5c5f62] font-medium">
+                            Showing {filtered.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filtered.length)} of {filtered.length} entries
+                        </div>
+                        {totalPages > 1 && (
+                            <div className="flex items-center gap-1">
+                                <button
+                                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                    disabled={currentPage === 1}
+                                    className="p-2 border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-transparent transition-all"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                    </svg>
+                                </button>
+                                {[...Array(totalPages)].map((_, i) => (
+                                    <button
+                                        key={i + 1}
+                                        onClick={() => setCurrentPage(i + 1)}
+                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                                            currentPage === i + 1
+                                                ? 'bg-[#1a1c23] text-white shadow-sm'
+                                                : 'text-[#5c5f62] hover:bg-gray-50 border border-transparent'
+                                        }`}
+                                    >
+                                        {i + 1}
+                                    </button>
+                                ))}
+                                <button
+                                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                    disabled={currentPage === totalPages}
+                                    className="p-2 border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-transparent transition-all"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}

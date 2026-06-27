@@ -6,7 +6,7 @@ export const gatewayAuthMiddleware = async (req, res, next) => {
     
     let requiredAuth = null; // default public
     
-    if (path === '/api/master-admin/profile') {
+    if (path === '/api/master-admin/profile' || path === '/api/master-admin/analytics') {
         requiredAuth = 'admin';
     } else if (path.startsWith('/api/merchants')) {
         const publicMerchantPaths = [
@@ -45,6 +45,12 @@ export const gatewayAuthMiddleware = async (req, res, next) => {
         requiredAuth = method === 'GET' ? null : 'merchant';
     } else if (path.startsWith('/api/store-pages')) {
         requiredAuth = method === 'GET' ? null : 'merchant';
+    } else if (path.startsWith('/api/customers')) {
+        if (method === 'POST' && (path.endsWith('/subscribe') || path.endsWith('/register') || path.endsWith('/login'))) {
+            requiredAuth = null;
+        } else {
+            requiredAuth = 'merchant';
+        }
     } else if (path.startsWith('/api/payments') || path.startsWith('/api/billing')) {
         requiredAuth = 'merchant';
     }
@@ -128,7 +134,7 @@ function extractToken(req) {
 }
 
 async function verifyTokenWithAuthService(token, type) {
-    const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || 'http://localhost:5001';
+    const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL;
     try {
         const response = await fetch(`${AUTH_SERVICE_URL}/api/auth/verify`, {
             method: 'POST',

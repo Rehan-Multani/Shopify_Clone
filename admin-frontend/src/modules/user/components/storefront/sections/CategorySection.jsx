@@ -1,9 +1,64 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 
-const CATALOG_API_URL = import.meta.env.VITE_CATALOG_API_URL || 'http://localhost:5003/api';
+const CATALOG_API_URL = import.meta.env.VITE_CATALOG_API_URL;
+const ASSETS_BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || '';
+
+const CategoryCard = ({ category, storeId }) => {
+    const [imageError, setImageError] = useState(false);
+    
+    const getImageUrl = (path) => {
+        if (!path) return null;
+        if (path.startsWith('http') || path.startsWith('data:')) return path;
+        const cleanPath = path.startsWith('/') ? path : `/${path}`;
+        return `${ASSETS_BASE_URL}${cleanPath}`;
+    };
+
+    const imageUrl = getImageUrl(category.image);
+
+    // Premium subtle color palettes for gradients
+    const getGradientClass = (name) => {
+        const code = name.charCodeAt(0) || 0;
+        const gradients = [
+            'from-zinc-100 to-zinc-200/80 text-zinc-800',
+            'from-neutral-50 to-neutral-200/90 text-neutral-800',
+            'from-slate-100 to-slate-200/80 text-slate-800',
+            'from-stone-100 to-stone-200/85 text-stone-800',
+            'from-zinc-50 to-zinc-200 text-zinc-900'
+        ];
+        return gradients[code % gradients.length];
+    };
+
+    return (
+        <Link 
+            to={`/store/${storeId}/catalog?category=${category._id}`}
+            className="group flex flex-col items-center space-y-3 cursor-pointer"
+        >
+            {!imageUrl || imageError ? (
+                <div className={`w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-gradient-to-br ${getGradientClass(category.name)} flex items-center justify-center relative overflow-hidden border border-zinc-200/50 group-hover:border-[var(--color-primary)] transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-[0_8px_20px_-8px_rgba(0,0,0,0.08)]`}>
+                    <span className="text-[10px] font-black uppercase px-2 text-center truncate w-full tracking-widest">
+                        {category.name.substring(0, 3)}
+                    </span>
+                </div>
+            ) : (
+                <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl overflow-hidden border border-zinc-250/70 group-hover:border-[var(--color-primary)] bg-white transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-[0_8px_20px_-8px_rgba(0,0,0,0.08)] relative">
+                    <img
+                        src={imageUrl}
+                        alt={category.name}
+                        onError={() => setImageError(true)}
+                        className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
+                    />
+                </div>
+            )}
+            <h3 className="text-zinc-800 font-extrabold text-[10px] tracking-widest text-center group-hover:text-[var(--color-primary)] transition-colors uppercase max-w-full leading-tight">
+                {category.name}
+            </h3>
+        </Link>
+    );
+};
 
 const CategorySection = ({ settings = {}, storeId: propStoreId }) => {
-    const { title = 'Shop by Category', columns = 4 } = settings;
+    const { title = 'Shop by Category' } = settings;
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -34,71 +89,105 @@ const CategorySection = ({ settings = {}, storeId: propStoreId }) => {
         fetchCategories();
     }, [storeId, token]);
 
-    const getGridColsClass = () => {
-        switch (parseInt(columns)) {
-            case 2: return 'grid-cols-2';
-            case 3: return 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3';
-            case 6: return 'grid-cols-2 sm:grid-cols-3 md:grid-cols-6';
-            case 4:
-            default:
-                return 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4';
+    const scrollContainerRef = useRef(null);
+
+    const scroll = (direction) => {
+        if (scrollContainerRef.current) {
+            const { scrollLeft, clientWidth } = scrollContainerRef.current;
+            const scrollAmount = clientWidth * 0.6;
+            scrollContainerRef.current.scrollTo({
+                left: direction === 'left' ? scrollLeft - scrollAmount : scrollLeft + scrollAmount,
+                behavior: 'smooth'
+            });
         }
     };
 
+    useEffect(() => {
+        if (categories.length <= 4) return;
+        const interval = setInterval(() => {
+            if (scrollContainerRef.current) {
+                const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+                const maxScrollLeft = scrollWidth - clientWidth;
+                const nextScrollLeft = scrollLeft + 160;
+                
+                if (scrollLeft >= maxScrollLeft - 10) {
+                    scrollContainerRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+                } else {
+                    scrollContainerRef.current.scrollTo({ left: nextScrollLeft, behavior: 'smooth' });
+                }
+            }
+        }, 4000);
+        return () => clearInterval(interval);
+    }, [categories]);
+
     if (loading) {
         return (
-            <div className="py-16 text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+            <div className="py-12 text-center flex items-center justify-center">
+                <div className="w-8 h-8 animate-shimmer rounded-full"></div>
             </div>
         );
     }
 
     if (categories.length === 0) {
         return (
-            <div className="py-16 text-center text-gray-400 font-semibold">
-                No categories found. Add categories to display them here.
+            <div className="py-16 text-center text-zinc-400 font-bold text-xs uppercase tracking-wider">
+                No categories found.
             </div>
         );
     }
 
     return (
-        <section className="py-16 px-6 md:px-12 bg-white max-w-7xl mx-auto w-full space-y-10">
-            <div className="text-center space-y-2">
-                <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">{title}</h2>
-                <div className="w-12 h-1 bg-indigo-600 mx-auto rounded-full"></div>
+        <section className="py-20 px-4 sm:px-6 md:px-8 bg-transparent max-w-7xl mx-auto w-full space-y-10 relative">
+            <style>{`
+                .hide-scrollbar::-webkit-scrollbar {
+                    display: none;
+                }
+                .hide-scrollbar {
+                    -ms-overflow-style: none;
+                    scrollbar-width: none;
+                }
+            `}</style>
+            
+            <div className="flex items-center justify-between border-b border-zinc-200/60 pb-4">
+                <div className="space-y-1">
+                    <h2 className="text-lg font-black tracking-widest text-zinc-900 uppercase">{title}</h2>
+                    <div className="w-8 h-0.5 rounded-full" style={{ backgroundColor: 'var(--color-primary)' }}></div>
+                </div>
+                
+                <div className="flex items-center gap-1.5">
+                    <button 
+                        onClick={() => scroll('left')} 
+                        className="w-8 h-8 rounded-xl bg-white shadow-sm border border-zinc-200 flex items-center justify-center text-zinc-700 hover:text-[var(--color-primary)] hover:border-[var(--color-primary)] hover:bg-[var(--color-primary-light)] active:scale-95 transition-all cursor-pointer"
+                        aria-label="Scroll Left"
+                    >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <button 
+                        onClick={() => scroll('right')} 
+                        className="w-8 h-8 rounded-xl bg-white shadow-sm border border-zinc-200 flex items-center justify-center text-zinc-700 hover:text-[var(--color-primary)] hover:border-[var(--color-primary)] hover:bg-[var(--color-primary-light)] active:scale-95 transition-all cursor-pointer"
+                        aria-label="Scroll Right"
+                    >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </div>
             </div>
 
-            <div className={`grid ${getGridColsClass()} gap-6`}>
-                {categories.map((category) => (
-                    <div 
-                        key={category._id}
-                        className="group relative h-64 rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer"
-                    >
-                        {category.image ? (
-                            <img
-                                src={category.image}
-                                alt={category.name}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                            />
-                        ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-indigo-50 to-indigo-100 flex items-center justify-center">
-                                <svg className="w-12 h-12 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                                </svg>
-                            </div>
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent flex flex-col justify-end p-6">
-                            <h3 className="text-white font-bold text-lg leading-tight uppercase tracking-wide">
-                                {category.name}
-                            </h3>
-                            {category.description && (
-                                <p className="text-gray-200 text-xs mt-1 line-clamp-2">
-                                    {category.description}
-                                </p>
-                            )}
+            <div className="relative">
+                {/* Categories Wrapper */}
+                <div 
+                    ref={scrollContainerRef}
+                    className="flex overflow-x-auto gap-7 pb-2 hide-scrollbar scroll-smooth"
+                >
+                    {categories.map((category) => (
+                        <div key={category._id} className="flex-shrink-0 w-20 sm:w-24 flex flex-col items-center">
+                            <CategoryCard category={category} storeId={storeId} />
                         </div>
-                    </div>
-                ))}
+                    ))}
+                </div>
             </div>
         </section>
     );

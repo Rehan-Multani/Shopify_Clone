@@ -55,15 +55,16 @@ export const createMerchant = async (req, res) => {
         const createdMerchant = await merchant.save();
         const populatedMerchant = await Merchant.findById(createdMerchant._id);
 
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5174';
         const emailSubject = 'Welcome to Storify - Your Merchant Account Credentials';
-        const emailText = `Hello ${name},\n\nYour merchant account has been successfully created by the Superadmin.\n\nYou can log in to your dashboard at http://localhost:5173/admin/login using these credentials:\n\nEmail: ${email}\nPassword: ${rawPassword}\n\nRegards,\nStorify Team`;
+        const emailText = `Hello ${name},\n\nYour merchant account has been successfully created by the Superadmin.\n\nYou can log in to your dashboard at ${frontendUrl}/admin/login using these credentials:\n\nEmail: ${email}\nPassword: ${rawPassword}\n\nRegards,\nStorify Team`;
         const emailHtml = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 12px;">
             <h2 style="color: #0d9488; text-align: center;">Welcome to Storify!</h2>
             <p>Hello <strong>${name}</strong>,</p>
             <p>Your merchant account has been successfully created by the Superadmin.</p>
             <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
-              <p style="margin: 5px 0;"><strong>Login URL:</strong> <a href="http://localhost:5173/admin/login">http://localhost:5173/admin/login</a></p>
+              <p style="margin: 5px 0;"><strong>Login URL:</strong> <a href="${frontendUrl}/admin/login">${frontendUrl}/admin/login</a></p>
               <p style="margin: 5px 0;"><strong>Email:</strong> ${email}</p>
               <p style="margin: 5px 0;"><strong>Password:</strong> <code style="background-color: #e5e7eb; padding: 2px 6px; border-radius: 4px; font-weight: bold;">${rawPassword}</code></p>
             </div>

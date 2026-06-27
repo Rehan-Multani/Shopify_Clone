@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import logo from '../../../assets/storify-logo.png';
 
-const BILLING_API_URL = import.meta.env.VITE_BILLING_API_URL || 'http://localhost:5005/api/billing';
+const BILLING_API_URL = import.meta.env.VITE_BILLING_API_URL;
 
 const Subscribe = () => {
     const location = useLocation();

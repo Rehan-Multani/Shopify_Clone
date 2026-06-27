@@ -213,7 +213,7 @@ export const getDashboardStats = async (req, res) => {
         // Call catalog-service internally to count products for this merchant/store
         let totalProducts = 0;
         try {
-            const catalogServiceUrl = process.env.CATALOG_SERVICE_URL || 'http://localhost:5003';
+            const catalogServiceUrl = process.env.CATALOG_SERVICE_URL;
             const countQuery = storeId ? `storeId=${storeId}` : `merchantId=${merchantId}`;
             const response = await fetch(`${catalogServiceUrl}/api/products/internal/count?${countQuery}`);
             if (response.ok) {
@@ -260,7 +260,7 @@ export const getAnalyticsStats = async (req, res) => {
         let allProducts = [];
         let totalProducts = 0;
         try {
-            const catalogServiceUrl = process.env.CATALOG_SERVICE_URL || 'http://localhost:5003';
+            const catalogServiceUrl = process.env.CATALOG_SERVICE_URL;
             // Count products
             const countQuery = storeId ? `storeId=${storeId}` : `merchantId=${merchantId}`;
             const countResponse = await fetch(`${catalogServiceUrl}/api/products/internal/count?${countQuery}`);
@@ -561,6 +561,21 @@ export const updatePlatformSettings = async (req, res) => {
 
         await settings.save();
         res.json(settings);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Get expected store A-record IP for DNS settings
+// @route   GET /api/stores/domain/expected-ip
+// @access  Private/Merchant
+export const getExpectedIP = async (req, res) => {
+    try {
+        let settings = await PlatformSetting.findOne();
+        if (!settings) {
+            settings = await PlatformSetting.create({});
+        }
+        res.json({ success: true, expectedIP: settings.expectedStoreIP });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

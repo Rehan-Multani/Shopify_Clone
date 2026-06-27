@@ -17,6 +17,17 @@ const MasterAdminPage = () => {
     const { tab } = useParams();
     const location = useLocation();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isCollapsed, setIsCollapsed] = useState(() => {
+        return localStorage.getItem('sidebarCollapsed') === 'true';
+    });
+
+    const toggleCollapse = () => {
+        setIsCollapsed(prev => {
+            const next = !prev;
+            localStorage.setItem('sidebarCollapsed', String(next));
+            return next;
+        });
+    };
 
     if (location.pathname === '/master-admin') {
         return <Navigate to="/master-admin/overview" replace />;
@@ -41,11 +52,11 @@ const MasterAdminPage = () => {
     return (
         /* Fixed viewport layout: sidebar + scrollable content side-by-side */
         <div style={{ height: '100vh', display: 'flex', overflow: 'hidden', background: '#f6f6f7', color: '#202223' }}>
-            <MasterAdminSidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+            <MasterAdminSidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} isCollapsed={isCollapsed} toggleCollapse={toggleCollapse} />
 
             {/* Right panel — header sticky, main scrollable */}
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto', minWidth: 0 }}>
-                <MasterAdminHeader isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+                <MasterAdminHeader isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} isCollapsed={isCollapsed} toggleCollapse={toggleCollapse} />
                 <main style={{ flex: 1, padding: '2rem', maxWidth: 1280, margin: '0 auto', width: '100%' }}>
                     <div className="space-y-6">
                         {renderTab()}

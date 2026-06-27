@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
-const STORE_API_URL = import.meta.env.VITE_STORE_API_URL || 'http://localhost:5004/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const STORE_API_URL = import.meta.env.VITE_STORE_API_URL;
 
 const Modal = ({ title, onClose, children }) => {
     return createPortal(
@@ -110,13 +110,20 @@ const SupportTab = () => {
         }
 
         try {
+            const activeStoreId = localStorage.getItem('activeStoreId') || '';
+            const payload = {
+                ...form,
+                storeId: form.storeId || activeStoreId || undefined
+            };
+
             const res = await fetch(`${API_BASE_URL}/support-tickets`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'x-store-id': activeStoreId
                 },
-                body: JSON.stringify(form)
+                body: JSON.stringify(payload)
             });
             const data = await res.json();
             if (res.ok) {

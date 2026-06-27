@@ -21,12 +21,8 @@ export const getMyOrders = async (req, res) => {
     }
 };
 
-// @desc    Create a new order
-// @route   POST /api/orders
-// @access  Private/Merchant
 export const createOrder = async (req, res) => {
     try {
-        const merchantId = req.merchant._id;
         const { customerName, customerEmail, products, totalAmount, status, paymentStatus, storeId } = req.body;
 
         if (!customerName) {
@@ -37,18 +33,28 @@ export const createOrder = async (req, res) => {
             return res.status(400).json({ message: 'At least one product is required' });
         }
 
-        // Determine storeId
+        // Determine storeId and merchantId
         let finalStoreId = storeId;
-        if (!finalStoreId) {
-            const store = await Store.findOne({ merchantId });
+        let finalMerchantId = req.merchant?._id;
+
+        if (finalStoreId) {
+            const store = await Store.findById(finalStoreId);
+            if (!store) {
+                return res.status(400).json({ message: 'Store not found.' });
+            }
+            finalMerchantId = store.merchantId;
+        } else if (finalMerchantId) {
+            const store = await Store.findOne({ merchantId: finalMerchantId });
             if (!store) {
                 return res.status(400).json({ message: 'No store found for this merchant. Please create a store first.' });
             }
             finalStoreId = store._id;
+        } else {
+            return res.status(400).json({ message: 'storeId or merchant authentication is required' });
         }
 
         const order = await Order.create({
-            merchantId,
+            merchantId: finalMerchantId,
             storeId: finalStoreId,
             customerName,
             customerEmail: customerEmail || '',

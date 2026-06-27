@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
-const STORE_API_URL = import.meta.env.VITE_STORE_API_URL || 'http://localhost:5004/api';
-const AUTH_API_URL = import.meta.env.VITE_AUTH_API_URL || 'http://localhost:5001/api/auth';
+const STORE_API_URL = import.meta.env.VITE_STORE_API_URL;
+const AUTH_API_URL = import.meta.env.VITE_AUTH_API_URL;
 
 const card = 'bg-white rounded-xl border border-[#e3e3e3] shadow-sm';
 

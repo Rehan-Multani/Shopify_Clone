@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-const STORE_API_URL = import.meta.env.VITE_STORE_API_URL || 'http://localhost:5004/api';
+const STORE_API_URL = import.meta.env.VITE_STORE_API_URL;
 const API_URL = STORE_API_URL;
 
 const StoresTabSingle = () => {

@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser';
 import merchantRoutes from './routes/merchantRoutes.js';
 import planRoutes from './routes/planRoutes.js';
 import supportRoutes from './routes/supportRoutes.js';
+import analyticsRoutes from './routes/analyticsRoutes.js';
 
 const app = express();
 
@@ -55,6 +56,8 @@ app.use((req, res, next) => {
 app.use('/api/admin', merchantRoutes);
 app.use('/api/admin/plans', planRoutes);
 app.use('/api/admin/support-tickets', supportRoutes);
+app.use('/api/admin', analyticsRoutes);
+
 
 // Health check
 app.get('/api/admin/health', (req, res) => {

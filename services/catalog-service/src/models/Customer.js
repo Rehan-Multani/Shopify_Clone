@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
 const customerSchema = new mongoose.Schema({
     merchant: {
@@ -27,6 +28,11 @@ const customerSchema = new mongoose.Schema({
         required: [true, 'Please add a phone number'],
         trim: true
     },
+    password: {
+        type: String,
+        minlength: 6,
+        select: false
+    },
     image: {
         type: String,
         default: ''
@@ -38,6 +44,20 @@ const customerSchema = new mongoose.Schema({
 // Compound index to ensure uniqueness per store
 customerSchema.index({ store: 1, email: 1 }, { unique: true });
 customerSchema.index({ store: 1, number: 1 }, { unique: true });
+
+// Pre-save hook to hash the password
+customerSchema.pre('save', async function(next) {
+    if (!this.password || !this.isModified('password')) {
+        return next();
+    }
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+});
+
+// Compare password method
+customerSchema.methods.matchPassword = async function(enteredPassword) {
+    return await bcrypt.compare(enteredPassword, this.password);
+};
 
 const Customer = mongoose.model('Customer', customerSchema);
 export default Customer;

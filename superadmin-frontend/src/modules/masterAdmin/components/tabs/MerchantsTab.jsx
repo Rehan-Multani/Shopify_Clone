@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const MERCHANT_ADMIN_API_URL = import.meta.env.VITE_MERCHANT_ADMIN_API_URL || 'http://localhost:5002/api/admin';
+const MERCHANT_ADMIN_API_URL = import.meta.env.VITE_MERCHANT_ADMIN_API_URL;
 const API_URL = MERCHANT_ADMIN_API_URL;
 
 const Modal = ({ title, onClose, children, width = 'max-w-md' }) => (

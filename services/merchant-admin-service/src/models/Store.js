@@ -17,6 +17,10 @@ const storeSchema = new mongoose.Schema({
     storeSlug: {
         type: String
     },
+    customDomain: {
+        type: String,
+        default: ''
+    },
     isActive: {
         type: Boolean,
         default: true

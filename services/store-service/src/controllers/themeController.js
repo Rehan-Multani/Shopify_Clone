@@ -1,4 +1,5 @@
 import Theme from '../models/Theme.js';
+import Store from '../models/Store.js';
 
 // @desc    Get store theme settings
 // @route   GET /api/themes
@@ -13,7 +14,22 @@ export const getTheme = async (req, res) => {
         // Find or create theme
         let theme = await Theme.findOne({ storeId });
         if (!theme) {
-            theme = await Theme.create({ storeId });
+            let merchantId = req.merchant ? req.merchant._id : undefined;
+            if (!merchantId) {
+                const store = await Store.findById(storeId);
+                if (store) merchantId = store.merchantId;
+            }
+            theme = await Theme.create({ storeId, merchantId });
+        } else if (!theme.merchantId) {
+            let merchantId = req.merchant ? req.merchant._id : undefined;
+            if (!merchantId) {
+                const store = await Store.findById(storeId);
+                if (store) merchantId = store.merchantId;
+            }
+            if (merchantId) {
+                theme.merchantId = merchantId;
+                await theme.save();
+            }
         }
 
         res.status(200).json({
@@ -38,6 +54,16 @@ export const updateTheme = async (req, res) => {
 
         const updateData = { ...req.body };
         delete updateData.storeId; // Prevent changing storeId
+
+        // Make sure merchantId is set
+        let merchantId = req.merchant ? req.merchant._id : undefined;
+        if (!merchantId) {
+            const store = await Store.findById(storeId);
+            if (store) merchantId = store.merchantId;
+        }
+        if (merchantId) {
+            updateData.merchantId = merchantId;
+        }
 
         const theme = await Theme.findOneAndUpdate(
             { storeId },
@@ -68,8 +94,14 @@ export const resetTheme = async (req, res) => {
 
         await Theme.findOneAndDelete({ storeId });
 
+        let merchantId = req.merchant ? req.merchant._id : undefined;
+        if (!merchantId) {
+            const store = await Store.findById(storeId);
+            if (store) merchantId = store.merchantId;
+        }
+
         // Create new default one
-        const theme = await Theme.create({ storeId });
+        const theme = await Theme.create({ storeId, merchantId });
 
         res.status(200).json({
             success: true,

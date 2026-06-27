@@ -60,7 +60,7 @@ export const createProduct = async (req, res) => {
         if (!storeId) {
             return res.status(400).json({ message: 'Store ID header (x-store-id) is required' });
         }
-        const { name, images, description, brandName, sku, actualPrice, sellingPrice, category, stock, isActive, tags, weight } = req.body;
+        const { name, images, description, brandName, sku, actualPrice, sellingPrice, category, stock, isActive, tags, weight, isFeatured } = req.body;
 
         if (!name || !name.trim()) {
             return res.status(400).json({ message: 'Product name is required' });
@@ -92,7 +92,8 @@ export const createProduct = async (req, res) => {
             stock: stock !== undefined ? Number(stock) : 0,
             isActive: isActive !== undefined ? isActive : true,
             tags: tags || [],
-            weight: weight || ''
+            weight: weight || '',
+            isFeatured: isFeatured !== undefined ? Boolean(isFeatured) : false
         });
 
         const populatedProduct = await Product.findById(product._id).populate('category', 'name');
@@ -117,7 +118,7 @@ export const updateProduct = async (req, res) => {
             return res.status(404).json({ message: 'Product not found' });
         }
 
-        const { name, images, description, brandName, sku, actualPrice, sellingPrice, category, stock, isActive, tags, weight } = req.body;
+        const { name, images, description, brandName, sku, actualPrice, sellingPrice, category, stock, isActive, tags, weight, isFeatured } = req.body;
 
         // Check for duplicate SKU (if SKU changed)
         if (sku && sku.trim() && sku.trim().toUpperCase() !== product.sku) {
@@ -143,6 +144,7 @@ export const updateProduct = async (req, res) => {
         product.isActive = isActive !== undefined ? isActive : product.isActive;
         product.tags = tags !== undefined ? tags : product.tags;
         product.weight = weight !== undefined ? weight : product.weight;
+        product.isFeatured = isFeatured !== undefined ? Boolean(isFeatured) : product.isFeatured;
 
         const updatedProduct = await product.save();
         const populatedProduct = await Product.findById(updatedProduct._id).populate('category', 'name');

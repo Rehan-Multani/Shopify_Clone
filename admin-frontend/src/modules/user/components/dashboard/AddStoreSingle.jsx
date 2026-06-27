@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const MERCHANT_ADMIN_API_URL = import.meta.env.VITE_MERCHANT_ADMIN_API_URL || 'http://localhost:5002/api/admin';
-const STORE_API_URL = import.meta.env.VITE_STORE_API_URL || 'http://localhost:5004/api';
-const BILLING_API_URL = import.meta.env.VITE_BILLING_API_URL || 'http://localhost:5005/api/billing';
+const MERCHANT_ADMIN_API_URL = import.meta.env.VITE_MERCHANT_ADMIN_API_URL;
+const STORE_API_URL = import.meta.env.VITE_STORE_API_URL;
+const BILLING_API_URL = import.meta.env.VITE_BILLING_API_URL;
 
 const AddStoreSingle = () => {
     const navigate = useNavigate();

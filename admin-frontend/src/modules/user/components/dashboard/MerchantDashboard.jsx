@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-const STORE_API_URL = import.meta.env.VITE_STORE_API_URL || 'http://localhost:5004/api';
+const STORE_API_URL = import.meta.env.VITE_STORE_API_URL;
 
 const MerchantDashboard = () => {
     const [stats, setStats] = useState({

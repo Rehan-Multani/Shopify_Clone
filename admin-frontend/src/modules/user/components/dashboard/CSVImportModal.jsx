@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 
-const CATALOG_API_URL = import.meta.env.VITE_CATALOG_API_URL || 'http://localhost:5003/api';
+const CATALOG_API_URL = import.meta.env.VITE_CATALOG_API_URL;
 const API_URL = CATALOG_API_URL;
 
 const CSVImportModal = ({ 

@@ -11,7 +11,7 @@ const OrdersTab = () => {
 
     const token = localStorage.getItem('merchantToken');
     const storeId = localStorage.getItem('activeStoreId') || '';
-    const API_URL = import.meta.env.VITE_STORE_API_URL || 'http://localhost:5004/api';
+    const API_URL = import.meta.env.VITE_STORE_API_URL;
 
     const showToast = (message, type = 'success') => {
         setToast({ show: true, message, type });

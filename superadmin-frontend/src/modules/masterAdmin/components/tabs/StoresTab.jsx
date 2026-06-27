@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const STORE_API_URL = import.meta.env.VITE_STORE_API_URL || 'http://localhost:5004/api';
+const STORE_API_URL = import.meta.env.VITE_STORE_API_URL;
 
 const PlanBadge = ({ plan }) => {
     const planName = plan || 'Single Vendor';
@@ -185,8 +185,61 @@ const StoresTab = () => {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-[400px]">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1a1c23]"></div>
+            <div className="space-y-6">
+                {/* Header Skeleton */}
+                <div className="flex justify-between items-center">
+                    <div className="space-y-2">
+                        <div className="h-6 w-32 bg-gray-200 animate-pulse rounded"></div>
+                        <div className="h-4 w-64 bg-gray-200 animate-pulse rounded"></div>
+                    </div>
+                    <div className="h-9 w-28 bg-gray-200 animate-pulse rounded-lg"></div>
+                </div>
+
+                {/* KPI Grid Skeleton */}
+                <div className="grid grid-cols-4 gap-4">
+                    {[1, 2, 3, 4].map(n => (
+                        <div key={n} className="bg-white border border-[#e3e3e3] rounded-xl p-5 space-y-3">
+                            <div className="h-8 w-16 bg-gray-200 animate-pulse rounded"></div>
+                            <div className="h-4 w-24 bg-gray-200 animate-pulse rounded"></div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Filter Bar Skeleton */}
+                <div className="bg-white border border-[#e3e3e3] rounded-xl p-4 space-y-3">
+                    <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+                        <div className="h-10 w-full md:w-80 bg-gray-200 animate-pulse rounded-lg"></div>
+                        <div className="flex gap-2 w-full md:w-auto">
+                            <div className="h-9 w-20 bg-gray-200 animate-pulse rounded-lg"></div>
+                            <div className="h-9 w-20 bg-gray-200 animate-pulse rounded-lg"></div>
+                            <div className="h-9 w-20 bg-gray-200 animate-pulse rounded-lg"></div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Table Skeleton */}
+                <div className="bg-white border border-[#e3e3e3] rounded-xl overflow-hidden shadow-sm">
+                    <div className="p-4 bg-gray-50 border-b border-gray-100 flex gap-4">
+                        {[1, 2, 3, 4, 5, 6].map(n => (
+                            <div key={n} className="h-4 flex-1 bg-gray-200 animate-pulse rounded"></div>
+                        ))}
+                    </div>
+                    <div className="divide-y divide-gray-100">
+                        {[1, 2, 3, 4, 5].map(row => (
+                            <div key={row} className="p-4 flex gap-4 items-center">
+                                <div className="flex items-center gap-3 flex-1">
+                                    <div className="w-8 h-8 rounded-lg bg-gray-200 animate-pulse"></div>
+                                    <div className="h-4 w-28 bg-gray-200 animate-pulse rounded"></div>
+                                </div>
+                                <div className="h-4 flex-1 bg-gray-200 animate-pulse rounded"></div>
+                                <div className="h-4 flex-1 bg-gray-200 animate-pulse rounded"></div>
+                                <div className="h-4 flex-1 bg-gray-200 animate-pulse rounded"></div>
+                                <div className="h-4 flex-1 bg-gray-200 animate-pulse rounded"></div>
+                                <div className="h-8 w-24 bg-gray-200 animate-pulse rounded-lg"></div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </div>
         );
     }

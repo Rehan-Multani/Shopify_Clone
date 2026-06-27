@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
-const API_BASE_URL = import.meta.env.VITE_ADMIN_API_URL || 'http://localhost:5002/api/admin';
+const API_BASE_URL = import.meta.env.VITE_ADMIN_API_URL;
 
 // Premium Color configurations matching theme
 const priorityConfig = {
@@ -465,11 +465,20 @@ const SupportTab = () => {
                     {/* Ticket List Items */}
                     <div className="divide-y divide-gray-100">
                         {isLoading ? (
-                            <div className="p-12 text-center text-sm text-gray-400">
-                                <div className="animate-pulse flex flex-col items-center gap-3">
-                                    <div className="h-4 w-32 bg-gray-200 rounded"></div>
-                                    <div className="h-3 w-48 bg-gray-100 rounded"></div>
-                                </div>
+                            <div className="divide-y divide-gray-100">
+                                {[1, 2, 3, 4].map(i => (
+                                    <div key={i} className="p-4 space-y-2.5 animate-pulse">
+                                        <div className="flex justify-between items-center">
+                                            <div className="h-4 w-1/3 bg-gray-200 rounded"></div>
+                                            <div className="h-3.5 w-12 bg-gray-100 rounded-full"></div>
+                                        </div>
+                                        <div className="h-3 w-3/4 bg-gray-100 rounded"></div>
+                                        <div className="flex gap-2">
+                                            <div className="h-3.5 w-16 bg-gray-100 rounded"></div>
+                                            <div className="h-3.5 w-24 bg-gray-100 rounded"></div>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         ) : filtered.map(t => {
                             const p = priorityConfig[t.priority] || priorityConfig.medium;

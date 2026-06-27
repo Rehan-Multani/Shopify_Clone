@@ -72,6 +72,10 @@ const productSchema = new mongoose.Schema({
         type: [String],
         default: []
     },
+    isFeatured: {
+        type: Boolean,
+        default: false
+    },
     weight: {
         type: String,
         default: ''

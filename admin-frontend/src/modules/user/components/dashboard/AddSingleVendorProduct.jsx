@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const CATALOG_API_URL = import.meta.env.VITE_CATALOG_API_URL || 'http://localhost:5003/api';
+const CATALOG_API_URL = import.meta.env.VITE_CATALOG_API_URL;
 const API_URL = CATALOG_API_URL;
 
 const AddSingleVendorProduct = () => {
@@ -20,6 +20,7 @@ const AddSingleVendorProduct = () => {
         category: '',
         weight: '',
         tags: '',
+        isFeatured: false,
         isActive: true
     });
 
@@ -74,6 +75,7 @@ const AddSingleVendorProduct = () => {
                             category: prod.category?._id || '',
                             weight: prod.weight || '',
                             tags: prod.tags ? prod.tags.join(', ') : '',
+                            isFeatured: prod.isFeatured || false,
                             isActive: prod.isActive !== undefined ? prod.isActive : true
                         });
                         if (prod.images && prod.images.length > 0) {
@@ -190,6 +192,7 @@ const AddSingleVendorProduct = () => {
                 category: form.category || null,
                 weight: form.weight,
                 tags: form.tags ? form.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
+                isFeatured: form.isFeatured,
                 isActive: form.isActive
             };
 
@@ -484,6 +487,21 @@ const AddSingleVendorProduct = () => {
                                     placeholder="sale, new"
                                     className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-transparent transition-all"
                                 />
+                            </div>
+                        </div>
+                        <div className="mt-5 pt-4 border-t border-gray-100 flex items-center gap-3">
+                            <label className="relative inline-flex items-center cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={form.isFeatured}
+                                    onChange={(e) => setForm(p => ({ ...p, isFeatured: e.target.checked }))}
+                                    className="sr-only peer"
+                                />
+                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600"></div>
+                            </label>
+                            <div>
+                                <span className="text-sm font-bold text-[#202223] block">Featured Product (Recommended)</span>
+                                <span className="text-xs text-gray-500">Recommend this product to be featured on the storefront homepage</span>
                             </div>
                         </div>
                     </div>

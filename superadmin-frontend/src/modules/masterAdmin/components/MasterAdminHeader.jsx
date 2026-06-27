@@ -22,7 +22,7 @@ const pageTitles = {
     settings: 'Settings',
 };
 
-const MasterAdminHeader = ({ isOpen, setIsOpen }) => {
+const MasterAdminHeader = ({ isOpen, setIsOpen, isCollapsed, toggleCollapse }) => {
     const location = useLocation();
     const navigate = useNavigate();
     const [showNotifications, setShowNotifications] = useState(false);
@@ -39,6 +39,17 @@ const MasterAdminHeader = ({ isOpen, setIsOpen }) => {
 
     return (
         <header className="h-14 bg-[#1a1c23] border-b border-white/5 flex items-center justify-between px-4 sticky top-0 z-40 shadow-xl flex-shrink-0">
+            {/* Desktop Sidebar Collapse Toggle */}
+            <button
+                onClick={toggleCollapse}
+                className="hidden lg:flex p-1.5 -ml-2.5 mr-3 text-gray-400 hover:bg-white/5 hover:text-white rounded-lg transition-all"
+                title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+            >
+                <svg className={`w-5 h-5 transition-transform duration-200 ${isCollapsed ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7M20 19l-7-7 7-7" />
+                </svg>
+            </button>
+
             {/* Mobile toggle */}
             <button
                 onClick={() => setIsOpen(!isOpen)}

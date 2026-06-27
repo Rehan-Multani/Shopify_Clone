@@ -2,8 +2,24 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ThemeRenderer from '../storefront/ThemeRenderer';
 import SectionRenderer from '../storefront/SectionRenderer';
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors
+} from '@dnd-kit/core';
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    verticalListSortingStrategy,
+    useSortable
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
-const STORE_API_URL = import.meta.env.VITE_STORE_API_URL || 'http://localhost:5004/api';
+const STORE_API_URL = import.meta.env.VITE_STORE_API_URL;
 
 const FONTS = [
     { name: 'Inter', value: 'Inter, sans-serif' },
@@ -54,12 +70,107 @@ const SECTION_TEMPLATES = [
         ]
     },
     {
+        type: 'banners',
+        label: 'Promotional Banners',
+        settings: { title: 'Promotional Banners', height: '300px' },
+        blocks: []
+    },
+    {
         type: 'newsletter',
         label: 'Newsletter Sign Up',
         settings: { title: 'Join the Club', subtitle: 'Receive exclusive launch details and promotions.' },
         blocks: []
     }
 ];
+
+const SortableSectionItem = ({
+    sec,
+    idx,
+    selectedSectionId,
+    setSelectedSectionId,
+    moveSection,
+    toggleSectionVisibility,
+    removeSection,
+    pageSectionsLength
+}) => {
+    const uniqueId = sec.sectionId || sec._id || `section-${idx}`;
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging
+    } = useSortable({ id: uniqueId });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+    };
+
+    return (
+        <div 
+            ref={setNodeRef}
+            style={style}
+            className={`flex items-center justify-between p-3.5 rounded-xl border transition-all duration-200 group cursor-pointer select-none
+                ${isDragging ? 'opacity-40 border-dashed border-gray-300 bg-gray-50 scale-95 z-50 shadow-lg' : 'bg-gray-50 hover:bg-gray-100/80 border-gray-150'}
+            `}
+            onClick={() => setSelectedSectionId(sec.sectionId || sec._id)}
+        >
+            <div className="flex items-center gap-3">
+                <span 
+                    className="text-[14px] font-black text-gray-400 cursor-grab active:cursor-grabbing hover:text-gray-700 select-none px-1"
+                    title="Drag to reorder"
+                    {...attributes}
+                    {...listeners}
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    ☰
+                </span>
+                <span className="text-xs font-bold text-gray-700 capitalize">{sec.type}</span>
+                {!sec.enabled && (
+                    <span className="text-[9px] bg-red-100 text-red-700 px-2 py-0.5 rounded font-bold">Hidden</span>
+                )}
+            </div>
+            <div className="flex items-center gap-1.5 opacity-80 group-hover:opacity-100" onClick={e => e.stopPropagation()}>
+                <button 
+                    type="button"
+                    disabled={idx === 0}
+                    onClick={() => moveSection(idx, -1)}
+                    className="p-1 hover:bg-gray-200 rounded disabled:opacity-30"
+                    title="Move Up"
+                >
+                    ▲
+                </button>
+                <button 
+                    type="button"
+                    disabled={idx === pageSectionsLength - 1}
+                    onClick={() => moveSection(idx, 1)}
+                    className="p-1 hover:bg-gray-200 rounded disabled:opacity-30"
+                    title="Move Down"
+                >
+                    ▼
+                </button>
+                <button 
+                    type="button"
+                    onClick={() => toggleSectionVisibility(sec.sectionId || sec._id)}
+                    className="p-1 hover:bg-gray-200 rounded text-gray-500"
+                    title="Toggle Visibility"
+                >
+                    👁️
+                </button>
+                <button 
+                    type="button"
+                    onClick={() => removeSection(sec.sectionId || sec._id)}
+                    className="p-1 hover:bg-red-50 rounded text-red-500"
+                    title="Delete Section"
+                >
+                    🗑️
+                </button>
+            </div>
+        </div>
+    );
+};
 
 const ThemeCustomizer = () => {
     const navigate = useNavigate();
@@ -89,6 +200,33 @@ const ThemeCustomizer = () => {
     // Home Page sections (from store-pages/home)
     const [pageSections, setPageSections] = useState([]);
     const [selectedSectionId, setSelectedSectionId] = useState(null);
+
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 5,
+            },
+        }),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
+
+    const handleDragEnd = (event) => {
+        const { active, over } = event;
+        if (!over) return;
+        
+        if (active.id !== over.id) {
+            setPageSections((items) => {
+                const oldIndex = items.findIndex((item) => (item.sectionId || item._id) === active.id);
+                const newIndex = items.findIndex((item) => (item.sectionId || item._id) === over.id);
+                if (oldIndex !== -1 && newIndex !== -1) {
+                    return arrayMove(items, oldIndex, newIndex);
+                }
+                return items;
+            });
+        }
+    };
 
     const showToast = (message, type = 'success') => {
         setToast({ show: true, message, type });
@@ -357,53 +495,32 @@ const ThemeCustomizer = () => {
                                 <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest">Page Sections</h3>
                             </div>
                             
-                            <div className="space-y-3">
-                                {pageSections.map((sec, idx) => (
-                                    <div 
-                                        key={sec.sectionId || sec._id || idx}
-                                        className="flex items-center justify-between p-3.5 bg-gray-50 hover:bg-gray-100/80 rounded-xl border border-gray-150 transition-colors group cursor-pointer"
-                                        onClick={() => setSelectedSectionId(sec.sectionId || sec._id)}
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <span className="text-[10px] font-bold text-gray-400">☰</span>
-                                            <span className="text-xs font-bold text-gray-700 capitalize">{sec.type}</span>
-                                            {!sec.enabled && (
-                                                <span className="text-[9px] bg-red-100 text-red-700 px-2 py-0.5 rounded font-bold">Hidden</span>
-                                            )}
-                                        </div>
-                                        <div className="flex items-center gap-1.5 opacity-80 group-hover:opacity-100" onClick={e => e.stopPropagation()}>
-                                            <button 
-                                                disabled={idx === 0}
-                                                onClick={() => moveSection(idx, -1)}
-                                                className="p-1 hover:bg-gray-200 rounded disabled:opacity-30"
-                                            >
-                                                ▲
-                                            </button>
-                                            <button 
-                                                disabled={idx === pageSections.length - 1}
-                                                onClick={() => moveSection(idx, 1)}
-                                                className="p-1 hover:bg-gray-200 rounded disabled:opacity-30"
-                                            >
-                                                ▼
-                                            </button>
-                                            <button 
-                                                onClick={() => toggleSectionVisibility(sec.sectionId || sec._id)}
-                                                className="p-1 hover:bg-gray-200 rounded text-gray-500"
-                                                title="Toggle Visibility"
-                                            >
-                                                👁️
-                                            </button>
-                                            <button 
-                                                onClick={() => removeSection(sec.sectionId || sec._id)}
-                                                className="p-1 hover:bg-red-50 rounded text-red-500"
-                                                title="Delete Section"
-                                            >
-                                                🗑️
-                                            </button>
-                                        </div>
+                            <DndContext
+                                sensors={sensors}
+                                collisionDetection={closestCenter}
+                                onDragEnd={handleDragEnd}
+                            >
+                                <SortableContext
+                                    items={pageSections.map(sec => sec.sectionId || sec._id || '')}
+                                    strategy={verticalListSortingStrategy}
+                                >
+                                    <div className="space-y-3">
+                                        {pageSections.map((sec, idx) => (
+                                            <SortableSectionItem
+                                                key={sec.sectionId || sec._id || idx}
+                                                sec={sec}
+                                                idx={idx}
+                                                selectedSectionId={selectedSectionId}
+                                                setSelectedSectionId={setSelectedSectionId}
+                                                moveSection={moveSection}
+                                                toggleSectionVisibility={toggleSectionVisibility}
+                                                removeSection={removeSection}
+                                                pageSectionsLength={pageSections.length}
+                                            />
+                                        ))}
                                     </div>
-                                ))}
-                            </div>
+                                </SortableContext>
+                            </DndContext>
 
                             <div className="border-t pt-4">
                                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Add Section</label>
@@ -688,6 +805,38 @@ const ThemeCustomizer = () => {
                                                 className="flex-grow px-3 py-2 border border-gray-200 rounded-xl text-sm font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500"
                                             />
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Logo Customization */}
+                            <div className="bg-white rounded-2xl border border-gray-200 p-6 space-y-6 shadow-sm">
+                                <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest border-b pb-2">Logo Customization</h3>
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-700 mb-1.5">Logo Shape</label>
+                                        <select 
+                                            value={themeSettings.logoShape || 'rounded'} 
+                                            onChange={(e) => handleThemeSettingChange('logoShape', e.target.value)}
+                                            className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                                        >
+                                            <option value="rounded">Rounded Corners (Default)</option>
+                                            <option value="circle">Circular / Round Logo</option>
+                                            <option value="square">Square / Sharp Logo</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-700 mb-1.5">Logo Size</label>
+                                        <select 
+                                            value={themeSettings.logoSize || 'medium'} 
+                                            onChange={(e) => handleThemeSettingChange('logoSize', e.target.value)}
+                                            className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                                        >
+                                            <option value="small">Small (36px)</option>
+                                            <option value="medium">Medium (56px)</option>
+                                            <option value="large">Large (76px)</option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
-const STORE_API_URL = import.meta.env.VITE_STORE_API_URL || 'http://localhost:5004/api';
+const STORE_API_URL = import.meta.env.VITE_STORE_API_URL;
 
 const AnalyticsTab = () => {
     const [timeRange, setTimeRange] = useState('30d'); // 'today', '7d', '30d'

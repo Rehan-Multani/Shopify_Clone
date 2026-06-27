@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const CATALOG_API_URL = import.meta.env.VITE_CATALOG_API_URL || 'http://localhost:5003/api';
+const CATALOG_API_URL = import.meta.env.VITE_CATALOG_API_URL;
 const API_URL = CATALOG_API_URL;
 
 const AddCategory = () => {

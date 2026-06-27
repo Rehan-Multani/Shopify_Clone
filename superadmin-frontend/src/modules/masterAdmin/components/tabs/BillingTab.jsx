@@ -19,7 +19,7 @@ const BillingTab = () => {
     const fetchBillingData = async () => {
         try {
             setIsLoading(true);
-            const billingApiUrl = import.meta.env.VITE_BILLING_API_URL || 'http://localhost:5005/api/billing';
+            const billingApiUrl = import.meta.env.VITE_BILLING_API_URL;
             const res = await fetch(`${billingApiUrl}/admin/history`, {
                 headers: getAuthHeaders()
             });

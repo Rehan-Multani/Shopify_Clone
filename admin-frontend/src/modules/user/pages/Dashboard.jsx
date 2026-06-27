@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams, Link, useLocation } from 'react-router-dom';
+import { useParams, Link, useLocation, Navigate } from 'react-router-dom';
 import DashboardSidebar from '../components/DashboardSidebar';
 import DashboardHeader from '../components/DashboardHeader';
 import OrdersTab from '../components/dashboard/OrdersTab';
@@ -73,6 +73,17 @@ const Dashboard = () => {
     const [isEditingStoreName, setIsEditingStoreName] = React.useState(false);
     const [isCSVModalOpen, setIsCSVModalOpen] = React.useState(false);
     const [editValue, setEditValue] = React.useState('');
+    const [isCollapsed, setIsCollapsed] = React.useState(() => {
+        return localStorage.getItem('sidebarCollapsed') === 'true';
+    });
+
+    const toggleCollapse = () => {
+        setIsCollapsed(prev => {
+            const next = !prev;
+            localStorage.setItem('sidebarCollapsed', String(next));
+            return next;
+        });
+    };
     const panelMode = localStorage.getItem('adminPanelType') || 'single';
 
     const handleSaveStoreName = () => {
@@ -113,7 +124,7 @@ const Dashboard = () => {
         }
 
         if (tab === 'analytics') {
-            return <AnalyticsTab />;
+            return <Navigate to="/dashboard" replace />;
         }
 
         if (tab === 'reports') {
@@ -240,11 +251,12 @@ const Dashboard = () => {
                     setIsOpen={setIsSidebarOpen}
                     isChatOpen={isChatOpen}
                     setIsChatOpen={setIsChatOpen}
+                    isCollapsed={isCollapsed}
                 />
             )}
 
             <div className="flex-1 flex flex-col min-w-0 transition-all duration-300 relative overflow-y-auto custom-scrollbar">
-                <DashboardHeader isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} storeName={storeName} />
+                <DashboardHeader isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} storeName={storeName} isCollapsed={isCollapsed} toggleCollapse={toggleCollapse} />
                 
                 {isChatOpen ? (
                    <div className="h-[calc(100vh-3.5rem)] flex flex-col">
@@ -255,7 +267,7 @@ const Dashboard = () => {
                         />
                    </div>
                 ) : (
-                    <main className={`p-4 lg:p-8 w-full space-y-6 relative z-10 bg-[#f6f6f7] ${location.pathname.includes('/new') ? 'max-w-[1248px] mx-auto' : 'max-w-5xl mx-auto'}`}>
+                    <main className={`p-4 lg:p-8 w-full space-y-6 relative z-10 bg-[#f6f6f7] ${location.pathname.includes('/new') || location.pathname.includes('/edit/') || location.pathname.includes('/view/') ? 'max-w-[1248px] mx-auto' : 'max-w-7xl mx-auto'}`}>
                         {renderContent()}
                     </main>
                 )}

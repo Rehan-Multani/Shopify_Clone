@@ -126,6 +126,14 @@ app.use('/api/plans', createServiceProxy(MERCHANT_ADMIN_SERVICE_URL, (path, req)
 app.use('/api/stores/admin/all', createServiceProxy(MERCHANT_ADMIN_SERVICE_URL, (path, req) => {
     return req.originalUrl.replace('/api/stores/admin/all', '/api/admin/stores/all');
 }));
+app.use('/api/master-admin/analytics', createServiceProxy(MERCHANT_ADMIN_SERVICE_URL, (path, req) => {
+    return req.originalUrl.replace('/api/master-admin/analytics', '/api/admin/analytics');
+}));
+app.use('/api/master-admin/overview', createServiceProxy(MERCHANT_ADMIN_SERVICE_URL, (path, req) => {
+    return req.originalUrl.replace('/api/master-admin/overview', '/api/admin/overview');
+}));
+
+
 
 // 3. Catalog Service Routes
 app.use('/api/products', createServiceProxy(CATALOG_SERVICE_URL));

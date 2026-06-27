@@ -4,7 +4,9 @@ import Merchant from '../models/Merchant.js';
 // Create a new support ticket
 export const createTicket = async (req, res) => {
     try {
-        const { title, description, priority, storeId, merchantId: adminSpecMerchantId } = req.body;
+        const { title, description, priority, storeId: bodyStoreId, merchantId: adminSpecMerchantId } = req.body;
+        const headerStoreId = req.headers['x-store-id'];
+        const storeId = bodyStoreId || headerStoreId || undefined;
 
         let merchantId;
         let createdBy = 'merchant';
@@ -29,7 +31,7 @@ export const createTicket = async (req, res) => {
 
         const ticket = await SupportTicket.create({
             merchantId,
-            storeId: storeId || undefined,
+            storeId: (storeId && storeId !== '') ? storeId : undefined,
             title,
             description,
             priority: priority || 'medium',

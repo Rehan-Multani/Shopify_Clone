@@ -291,6 +291,16 @@ const AddProduct = () => {
                                 <label className="text-xs font-medium text-gray-500">Tags</label>
                                 <input type="text" className="w-full px-3 py-2 bg-white border border-[#d3d3d3] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#008060]" />
                             </div>
+                            <div className="pt-2 border-t border-gray-100 flex items-center gap-3">
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" className="sr-only peer" />
+                                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600"></div>
+                                </label>
+                                <div>
+                                    <span className="text-xs font-bold text-[#202223] block">Featured Product (Recommended)</span>
+                                    <span className="text-[10px] text-gray-500">Recommend this product to homepage</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 

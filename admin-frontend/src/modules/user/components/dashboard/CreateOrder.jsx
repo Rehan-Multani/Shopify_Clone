@@ -24,8 +24,8 @@ const CreateOrder = () => {
     // API Config
     const token = localStorage.getItem('merchantToken');
     const storeId = localStorage.getItem('activeStoreId') || '';
-    const CATALOG_API_URL = import.meta.env.VITE_CATALOG_API_URL || 'http://localhost:5003/api';
-    const STORE_API_URL = import.meta.env.VITE_STORE_API_URL || 'http://localhost:5004/api';
+    const CATALOG_API_URL = import.meta.env.VITE_CATALOG_API_URL;
+    const STORE_API_URL = import.meta.env.VITE_STORE_API_URL;
 
     const showToast = (message, type = 'success') => {
         setToast({ show: true, message, type });
