@@ -599,35 +599,79 @@ server {
                 }
             });
         } else {
-            console.log(`[Publish Step 6/7] Initializing Remote Deployment to: ${sshUser}@${serverIp}...`);        console.log(`[Publish Step 7/7] Dispatching SCP file transfer command...`);
-            const scpCmd = `sshpass -p "${sshPass}" scp -o StrictHostKeyChecking=no ${localTempPath} ${sshUser}@${serverIp}:/tmp/${domain}.conf`;
-            console.log(`[SCP Command] Running: ${scpCmd}`);
+            console.log(`[Publish Step 6/7] Initializing Remote SSH2 Client connection to: ${sshUser}@${serverIp}...`);
+            const { Client } = await import('ssh2');
+            const conn = new Client();
 
-            exec(scpCmd, (scpError, scpStdout, scpStderr) => {
-                if (scpError) {
-                    console.error(`[SCP Error - STEP 5/7 FAILED]`, scpError.message);
-                    console.error(`[SCP Stderr]`, scpStderr);
-                    return;
-                }
-                console.log(`[SCP Success] Configuration copied to remote /tmp/ folder`);
-
-                // Phase 2: Execute SSH commands
-                console.log(`[SSH Process] Dispatching remote config linkage commands...`);
-                const sshCmd = `sshpass -p "${sshPass}" ssh -o StrictHostKeyChecking=no ${sshUser}@${serverIp} "sudo mv -f /tmp/${domain}.conf ${destPath} && sudo ln -sf ${destPath} ${linkPath} && sudo nginx -t && sudo nginx -s reload && sudo certbot --nginx -d ${domain} -d www.${domain} --non-interactive --agree-tos -m admin@storify.com --redirect && sudo nginx -s reload"`;
-                console.log(`[SSH Command] Running: ${sshCmd}`);
-
-                exec(sshCmd, (sshError, sshStdout, sshStderr) => {
-                    console.log(`[SSH Execution Finish] Remote response received`);
-                    if (sshError) {
-                        console.error(`[SSH Error - DEPLOY FAILED] Details:`, sshError.message);
-                        console.error(`[SSH Stderr] Output:`, sshStderr);
+            conn.on('ready', () => {
+                console.log(`[SSH2 Ready] Connection established. Uploading config file via SFTP...`);
+                
+                conn.sftp((err, sftp) => {
+                    if (err) {
+                        console.error(`[SFTP Error] Failed to start SFTP session:`, err.message);
+                        conn.end();
                         return;
                     }
-                    console.log(`[SSH Success - DEPLOY COMPLETE] Output:\n`, sshStdout);
-                    if (sshStderr) {
-                        console.log(`[SSH Warnings/Info]:`, sshStderr);
-                    }
+
+                    const remoteTempPath = `/tmp/${domain}.conf`;
+                    sftp.fastPut(localTempPath, remoteTempPath, {}, (uploadErr) => {
+                        if (uploadErr) {
+                            console.error(`[SFTP Upload Error - STEP 6/7 FAILED]`, uploadErr.message);
+                            conn.end();
+                            return;
+                        }
+                        console.log(`[SFTP Success] Config file transferred to remote: ${remoteTempPath}`);
+
+                        // Phase 2: Execute remote link and reload commands
+                        console.log(`[SSH2 Process] Executing configuration deployment commands...`);
+                        const deployCmds = [
+                            `sudo mv -f ${remoteTempPath} ${destPath}`,
+                            `sudo ln -sf ${destPath} ${linkPath}`,
+                            `sudo nginx -t`,
+                            `sudo nginx -s reload`,
+                            `sudo certbot --nginx -d ${domain} -d www.${domain} --non-interactive --agree-tos -m admin@storify.com --redirect`,
+                            `sudo nginx -s reload`
+                        ].join(' && ');
+
+                        console.log(`[SSH2 Execute Command]: ${deployCmds}`);
+                        conn.exec(deployCmds, (execErr, stream) => {
+                            if (execErr) {
+                                console.error(`[SSH2 Exec Error]`, execErr.message);
+                                conn.end();
+                                return;
+                            }
+
+                            let stdoutData = '';
+                            let stderrData = '';
+
+                            stream.on('close', (code, signal) => {
+                                console.log(`[SSH2 Command Finish] Exit code: ${code}`);
+                                conn.end();
+                                if (code !== 0) {
+                                    console.error(`[Deployment Error - STEP 7/7 FAILED]`);
+                                    console.error(`[Deployment Stderr Output]:\n`, stderrData);
+                                    return;
+                                }
+                                console.log(`[Deployment Success - COMPLETE] Output:\n`, stdoutData);
+                                if (stderrData) {
+                                    console.log(`[Deployment Warnings/Info]:\n`, stderrData);
+                                }
+                            }).on('data', (data) => {
+                                stdoutData += data.toString();
+                            }).stderr.on('data', (data) => {
+                                stderrData += data.toString();
+                            });
+                        });
+                    });
                 });
+            }).on('error', (connErr) => {
+                console.error(`[SSH2 Connection Error] Failed to connect to ${serverIp}:`, connErr.message);
+            }).connect({
+                host: serverIp,
+                port: 22,
+                username: sshUser,
+                password: sshPass,
+                readyTimeout: 20000
             });
         }
 
