@@ -10,6 +10,8 @@ import {
     getAnalyticsStats, 
     createStoreInternal,
     updateStoreDomain,
+    publishStoreDomain,
+    unpublishStoreDomain,
     checkDomainDNS,
     getPlatformSettings,
     updatePlatformSettings,
@@ -32,6 +34,8 @@ router.get('/domain/resolve', resolveDomain);
 router.get('/domain/expected-ip', getExpectedIP);
 router.get('/domain/dns-check', checkDomainDNS);
 router.put('/:id/domain', updateStoreDomain);
+router.put('/:id/domain/publish', publishStoreDomain);
+router.put('/:id/domain/unpublish', unpublishStoreDomain);
 
 router.get('/dashboard-stats', getDashboardStats);
 router.get('/analytics-stats', getAnalyticsStats);

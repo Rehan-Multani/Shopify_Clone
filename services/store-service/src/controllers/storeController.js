@@ -452,7 +452,7 @@ export const resolveDomain = async (req, res) => {
         // Clean protocol, www, paths, and ports from input domain
         let cleanDomain = domain.replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0].split(':')[0].trim().toLowerCase();
 
-        const store = await Store.findOne({ customDomain: cleanDomain, isActive: true });
+        const store = await Store.findOne({ customDomain: cleanDomain, isActive: true, domainPublished: true });
         if (!store) {
             return res.status(404).json({ success: false, message: 'No active store found for this domain' });
         }
@@ -480,11 +480,65 @@ export const updateStoreDomain = async (req, res) => {
 
         const { customDomain } = req.body;
         store.customDomain = customDomain !== undefined ? customDomain.trim().toLowerCase() : store.customDomain;
+        // Reset published status when domain changes
+        if (customDomain !== undefined) {
+            store.domainPublished = false;
+        }
         await store.save();
 
         res.status(200).json({
             success: true,
             message: 'Custom domain updated successfully',
+            store
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Publish store on custom domain (after DNS verification)
+// @route   PUT /api/stores/:id/domain/publish
+// @access  Private/Merchant
+export const publishStoreDomain = async (req, res) => {
+    try {
+        const store = await Store.findOne({ _id: req.params.id, merchantId: req.merchant._id });
+        if (!store) {
+            return res.status(404).json({ success: false, message: 'Store not found' });
+        }
+
+        if (!store.customDomain) {
+            return res.status(400).json({ success: false, message: 'No custom domain configured. Please set a domain first.' });
+        }
+
+        store.domainPublished = true;
+        await store.save();
+
+        res.status(200).json({
+            success: true,
+            message: `Store published on ${store.customDomain}`,
+            store
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Unpublish store from custom domain
+// @route   PUT /api/stores/:id/domain/unpublish
+// @access  Private/Merchant
+export const unpublishStoreDomain = async (req, res) => {
+    try {
+        const store = await Store.findOne({ _id: req.params.id, merchantId: req.merchant._id });
+        if (!store) {
+            return res.status(404).json({ success: false, message: 'Store not found' });
+        }
+
+        store.domainPublished = false;
+        await store.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Store unpublished from custom domain',
             store
         });
     } catch (error) {

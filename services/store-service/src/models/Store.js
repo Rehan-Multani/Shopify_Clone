@@ -67,6 +67,10 @@ const storeSchema = new mongoose.Schema({
         type: String,
         default: ''
     },
+    domainPublished: {
+        type: Boolean,
+        default: false
+    },
     isActive: {
         type: Boolean,
         default: true
