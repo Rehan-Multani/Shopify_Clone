@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import MasterAdminPage from './modules/masterAdmin/pages/MasterAdminPage';
 import MasterAdminLogin from './modules/masterAdmin/pages/MasterAdminLogin';
 import ProtectedRoute from './modules/masterAdmin/components/ProtectedRoute';
+import NotFound from './modules/masterAdmin/pages/NotFound';
 
 function App() {
   return (
@@ -19,7 +20,7 @@ function App() {
             <MasterAdminPage />
           </ProtectedRoute>
         } />
-        <Route path="*" element={<Navigate to="/superadmin" replace />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   );

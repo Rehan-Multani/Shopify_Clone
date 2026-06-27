@@ -11,6 +11,7 @@ import Subscribe from './modules/user/pages/Subscribe';
 import MerchantProtectedRoute from './modules/user/components/MerchantProtectedRoute';
 import ForgotPassword from './modules/user/pages/ForgotPassword';
 import StorefrontContainer from './modules/user/components/storefront/StorefrontContainer';
+import NotFound from './modules/user/pages/NotFound';
 
 function App() {
   const [resolvedStore, setResolvedStore] = useState(null);
@@ -105,6 +106,9 @@ function App() {
         
         {/* Customer Storefront Routes */}
         <Route path="/store/:storeId/*" element={<StorefrontContainer />} />
+
+        {/* 404 Catch-All Route */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   );
