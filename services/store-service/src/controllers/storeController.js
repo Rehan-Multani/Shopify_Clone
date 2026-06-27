@@ -514,30 +514,88 @@ export const publishStoreDomain = async (req, res) => {
         store.domainPublished = true;
         await store.save();
 
-        // ── AUTOMATIC SSL GENERATION (Certbot running in background) ──
-        // This runs the certbot command in background to generate SSL for this specific custom domain
-        // It requires certbot to be pre-installed on the host server.
-        const domainToSSL = store.customDomain;
-        const certbotCmd = `sudo certbot --nginx -d ${domainToSSL} -d www.${domainToSSL} --non-interactive --agree-tos -m admin@storify.com --redirect`;
+        const domain = store.customDomain;
+        const serverIp = process.env.SERVER_IP || '210.56.147.239';
+        const sshUser = process.env.SERVER_SSH_USER || 'root';
+        const sshPass = process.env.SERVER_SSH_PASSWORD;
+
+        // Dynamic nginx config content for this specific domain
+        const nginxConfig = `
+server {
+    listen 80;
+    listen [::]:80;
+    server_name ${domain} www.${domain};
+
+    root /var/www/Shopify_Clone/admin-frontend/dist;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    location /api {
+        proxy_pass http://127.0.0.1:5000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /uploads/ {
+        alias /var/www/Shopify_Clone/services/gateway/public/uploads/;
+        expires 30d;
+        add_header Cache-Control "public, immutable";
+    }
+}
+`;
+
+        // Execution script using sshpass or direct execution if running on target server natively
+        // First we write Nginx configuration locally then push or apply it
+        const fs = await import('fs');
+        const tempPath = `/tmp/${domain}.conf`;
+        const destPath = `/etc/nginx/sites-available/${domain}.conf`;
+        const linkPath = `/etc/nginx/sites-enabled/${domain}.conf`;
+
+        console.log(`[Deployment] Creating Nginx configuration for ${domain}`);
         
-        console.log(`[SSL Auto-Deploy] Executing SSL setup for: ${domainToSSL}`);
-        exec(certbotCmd, (error, stdout, stderr) => {
+        let deployCmd;
+        if (!sshPass) {
+            // Native deployment (assuming node is running on the same server)
+            deployCmd = `
+                sudo teedest="${destPath}" node -e "require('fs').writeFileSync('${destPath}', \`${nginxConfig.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)" && \
+                sudo ln -sf ${destPath} ${linkPath} && \
+                sudo nginx -t && \
+                sudo nginx -s reload && \
+                sudo certbot --nginx -d ${domain} -d www.${domain} --non-interactive --agree-tos -m admin@storify.com --redirect && \
+                sudo nginx -s reload
+            `;
+        } else {
+            // Remote deployment via SSH using sshpass
+            deployCmd = `
+                sshpass -p "${sshPass}" ssh -o StrictHostKeyChecking=no ${sshUser}@${serverIp} "
+                    echo \\"${nginxConfig.replace(/"/g, '\\"')}\\" | sudo tee ${destPath} > /dev/null && \
+                    sudo ln -sf ${destPath} ${linkPath} && \
+                    sudo nginx -t && \
+                    sudo nginx -s reload && \
+                    sudo certbot --nginx -d ${domain} -d www.${domain} --non-interactive --agree-tos -m admin@storify.com --redirect && \
+                    sudo nginx -s reload
+                "
+            `;
+        }
+
+        console.log(`[Deployment] Executing script: publish for ${domain}`);
+        exec(deployCmd, (error, stdout, stderr) => {
             if (error) {
-                console.error(`[SSL Error] Failed to generate certificate for ${domainToSSL}:`, error.message);
+                console.error(`[Deployment Error] Failed for ${domain}:`, error.message);
                 return;
             }
-            console.log(`[SSL Success] Certificate generated successfully for ${domainToSSL}. Output:\n`, stdout);
-            
-            // Reload nginx to apply the new cert
-            exec('sudo nginx -s reload', (reloadErr) => {
-                if (reloadErr) console.error('[SSL Error] Nginx reload failed:', reloadErr.message);
-                else console.log('[SSL Success] Nginx configuration reloaded successfully.');
-            });
+            console.log(`[Deployment Success] Nginx & SSL complete for ${domain}. Output:\n`, stdout);
         });
 
         res.status(200).json({
             success: true,
-            message: `Store published on ${store.customDomain} (SSL certificate generation initiated in the background)`,
+            message: `Store config created and deployment initialized for ${domain}.`,
             store
         });
     } catch (error) {
