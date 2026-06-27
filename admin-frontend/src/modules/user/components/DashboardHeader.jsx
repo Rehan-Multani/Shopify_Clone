@@ -102,6 +102,17 @@ const DashboardHeader = ({ isOpen, setIsOpen, storeName: propStoreName, isCollap
             {/* Breadcrumb */}
             <div className="hidden lg:flex items-center gap-2.5 flex-shrink-0">
                 <span className="text-[11px] font-black uppercase tracking-widest text-gray-500">Merchant</span>
+                {activeStoreId && (
+                    <>
+                        <svg className="w-3 h-3 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                            {storeName}
+                        </span>
+                    </>
+                )}
                 <svg className="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
