@@ -522,9 +522,11 @@ export const publishStoreDomain = async (req, res) => {
             settings = await PlatformSetting.create({});
         }
 
-        const serverIp = settings.expectedStoreIP || '210.56.147.239';
-        const sshUser = settings.sshUser || 'root';
+        const serverIp = settings.expectedStoreIP;;
+        const sshUser = settings.sshUser;;
         const sshPass = settings.sshPassword;
+
+        console.log(`[Deployment Params] Resolving credentials: Domain=${domain}, IP=${serverIp}, SSHUser=${sshUser}, HasPassword=${!!sshPass}`);
 
         // Dynamic nginx config content for this specific domain
         const nginxConfig = `
@@ -578,26 +580,30 @@ server {
                 sudo nginx -s reload
             `;
         } else {
-            // Remote deployment via SSH using sshpass
+            // Remote deployment via SSH using sshpass and EOF block mapping (solves quote escape issues)
             deployCmd = `
-                sshpass -p "${sshPass}" ssh -o StrictHostKeyChecking=no ${sshUser}@${serverIp} "
-                    echo \\"${nginxConfig.replace(/"/g, '\\"')}\\" | sudo tee ${destPath} > /dev/null && \
-                    sudo ln -sf ${destPath} ${linkPath} && \
-                    sudo nginx -t && \
-                    sudo nginx -s reload && \
-                    sudo certbot --nginx -d ${domain} -d www.${domain} --non-interactive --agree-tos -m admin@storify.com --redirect && \
-                    sudo nginx -s reload
-                "
+sshpass -p "${sshPass}" ssh -o StrictHostKeyChecking=no ${sshUser}@${serverIp} "cat << 'EOF' | sudo tee ${destPath} > /dev/null
+${nginxConfig}
+EOF
+sudo ln -sf ${destPath} ${linkPath}
+sudo nginx -t
+sudo nginx -s reload
+sudo certbot --nginx -d ${domain} -d www.${domain} --non-interactive --agree-tos -m admin@storify.com --redirect
+sudo nginx -s reload"
             `;
         }
 
-        console.log(`[Deployment] Executing script: publish for ${domain}`);
+        console.log(`[Deployment Command] Construct: ${deployCmd}`);
         exec(deployCmd, (error, stdout, stderr) => {
             if (error) {
                 console.error(`[Deployment Error] Failed for ${domain}:`, error.message);
+                console.error(`[Deployment Stderr] Error details:`, stderr);
                 return;
             }
             console.log(`[Deployment Success] Nginx & SSL complete for ${domain}. Output:\n`, stdout);
+            if (stderr) {
+                console.log(`[Deployment Warnings/Logs]:`, stderr);
+            }
         });
 
         res.status(200).json({

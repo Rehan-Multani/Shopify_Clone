@@ -175,6 +175,7 @@ const DomainsTab = () => {
 
     const handlePublish = async () => {
         setPublishing(true);
+        console.log(`[Frontend Publish] Triggering publish for storeId=${storeId} to target=${STORE_API_URL}/stores/${storeId}/domain/publish`);
         try {
             const res = await fetch(`${STORE_API_URL}/stores/${storeId}/domain/publish`, {
                 method: 'PUT',
@@ -183,7 +184,10 @@ const DomainsTab = () => {
                     'Authorization': `Bearer ${token}`
                 }
             });
+            console.log(`[Frontend Publish] HTTP Status received: ${res.status}`);
             const data = await res.json();
+            console.log(`[Frontend Publish] Response body payload:`, data);
+            
             if (res.ok && data.success) {
                 setIsPublished(true);
                 showToast(`🎉 Store is now LIVE on ${savedDomain}!`, 'success');
@@ -191,7 +195,7 @@ const DomainsTab = () => {
                 showToast(data.message || 'Failed to publish.', 'error');
             }
         } catch (err) {
-            console.error('Error publishing domain:', err);
+            console.error('[Frontend Publish Exception] Details:', err);
             showToast('Failed to publish store.', 'error');
         } finally {
             setPublishing(false);
