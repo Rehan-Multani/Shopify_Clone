@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { getStorePath } from '../storeUrlHelper';
 
 const CATALOG_API_URL = import.meta.env.VITE_CATALOG_API_URL;
 const ASSETS_BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || '';
@@ -87,7 +88,7 @@ const BestSellerSection = ({ settings = {} }) => {
                             style={{ animationDelay: `${idx * 50}ms`, borderRadius: 'var(--border-radius)' }}
                         >
                             <Link 
-                                to={`/store/${storeId}/product/${product._id}`} 
+                                to={getStorePath(storeId, `/product/${product._id}`)} 
                                 className="aspect-square w-full rounded-xl overflow-hidden bg-[#fafafa] border border-zinc-100 flex items-center justify-center relative mb-3.5"
                             >
                                 {imageUrl ? (
@@ -108,7 +109,7 @@ const BestSellerSection = ({ settings = {} }) => {
                             <div className="flex-grow flex flex-col justify-between space-y-2.5 px-0.5">
                                 <div className="space-y-1">
                                     <Link 
-                                        to={`/store/${storeId}/product/${product._id}`} 
+                                        to={getStorePath(storeId, `/product/${product._id}`)} 
                                         className="text-xs font-bold text-zinc-800 hover:text-[var(--color-primary)] transition-colors line-clamp-1 leading-snug uppercase tracking-tight"
                                     >
                                         {product.name || product.title}

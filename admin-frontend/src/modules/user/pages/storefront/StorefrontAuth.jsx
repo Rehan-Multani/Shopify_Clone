@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
 import StorefrontLayout from '../../components/storefront/StorefrontLayout';
+import { getStorePath } from '../../components/storefront/storeUrlHelper';
 
 const StorefrontAuth = ({ cartCount, onLoginSuccess, customer, onLogout, storeInfo }) => {
-    const { storeId } = useParams();
+    const { storeId: paramStoreId } = useParams();
+    const storeId = storeInfo?._id || paramStoreId;
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const redirectPath = searchParams.get('redirect');
@@ -45,7 +47,7 @@ const StorefrontAuth = ({ cartCount, onLoginSuccess, customer, onLogout, storeIn
                 const data = await res.json();
                 if (res.ok && data.success) {
                     onLoginSuccess(data.customer);
-                    const target = redirectPath ? `/store/${storeId}/${redirectPath}` : `/store/${storeId}`;
+                    const target = redirectPath ? getStorePath(storeId, `/${redirectPath}`) : getStorePath(storeId, '/');
                     navigate(target);
                 } else {
                     setError(data.message || 'Invalid email address or password.');
@@ -75,7 +77,7 @@ const StorefrontAuth = ({ cartCount, onLoginSuccess, customer, onLogout, storeIn
                 const data = await res.json();
                 if (res.ok && data.success) {
                     onLoginSuccess(data.customer);
-                    const target = redirectPath ? `/store/${storeId}/${redirectPath}` : `/store/${storeId}`;
+                    const target = redirectPath ? getStorePath(storeId, `/${redirectPath}`) : getStorePath(storeId, '/');
                     navigate(target);
                 } else {
                     setError(data.message || 'Registration failed.');

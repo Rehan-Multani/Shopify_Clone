@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { getStorePath } from '../storeUrlHelper';
 
 const CATALOG_API_URL = import.meta.env.VITE_CATALOG_API_URL;
 const ASSETS_BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || '';
@@ -75,7 +76,7 @@ const ProductCard = ({ product, storeId, onAddToCart }) => {
                 </button>
 
                 <Link 
-                    to={`/store/${storeId}/product/${product._id}`} 
+                    to={getStorePath(storeId, `/product/${product._id}`)} 
                     className="w-full h-full block"
                 >
                     {!imageUrl || imageError ? (
@@ -100,7 +101,7 @@ const ProductCard = ({ product, storeId, onAddToCart }) => {
             <div className="flex-grow flex flex-col justify-between space-y-2.5 px-0.5">
                 <div className="space-y-1">
                     <Link 
-                        to={`/store/${storeId}/product/${product._id}`} 
+                        to={getStorePath(storeId, `/product/${product._id}`)} 
                         className="text-xs font-bold text-zinc-800 hover:text-[var(--color-primary)] transition-colors line-clamp-1 leading-snug uppercase tracking-tight"
                     >
                         {product.name}
@@ -215,7 +216,7 @@ const FeaturedProductsSection = ({ settings = {}, storeId: propStoreId, onAddToC
                     <div className="w-8 h-0.5 rounded-full" style={{ backgroundColor: 'var(--color-primary)' }}></div>
                 </div>
                 <Link 
-                    to={`/store/${storeId}/catalog`}
+                    to={getStorePath(storeId, '/catalog')}
                     className="text-[10px] font-black uppercase tracking-wider text-zinc-500 hover:text-zinc-900 flex items-center gap-1 hover:gap-1.5 transition-all py-1.5 pl-2"
                 >
                     View All Catalog

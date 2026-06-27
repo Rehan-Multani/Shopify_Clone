@@ -1,12 +1,14 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import StorefrontLayout from '../../components/storefront/StorefrontLayout';
+import { getStorePath } from '../../components/storefront/storeUrlHelper';
 
 const GATEWAY_URL = import.meta.env.VITE_API_BASE_URL;
 const ASSETS_BASE_URL = GATEWAY_URL.replace('/api', '');
 
 const StorefrontCart = ({ cart, cartCount, onUpdateCartQty, onRemoveFromCart, customer, onLogout, storeInfo }) => {
-    const { storeId } = useParams();
+    const { storeId: paramStoreId } = useParams();
+    const storeId = storeInfo?._id || paramStoreId;
 
     const subtotal = cart.reduce((sum, item) => sum + (item.sellingPrice * item.qty), 0);
     
@@ -144,7 +146,7 @@ const StorefrontCart = ({ cart, cartCount, onUpdateCartQty, onRemoveFromCart, cu
                             </div>
 
                             <Link 
-                                to={`/store/${storeId}/checkout`}
+                                to={getStorePath(storeId, '/checkout')}
                                 className="block w-full py-3.5 text-center text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all active:scale-[0.98] shadow-md hover:opacity-95 cursor-pointer btn-premium"
                                 style={{ backgroundColor: 'var(--color-primary)', borderRadius: 'var(--border-radius)' }}
                             >
@@ -164,7 +166,7 @@ const StorefrontCart = ({ cart, cartCount, onUpdateCartQty, onRemoveFromCart, cu
                             <p className="text-xs text-zinc-400 max-w-xs mx-auto leading-relaxed font-semibold">Looks like you haven't added anything to your cart yet.</p>
                         </div>
                         <Link 
-                            to={`/store/${storeId}/catalog`} 
+                            to={getStorePath(storeId, '/catalog')} 
                             className="inline-block px-7 py-3 text-white text-[10px] font-black uppercase tracking-wider rounded-xl transition-all active:scale-95 shadow-md btn-premium"
                             style={{ backgroundColor: 'var(--color-primary)', borderRadius: 'var(--border-radius)' }}
                         >

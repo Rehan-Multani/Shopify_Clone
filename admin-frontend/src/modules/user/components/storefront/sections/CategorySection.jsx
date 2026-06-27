@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { getStorePath } from '../storeUrlHelper';
 
 const CATALOG_API_URL = import.meta.env.VITE_CATALOG_API_URL;
 const ASSETS_BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || '';
@@ -31,7 +32,7 @@ const CategoryCard = ({ category, storeId }) => {
 
     return (
         <Link 
-            to={`/store/${storeId}/catalog?category=${category._id}`}
+            to={getStorePath(storeId, `/catalog?category=${category._id}`)}
             className="group flex flex-col items-center space-y-3 cursor-pointer"
         >
             {!imageUrl || imageError ? (

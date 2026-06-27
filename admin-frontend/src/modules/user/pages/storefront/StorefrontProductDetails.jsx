@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import StorefrontLayout from '../../components/storefront/StorefrontLayout';
+import { getStorePath } from '../../components/storefront/storeUrlHelper';
 
 const GATEWAY_URL = import.meta.env.VITE_API_BASE_URL;
 const ASSETS_BASE_URL = GATEWAY_URL.replace('/api', '');
 
 const StorefrontProductDetails = ({ cartCount, onAddToCart, customer, onLogout, storeInfo }) => {
-    const { storeId, productId } = useParams();
+    const { storeId: paramStoreId, productId } = useParams();
+    const storeId = storeInfo?._id || paramStoreId;
     const [product, setProduct] = useState(null);
     const [activeImage, setActiveImage] = useState('');
     const [qty, setQty] = useState(1);
@@ -95,7 +97,7 @@ const StorefrontProductDetails = ({ cartCount, onAddToCart, customer, onLogout, 
                     </div>
                     <h2 className="text-md font-black text-zinc-800 uppercase tracking-wider">Product Not Found</h2>
                     <p className="text-xs text-zinc-400 max-w-xs mx-auto leading-relaxed font-semibold">The product you are trying to view is unavailable.</p>
-                    <Link to={`/store/${storeId}/catalog`} className="inline-block px-6 py-2.5 bg-zinc-950 text-white font-black text-[10px] uppercase tracking-wider rounded-xl hover:bg-black transition-all shadow-md active:scale-95">
+                    <Link to={getStorePath(storeId, '/catalog')} className="inline-block px-6 py-2.5 bg-zinc-950 text-white font-black text-[10px] uppercase tracking-wider rounded-xl hover:bg-black transition-all shadow-md active:scale-95">
                         Back to Catalog
                     </Link>
                 </div>
@@ -112,9 +114,9 @@ const StorefrontProductDetails = ({ cartCount, onAddToCart, customer, onLogout, 
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 animate-fade-in relative">
                 {/* Breadcrumbs */}
                 <div className="text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-6 flex items-center gap-1.5 pl-0.5">
-                    <Link to={`/store/${storeId}`} className="hover:text-[var(--color-primary)] transition-colors">Home</Link>
+                    <Link to={getStorePath(storeId, '/')} className="hover:text-[var(--color-primary)] transition-colors">Home</Link>
                     <span className="text-zinc-300">/</span>
-                    <Link to={`/store/${storeId}/catalog`} className="hover:text-[var(--color-primary)] transition-colors">Catalog</Link>
+                    <Link to={getStorePath(storeId, '/catalog')} className="hover:text-[var(--color-primary)] transition-colors">Catalog</Link>
                     <span className="text-zinc-300">/</span>
                     <span className="text-zinc-650 truncate max-w-xs">{product.name}</span>
                 </div>

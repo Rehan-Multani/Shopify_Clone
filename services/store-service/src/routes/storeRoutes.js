@@ -13,7 +13,8 @@ import {
     checkDomainDNS,
     getPlatformSettings,
     updatePlatformSettings,
-    getExpectedIP
+    getExpectedIP,
+    resolveDomain
 } from '../controllers/storeController.js';
 
 const router = express.Router();
@@ -27,6 +28,7 @@ router.put('/admin/settings', updatePlatformSettings);
 router.post('/internal/create', createStoreInternal);
 
 // Merchant routes
+router.get('/domain/resolve', resolveDomain);
 router.get('/domain/expected-ip', getExpectedIP);
 router.get('/domain/dns-check', checkDomainDNS);
 router.put('/:id/domain', updateStoreDomain);

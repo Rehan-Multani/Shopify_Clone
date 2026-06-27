@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
 import StorefrontLayout from '../../components/storefront/StorefrontLayout';
+import { getStorePath } from '../../components/storefront/storeUrlHelper';
 
 const GATEWAY_URL = import.meta.env.VITE_API_BASE_URL;
 const ASSETS_BASE_URL = GATEWAY_URL.replace('/api', '');
 
 const StorefrontCatalog = ({ cartCount, onAddToCart, customer, onLogout, storeInfo }) => {
-    const { storeId } = useParams();
+    const { storeId: paramStoreId } = useParams();
+    const storeId = storeInfo?._id || paramStoreId;
     const [searchParams, setSearchParams] = useSearchParams();
     const categoryParam = searchParams.get('category');
     const searchParam = searchParams.get('search');
@@ -224,7 +226,7 @@ const StorefrontCatalog = ({ cartCount, onAddToCart, customer, onLogout, storeIn
                                     </button>
 
                                     {/* Image Link */}
-                                    <Link to={`/store/${storeId}/product/${product._id}`} className="aspect-square w-full rounded-xl overflow-hidden bg-[#fafafa] border border-zinc-100 flex items-center justify-center relative mb-3.5">
+                                    <Link to={getStorePath(storeId, `/product/${product._id}`)} className="aspect-square w-full rounded-xl overflow-hidden bg-[#fafafa] border border-zinc-100 flex items-center justify-center relative mb-3.5">
                                         {imageUrl ? (
                                             <img
                                                 src={imageUrl}
@@ -242,7 +244,7 @@ const StorefrontCatalog = ({ cartCount, onAddToCart, customer, onLogout, storeIn
 
                                     <div className="flex-grow flex flex-col justify-between space-y-2.5 px-0.5">
                                         <div className="space-y-1">
-                                            <Link to={`/store/${storeId}/product/${product._id}`} className="text-xs font-bold text-zinc-800 hover:text-[var(--color-primary)] transition-colors line-clamp-1 leading-snug uppercase tracking-tight">
+                                            <Link to={getStorePath(storeId, `/product/${product._id}`)} className="text-xs font-bold text-zinc-800 hover:text-[var(--color-primary)] transition-colors line-clamp-1 leading-snug uppercase tracking-tight">
                                                 {product.name}
                                             </Link>
                                             {product.brandName && (

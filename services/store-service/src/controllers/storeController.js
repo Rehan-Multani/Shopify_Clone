@@ -439,6 +439,34 @@ export const createStoreInternal = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+// @desc    Resolve store by custom domain
+// @route   GET /api/stores/domain/resolve
+// @access  Public
+export const resolveDomain = async (req, res) => {
+    try {
+        const { domain } = req.query;
+        if (!domain) {
+            return res.status(400).json({ success: false, message: 'Domain query parameter is required' });
+        }
+
+        // Clean protocol, www, paths, and ports from input domain
+        let cleanDomain = domain.replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0].split(':')[0].trim().toLowerCase();
+
+        const store = await Store.findOne({ customDomain: cleanDomain, isActive: true });
+        if (!store) {
+            return res.status(404).json({ success: false, message: 'No active store found for this domain' });
+        }
+
+        res.status(200).json({
+            success: true,
+            storeId: store._id,
+            storeSlug: store.storeSlug,
+            storeName: store.storeName
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
 
 // @desc    Update store custom domain
 // @route   PUT /api/stores/:id/domain

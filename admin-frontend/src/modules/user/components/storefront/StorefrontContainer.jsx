@@ -7,18 +7,20 @@ import StorefrontCart from '../../pages/storefront/StorefrontCart';
 import StorefrontCheckout from '../../pages/storefront/StorefrontCheckout';
 import StorefrontAuth from '../../pages/storefront/StorefrontAuth';
 import StorefrontPage from '../../pages/storefront/StorefrontPage';
+import { getStorePath } from './storeUrlHelper';
 
 const GATEWAY_URL = import.meta.env.VITE_API_BASE_URL;
 
 const ProtectedRoute = ({ customer, storeId, redirect, children }) => {
     if (!customer) {
-        return <Navigate to={`/store/${storeId}/login?redirect=${redirect}`} replace />;
+        return <Navigate to={getStorePath(storeId, `/login?redirect=${redirect}`)} replace />;
     }
     return children;
 };
 
-const StorefrontContainer = () => {
-    const { storeId } = useParams();
+const StorefrontContainer = ({ resolvedStoreId }) => {
+    const { storeId: paramStoreId } = useParams();
+    const storeId = resolvedStoreId || paramStoreId;
     const location = useLocation();
     const [storeInfo, setStoreInfo] = useState(null);
     const [cart, setCart] = useState([]);

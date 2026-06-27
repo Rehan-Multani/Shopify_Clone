@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import StorefrontLayout from '../../components/storefront/StorefrontLayout';
+import { getStorePath } from '../../components/storefront/storeUrlHelper';
 
 const GATEWAY_URL = import.meta.env.VITE_API_BASE_URL;
 
 const StorefrontCheckout = ({ cart, cartCount, onClearCart, customer, onLogout, storeInfo }) => {
-    const { storeId } = useParams();
+    const { storeId: paramStoreId } = useParams();
+    const storeId = storeInfo?._id || paramStoreId;
     const [step, setStep] = useState(1); // 1: Shipping, 2: Payment
 
     const [form, setForm] = useState({
@@ -140,7 +142,7 @@ const StorefrontCheckout = ({ cart, cartCount, onClearCart, customer, onLogout, 
                         </p>
                     </div>
                     <Link 
-                        to={`/store/${storeId}/catalog`} 
+                        to={getStorePath(storeId, '/catalog')} 
                         className="inline-block px-7 py-3 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all active:scale-95 shadow-md btn-premium"
                         style={{ backgroundColor: 'var(--color-primary)', borderRadius: 'var(--border-radius)' }}
                     >
@@ -149,7 +151,7 @@ const StorefrontCheckout = ({ cart, cartCount, onClearCart, customer, onLogout, 
                 </div>
             </StorefrontLayout>
         );
-    }
+     }
 
     return (
         <StorefrontLayout cartCount={cartCount} customer={customer} onLogout={onLogout} storeInfo={storeInfo}>
@@ -163,7 +165,7 @@ const StorefrontCheckout = ({ cart, cartCount, onClearCart, customer, onLogout, 
                     <div className="text-center py-16 bg-white border border-zinc-200/60 rounded-3xl space-y-4 max-w-md mx-auto shadow-sm">
                         <p className="text-xs text-zinc-400 font-bold uppercase tracking-wider">No items in your cart to checkout.</p>
                         <Link 
-                            to={`/store/${storeId}/catalog`} 
+                            to={getStorePath(storeId, '/catalog')} 
                             className="inline-block px-6 py-2.5 bg-zinc-950 text-white font-black text-[10px] uppercase tracking-wider rounded-xl hover:bg-black transition-all shadow-md"
                         >
                             Explore Catalog

@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import StorefrontLayout from '../../components/storefront/StorefrontLayout';
+import { getStorePath } from '../../components/storefront/storeUrlHelper';
 
 const GATEWAY_URL = import.meta.env.VITE_API_BASE_URL;
 
 const StorefrontPage = ({ cartCount, customer, onLogout, storeInfo }) => {
-    const { storeId, slug } = useParams();
+    const { storeId: paramStoreId, slug } = useParams();
+    const storeId = storeInfo?._id || paramStoreId;
     const [page, setPage] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -71,7 +73,7 @@ const StorefrontPage = ({ cartCount, customer, onLogout, storeInfo }) => {
                     </div>
                     <h2 className="text-md font-black text-zinc-800 uppercase tracking-wider">Page Not Found</h2>
                     <p className="text-xs text-zinc-400 max-w-xs mx-auto leading-relaxed font-semibold">The page you are trying to view does not exist or has been removed.</p>
-                    <Link to={`/store/${storeId}`} className="inline-block px-6 py-2.5 bg-zinc-950 text-white font-black text-[10px] uppercase tracking-wider rounded-xl hover:bg-black transition-all shadow-md active:scale-95">
+                    <Link to={getStorePath(storeId, '/')} className="inline-block px-6 py-2.5 bg-zinc-950 text-white font-black text-[10px] uppercase tracking-wider rounded-xl hover:bg-black transition-all shadow-md active:scale-95">
                         Back to Home
                     </Link>
                 </div>

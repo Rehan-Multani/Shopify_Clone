@@ -22,7 +22,9 @@ const allowedOrigins = [
 
 // Global Middlewares (No body parser here to avoid proxy issues with POST/PUT requests)
 app.use(cors({
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+        callback(null, true);
+    },
     credentials: true,
 }));
 
@@ -70,7 +72,7 @@ const createServiceProxy = (target, pathRewrite = null) => {
             },
             proxyRes: (proxyRes, req, res) => {
                 const origin = req.headers.origin;
-                if (allowedOrigins.includes(origin)) {
+                if (origin) {
                     proxyRes.headers['access-control-allow-origin'] = origin;
                     proxyRes.headers['access-control-allow-credentials'] = 'true';
                 }

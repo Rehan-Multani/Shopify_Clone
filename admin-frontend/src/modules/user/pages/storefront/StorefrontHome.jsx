@@ -4,12 +4,14 @@ import StorefrontLayout from '../../components/storefront/StorefrontLayout';
 import CategorySection from '../../components/storefront/sections/CategorySection';
 import FeaturedProductsSection from '../../components/storefront/sections/FeaturedProductsSection';
 import BannerSection from '../../components/storefront/sections/BannerSection';
+import { getStorePath } from '../../components/storefront/storeUrlHelper';
 
 const GATEWAY_URL = import.meta.env.VITE_API_BASE_URL;
 const ASSETS_BASE_URL = GATEWAY_URL.replace('/api', '');
 
 const StorefrontHome = ({ cartCount, onAddToCart, customer, onLogout, storeInfo }) => {
-    const { storeId } = useParams();
+    const { storeId: paramStoreId } = useParams();
+    const storeId = storeInfo?._id || paramStoreId;
     const navigate = useNavigate();
     const [pageSections, setPageSections] = useState([]);
     const [banners, setBanners] = useState([]);
@@ -82,7 +84,7 @@ const StorefrontHome = ({ cartCount, onAddToCart, customer, onLogout, storeInfo 
     }, [storeId]);
 
     const handleSearchClick = () => {
-        navigate(`/store/${storeId}/catalog`);
+        navigate(getStorePath(storeId, '/catalog'));
     };
 
     if (loading) {

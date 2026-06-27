@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useParams, useLocation } from 'react-router-dom';
 import ThemeRenderer from './ThemeRenderer';
+import { getStorePath } from './storeUrlHelper';
 
 const GATEWAY_URL = import.meta.env.VITE_API_BASE_URL;
 const ASSETS_BASE_URL = GATEWAY_URL.replace('/api', '');
 
 const StorefrontLayout = ({ children, cartCount, customer, onLogout, storeInfo }) => {
-    const { storeId } = useParams();
+    const { storeId: paramStoreId } = useParams();
+    const storeId = storeInfo?._id || paramStoreId;
+    const getLink = (subpath) => getStorePath(storeId, subpath);
     const navigate = useNavigate();
     const location = useLocation();
     const [pages, setPages] = useState([]);
@@ -45,7 +48,7 @@ const StorefrontLayout = ({ children, cartCount, customer, onLogout, storeInfo }
     const handleSearchSubmit = (e) => {
         e.preventDefault();
         if (searchQuery.trim()) {
-            navigate(`/store/${storeId}/catalog?search=${encodeURIComponent(searchQuery.trim())}`);
+            navigate(getLink(`/catalog?search=${encodeURIComponent(searchQuery.trim())}`));
             setShowSearchOverlay(false);
             setSearchQuery('');
         }
@@ -84,7 +87,7 @@ const StorefrontLayout = ({ children, cartCount, customer, onLogout, storeInfo }
                 >
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between min-h-[3rem]">
                         {/* Logo & Name */}
-                        <Link to={`/store/${storeId}`} className="flex items-center gap-3.5 group">
+                        <Link to={getLink('/')} className="flex items-center gap-3.5 group">
                             {storeInfo?.storeLogo ? (
                                 <img 
                                     src={storeInfo.storeLogo.startsWith('http') || storeInfo.storeLogo.startsWith('data:') ? storeInfo.storeLogo : `${ASSETS_BASE_URL}${storeInfo.storeLogo}`} 
@@ -104,9 +107,9 @@ const StorefrontLayout = ({ children, cartCount, customer, onLogout, storeInfo }
                         {/* Desktop Navigation */}
                         <nav className="hidden md:flex items-center gap-8 lg:gap-10">
                             <Link 
-                                to={`/store/${storeId}`} 
+                                to={getLink('/')} 
                                 className={`text-[11px] font-bold uppercase tracking-wider relative py-1.5 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[var(--color-primary)] after:origin-left after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300 ${
-                                    location.pathname === `/store/${storeId}` || location.pathname === `/store/${storeId}/`
+                                    location.pathname === getLink('/') || location.pathname === getLink('/') + '/'
                                         ? 'text-zinc-950 after:scale-x-100' 
                                         : 'text-zinc-500 hover:text-zinc-950'
                                 }`}
@@ -114,7 +117,7 @@ const StorefrontLayout = ({ children, cartCount, customer, onLogout, storeInfo }
                                 Home
                             </Link>
                             <Link 
-                                to={`/store/${storeId}/catalog`} 
+                                to={getLink('/catalog')} 
                                 className={`text-[11px] font-bold uppercase tracking-wider relative py-1.5 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[var(--color-primary)] after:origin-left after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300 ${
                                     location.pathname.includes('/catalog') 
                                         ? 'text-zinc-950 after:scale-x-100' 
@@ -126,7 +129,7 @@ const StorefrontLayout = ({ children, cartCount, customer, onLogout, storeInfo }
                             {pages.filter(p => p.slug.toLowerCase().includes('contact')).map(page => (
                                 <Link 
                                     key={page.slug}
-                                    to={`/store/${storeId}/pages/${page.slug}`} 
+                                    to={getLink(`/pages/${page.slug}`)} 
                                     className={`text-[11px] font-bold uppercase tracking-wider relative py-1.5 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[var(--color-primary)] after:origin-left after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300 ${
                                         location.pathname.includes(`/pages/${page.slug}`) 
                                             ? 'text-zinc-950 after:scale-x-100' 
@@ -169,7 +172,7 @@ const StorefrontLayout = ({ children, cartCount, customer, onLogout, storeInfo }
                                 </div>
                             ) : (
                                 <Link 
-                                    to={`/store/${storeId}/login`}
+                                    to={getLink('/login')}
                                     className="hidden sm:flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-zinc-700 hover:text-white hover:bg-[var(--color-primary)] transition-all bg-white border border-zinc-200/80 px-4.5 py-2.5 rounded-full shadow-[0_1px_3px_rgba(0,0,0,0.02)] hover:border-[var(--color-primary)]"
                                 >
                                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
@@ -182,7 +185,7 @@ const StorefrontLayout = ({ children, cartCount, customer, onLogout, storeInfo }
 
                             {/* Cart Icon */}
                             <Link 
-                                to={`/store/${storeId}/cart`}
+                                to={getLink('/cart')}
                                 className="relative p-2.5 bg-white border border-zinc-200/80 rounded-xl hover:border-zinc-300 text-zinc-700 transition-premium shadow-sm hover:scale-[1.04] active:scale-95 flex items-center justify-center"
                             >
                                 <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" strokeWidth={2.2} viewBox="0 0 24 24">
@@ -243,9 +246,9 @@ const StorefrontLayout = ({ children, cartCount, customer, onLogout, storeInfo }
                                 </div>
                                 <nav className="flex flex-col gap-5">
                                     <Link 
-                                        to={`/store/${storeId}`} 
+                                        to={getLink('/')} 
                                         className={`text-sm font-bold tracking-wide transition-colors ${
-                                            location.pathname === `/store/${storeId}` || location.pathname === `/store/${storeId}/`
+                                            location.pathname === getLink('/') || location.pathname === getLink('/') + '/'
                                                 ? 'text-[var(--color-primary)]' 
                                                 : 'text-zinc-600 hover:text-zinc-950'
                                         }`}
@@ -253,7 +256,7 @@ const StorefrontLayout = ({ children, cartCount, customer, onLogout, storeInfo }
                                         Home
                                     </Link>
                                     <Link 
-                                        to={`/store/${storeId}/catalog`} 
+                                        to={getLink('/catalog')} 
                                         className={`text-sm font-bold tracking-wide transition-colors ${
                                             location.pathname.includes('/catalog') 
                                                 ? 'text-[var(--color-primary)]' 
@@ -265,7 +268,7 @@ const StorefrontLayout = ({ children, cartCount, customer, onLogout, storeInfo }
                                     {pages.map(page => (
                                         <Link 
                                             key={page.slug}
-                                            to={`/store/${storeId}/pages/${page.slug}`} 
+                                            to={getLink(`/pages/${page.slug}`)} 
                                             className={`text-sm font-bold tracking-wide transition-colors ${
                                                 location.pathname.includes(`/pages/${page.slug}`) 
                                                     ? 'text-[var(--color-primary)]' 
@@ -302,7 +305,7 @@ const StorefrontLayout = ({ children, cartCount, customer, onLogout, storeInfo }
                                     </div>
                                 ) : (
                                     <Link 
-                                        to={`/store/${storeId}/login`}
+                                        to={getLink('/login')}
                                         className="w-full flex items-center justify-center gap-2 py-3 bg-[var(--color-primary)] text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:opacity-90 active:scale-95 transition-all shadow-md"
                                     >
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
@@ -355,7 +358,7 @@ const StorefrontLayout = ({ children, cartCount, customer, onLogout, storeInfo }
                                         <button 
                                             key={tag}
                                             onClick={() => {
-                                                navigate(`/store/${storeId}/catalog?search=${encodeURIComponent(tag)}`);
+                                                navigate(getLink(`/catalog?search=${encodeURIComponent(tag)}`));
                                                 setShowSearchOverlay(false);
                                             }}
                                             className="px-4 py-2 bg-zinc-50 hover:bg-zinc-100 hover:text-zinc-950 text-zinc-600 rounded-xl text-xs font-bold transition-all cursor-pointer border border-zinc-200/50"
@@ -441,11 +444,11 @@ const StorefrontLayout = ({ children, cartCount, customer, onLogout, storeInfo }
                             <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-400 border-l border-[var(--color-primary)] pl-2">Quick Links</h3>
                             <ul className="space-y-2.5 text-xs font-bold">
                                 <li>
-                                    <Link to={`/store/${storeId}/catalog`} className="text-zinc-400 hover:text-white transition-colors relative py-1 hover:pl-1 transition-all">Catalog</Link>
+                                    <Link to={getLink('/catalog')} className="text-zinc-400 hover:text-white transition-colors relative py-1 hover:pl-1 transition-all">Catalog</Link>
                                 </li>
                                 {pages.map(page => (
                                     <li key={page.slug}>
-                                        <Link to={`/store/${storeId}/pages/${page.slug}`} className="text-zinc-400 hover:text-white transition-colors relative py-1 hover:pl-1 transition-all">{page.title}</Link>
+                                        <Link to={getLink(`/pages/${page.slug}`)} className="text-zinc-400 hover:text-white transition-colors relative py-1 hover:pl-1 transition-all">{page.title}</Link>
                                     </li>
                                 ))}
                             </ul>

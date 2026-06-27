@@ -32,7 +32,7 @@ export const gatewayAuthMiddleware = async (req, res, next) => {
         requiredAuth = 'admin';
     } else if (path.startsWith('/api/stores')) {
         // GET specific store is public; other actions (or list my-stores, dashboard-stats etc.) require merchant
-        if (method === 'GET' && path.match(/^\/api\/stores\/[a-f0-9]{24}$/i)) {
+        if (method === 'GET' && (path.match(/^\/api\/stores\/[a-f0-9]{24}$/i) || path === '/api/stores/domain/resolve')) {
             requiredAuth = null;
         } else {
             requiredAuth = 'merchant';
