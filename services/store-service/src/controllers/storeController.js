@@ -586,38 +586,50 @@ server {
                 sudo certbot --nginx -d ${domain} -d www.${domain} --non-interactive --agree-tos -m admin@storify.com --redirect && \
                 sudo nginx -s reload
             `;
+            exec(deployCmd, (error, stdout, stderr) => {
+                console.log(`[Execution Finish] Shell output returned`);
+                if (error) {
+                    console.error(`[Deployment Error - STEP FAILED] Error message:`, error.message);
+                    console.error(`[Deployment Stderr Output]:`, stderr);
+                    return;
+                }
+                console.log(`[Deployment Success - COMPLETE] Output:\n`, stdout);
+                if (stderr) {
+                    console.log(`[Deployment Warnings/Info]:`, stderr);
+                }
+            });
         } else {
-            console.log(`[Publish Step 6/7] Initializing Remote Deployment to: ${sshUser}@${serverIp}...`);
-            // Remote deployment: Transfer file to server via secure copy first, then configure Nginx
-            // This avoids Windows shell multi-line command parameter breaks completely
-            deployCmd = `
-                sshpass -p "${sshPass}" scp -o StrictHostKeyChecking=no ${localTempPath} ${sshUser}@${serverIp}:/tmp/${domain}.conf && \
-                sshpass -p "${sshPass}" ssh -o StrictHostKeyChecking=no ${sshUser}@${serverIp} "
-                    sudo mv /tmp/${domain}.conf ${destPath} && \
-                    sudo ln -sf ${destPath} ${linkPath} && \
-                    sudo nginx -t && \
-                    sudo nginx -s reload && \
-                    sudo certbot --nginx -d ${domain} -d www.${domain} --non-interactive --agree-tos -m admin@storify.com --redirect && \
-                    sudo nginx -s reload
-                "
-            `;
-        }
+            console.log(`[Publish Step 6/7] Initializing Remote Deployment to: ${sshUser}@${serverIp}...`);        console.log(`[Publish Step 7/7] Dispatching SCP file transfer command...`);
+            const scpCmd = `sshpass -p "${sshPass}" scp -o StrictHostKeyChecking=no ${localTempPath} ${sshUser}@${serverIp}:/tmp/${domain}.conf`;
+            console.log(`[SCP Command] Running: ${scpCmd}`);
 
-        console.log(`[Publish Step 7/7] Dispatching Shell Execution command...`);
-        console.log(`[Publish Command Info] ${deployCmd}`);
-        
-        exec(deployCmd, (error, stdout, stderr) => {
-            console.log(`[Execution Finish] Shell output returned`);
-            if (error) {
-                console.error(`[Deployment Error - STEP FAILED] Error message:`, error.message);
-                console.error(`[Deployment Stderr Output]:`, stderr);
-                return;
-            }
-            console.log(`[Deployment Success - COMPLETE] Output:\n`, stdout);
-            if (stderr) {
-                console.log(`[Deployment Warnings/Info]:`, stderr);
-            }
-        });
+            exec(scpCmd, (scpError, scpStdout, scpStderr) => {
+                if (scpError) {
+                    console.error(`[SCP Error - STEP 5/7 FAILED]`, scpError.message);
+                    console.error(`[SCP Stderr]`, scpStderr);
+                    return;
+                }
+                console.log(`[SCP Success] Configuration copied to remote /tmp/ folder`);
+
+                // Phase 2: Execute SSH commands
+                console.log(`[SSH Process] Dispatching remote config linkage commands...`);
+                const sshCmd = `sshpass -p "${sshPass}" ssh -o StrictHostKeyChecking=no ${sshUser}@${serverIp} "sudo mv -f /tmp/${domain}.conf ${destPath} && sudo ln -sf ${destPath} ${linkPath} && sudo nginx -t && sudo nginx -s reload && sudo certbot --nginx -d ${domain} -d www.${domain} --non-interactive --agree-tos -m admin@storify.com --redirect && sudo nginx -s reload"`;
+                console.log(`[SSH Command] Running: ${sshCmd}`);
+
+                exec(sshCmd, (sshError, sshStdout, sshStderr) => {
+                    console.log(`[SSH Execution Finish] Remote response received`);
+                    if (sshError) {
+                        console.error(`[SSH Error - DEPLOY FAILED] Details:`, sshError.message);
+                        console.error(`[SSH Stderr] Output:`, sshStderr);
+                        return;
+                    }
+                    console.log(`[SSH Success - DEPLOY COMPLETE] Output:\n`, sshStdout);
+                    if (sshStderr) {
+                        console.log(`[SSH Warnings/Info]:`, sshStderr);
+                    }
+                });
+            });
+        }
 
         res.status(200).json({
             success: true,
