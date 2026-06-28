@@ -77,11 +77,48 @@ const StorefrontCatalog = ({ cartCount, onAddToCart, customer, onLogout, storeIn
         return matchesCategory && matchesSearch;
     });
 
-    const toggleWishlist = (id) => {
-        if (wishlist.includes(id)) {
-            setWishlist(wishlist.filter(item => item !== id));
-        } else {
-            setWishlist([...wishlist, id]);
+    useEffect(() => {
+        if (customer && customer._id && storeId) {
+            fetch(`${GATEWAY_URL}/customers/${customer._id}/wishlist`, {
+                headers: { 'x-store-id': storeId }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.wishlist) {
+                        // Backend returns full populated products or just IDs depending on controller.
+                        // Let's extract IDs.
+                        const ids = data.wishlist.map(item => item._id || item);
+                        setWishlist(ids);
+                    }
+                })
+                .catch(err => console.error('Error fetching wishlist:', err));
+        }
+    }, [customer, storeId]);
+
+    const toggleWishlist = async (id) => {
+        if (!customer) {
+            alert('Please login to add products to your wishlist!');
+            return;
+        }
+
+        try {
+            const isWish = wishlist.includes(id);
+            setWishlist(isWish ? wishlist.filter(item => item !== id) : [...wishlist, id]);
+
+            const res = await fetch(`${GATEWAY_URL}/customers/${customer._id}/wishlist`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-store-id': storeId
+                },
+                body: JSON.stringify({ productId: id })
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                setWishlist(data.wishlist.map(item => item._id || item));
+            }
+        } catch (err) {
+            console.error('Error updating wishlist:', err);
         }
     };
 

@@ -92,6 +92,14 @@ const storeSchema = new mongoose.Schema({
             type: Boolean,
             default: true
         }
+    },
+    gstPercent: {
+        type: Number,
+        default: 0
+    },
+    platformCommission: {
+        type: Number,
+        default: 0
     }
 }, {
     timestamps: true

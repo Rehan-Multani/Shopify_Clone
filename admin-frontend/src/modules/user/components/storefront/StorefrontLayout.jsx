@@ -155,13 +155,28 @@ const StorefrontLayout = ({ children, cartCount, customer, onLogout, storeInfo }
                                 </svg>
                             </button>
 
+                            {/* Wishlist Link */}
+                            {customer && (
+                                <Link 
+                                    to={getLink('/wishlist')}
+                                    className="p-2.5 bg-white border border-zinc-200/80 rounded-xl hover:border-zinc-300 text-zinc-700 hover:text-red-500 transition-all shadow-sm hover:scale-[1.04] active:scale-95 flex items-center justify-center"
+                                    title="Wishlist"
+                                >
+                                    <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                    </svg>
+                                </Link>
+                            )}
+
                             {/* Customer Auth */}
                             {customer ? (
                                 <div className="hidden sm:flex items-center gap-2.5 bg-zinc-50 border border-zinc-200/60 pl-2 pr-3 py-1 rounded-full shadow-[0_1px_4px_rgba(0,0,0,0.01)]">
-                                    <div className="w-6.5 h-6.5 rounded-full text-white flex items-center justify-center text-[10px] font-black shadow-sm" style={{ backgroundColor: 'var(--color-primary)' }}>
-                                        {customer.name?.charAt(0).toUpperCase() || 'U'}
-                                    </div>
-                                    <span className="text-[11px] font-bold text-zinc-700">Hi, {customer.name.split(' ')[0]}</span>
+                                    <Link to={getLink('/account')} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                                        <div className="w-6.5 h-6.5 rounded-full text-white flex items-center justify-center text-[10px] font-black shadow-sm" style={{ backgroundColor: 'var(--color-primary)' }}>
+                                            {customer.name?.charAt(0).toUpperCase() || 'U'}
+                                        </div>
+                                        <span className="text-[11px] font-bold text-zinc-700">Hi, {customer.name.split(' ')[0]}</span>
+                                    </Link>
                                     <span className="w-px h-3 bg-zinc-200"></span>
                                     <button 
                                         onClick={onLogout}
@@ -278,21 +293,49 @@ const StorefrontLayout = ({ children, cartCount, customer, onLogout, storeInfo }
                                             {page.title}
                                         </Link>
                                     ))}
+                                    {customer && (
+                                        <>
+                                            <Link 
+                                                to={getLink('/wishlist')}
+                                                className={`text-sm font-bold tracking-wide transition-colors ${
+                                                    location.pathname.includes('/wishlist') 
+                                                        ? 'text-[var(--color-primary)]' 
+                                                        : 'text-zinc-600 hover:text-zinc-950'
+                                                }`}
+                                            >
+                                                Wishlist
+                                            </Link>
+                                            <Link 
+                                                to={getLink('/account')}
+                                                className={`text-sm font-bold tracking-wide transition-colors ${
+                                                    location.pathname.includes('/account') 
+                                                        ? 'text-[var(--color-primary)]' 
+                                                        : 'text-zinc-600 hover:text-zinc-950'
+                                                }`}
+                                            >
+                                                My Account
+                                            </Link>
+                                        </>
+                                    )}
                                 </nav>
                             </div>
 
                             <div className="border-t border-zinc-150 pt-6">
                                 {customer ? (
                                     <div className="space-y-4">
-                                        <div className="flex items-center gap-3">
+                                        <Link 
+                                            to={getLink('/account')}
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                            className="flex items-center gap-3 hover:opacity-85"
+                                        >
                                             <div className="w-8 h-8 rounded-full text-white flex items-center justify-center text-xs font-black shadow-sm" style={{ backgroundColor: 'var(--color-primary)' }}>
                                                 {customer.name?.charAt(0).toUpperCase() || 'U'}
                                             </div>
                                             <div className="min-w-0">
-                                                <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Logged in as</p>
+                                                <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">My Account</p>
                                                 <p className="text-sm font-bold text-zinc-800 truncate">{customer.name}</p>
                                             </div>
-                                        </div>
+                                        </Link>
                                         <button 
                                             onClick={() => {
                                                 onLogout();

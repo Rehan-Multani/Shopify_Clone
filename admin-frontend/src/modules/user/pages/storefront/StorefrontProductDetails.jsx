@@ -37,6 +37,49 @@ const StorefrontProductDetails = ({ cartCount, onAddToCart, customer, onLogout, 
         fetchProductDetails();
     }, [productId, storeId]);
 
+    useEffect(() => {
+        if (customer && customer._id && productId && storeId) {
+            fetch(`${GATEWAY_URL}/customers/${customer._id}/wishlist`, {
+                headers: { 'x-store-id': storeId }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.wishlist) {
+                        const ids = data.wishlist.map(item => item._id || item);
+                        setIsWishlisted(ids.includes(productId));
+                    }
+                })
+                .catch(err => console.error('Error loading wishlist state:', err));
+        }
+    }, [customer, productId, storeId]);
+
+    const handleWishlistToggle = async () => {
+        if (!customer) {
+            alert('Please login to add products to your wishlist!');
+            return;
+        }
+        try {
+            const nextState = !isWishlisted;
+            setIsWishlisted(nextState);
+
+            const res = await fetch(`${GATEWAY_URL}/customers/${customer._id}/wishlist`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-store-id': storeId
+                },
+                body: JSON.stringify({ productId })
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                const ids = data.wishlist.map(item => item._id || item);
+                setIsWishlisted(ids.includes(productId));
+            }
+        } catch (err) {
+            console.error('Error toggling wishlist:', err);
+        }
+    };
+
     const handleQuantityChange = (val) => {
         const next = Number(val);
         if (next < 1) return;
@@ -127,7 +170,7 @@ const StorefrontProductDetails = ({ cartCount, onAddToCart, customer, onLogout, 
                         <div className="aspect-square bg-[#fafafa] rounded-2xl overflow-hidden border border-zinc-200/40 flex items-center justify-center shadow-sm relative group/image">
                             {/* Wishlist Button */}
                             <button 
-                                onClick={() => setIsWishlisted(!isWishlisted)}
+                                onClick={handleWishlistToggle}
                                 className="absolute top-4 right-4 z-10 w-9 h-9 bg-white border border-zinc-200 rounded-full flex items-center justify-center text-zinc-400 hover:text-red-500 transition-all cursor-pointer shadow-md"
                             >
                                 <svg 

@@ -43,16 +43,52 @@ const orderSchema = new mongoose.Schema({
         required: true,
         default: 0
     },
+    subtotal: {
+        type: Number,
+        required: true,
+        default: 0
+    },
+    gstAmount: {
+        type: Number,
+        default: 0
+    },
+    platformCommissionAmount: {
+        type: Number,
+        default: 0
+    },
     status: {
         type: String,
-        enum: ['pending', 'accepted', 'rejected', 'completed'],
+        enum: ['pending', 'accepted', 'rejected', 'shipped', 'out_for_delivery', 'delivered', 'cancelled'],
         default: 'pending'
     },
     paymentStatus: {
         type: String,
         enum: ['pending', 'paid', 'refunded'],
         default: 'pending'
-    }
+    },
+    customerId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Customer'
+    },
+    customerPhone: {
+        type: String,
+        default: ''
+    },
+    paymentMethod: {
+        type: String,
+        default: 'COD'
+    },
+    shippingAddress: {
+        address: { type: String, default: '' },
+        city: { type: String, default: '' },
+        state: { type: String, default: '' },
+        pincode: { type: String, default: '' }
+    },
+    trackingStatus: [{
+        status: { type: String, required: true },
+        updatedAt: { type: Date, default: Date.now },
+        description: { type: String, default: '' }
+    }]
 }, {
     timestamps: true
 });

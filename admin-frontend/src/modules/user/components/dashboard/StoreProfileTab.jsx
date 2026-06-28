@@ -18,7 +18,9 @@ const StoreProfileTab = () => {
         storeLogo: '',
         facebook: '',
         instagram: '',
-        twitter: ''
+        twitter: '',
+        gstPercent: 0,
+        platformCommission: 0
     });
 
     const [paymentSettings, setPaymentSettings] = useState({
@@ -54,7 +56,9 @@ const StoreProfileTab = () => {
                         storeLogo: data.storeLogo || '',
                         facebook: data.socialLinks?.facebook || '',
                         instagram: data.socialLinks?.instagram || '',
-                        twitter: data.socialLinks?.twitter || ''
+                        twitter: data.socialLinks?.twitter || '',
+                        gstPercent: data.gstPercent || 0,
+                        platformCommission: data.platformCommission || 0
                     });
                     if (data.paymentSettings) {
                         setPaymentSettings({
@@ -359,6 +363,39 @@ const StoreProfileTab = () => {
                         >
                             <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${paymentSettings.onlineEnabled ? 'translate-x-5' : ''}`}></span>
                         </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* Tax & Handling Settings Section */}
+            <div className="bg-white rounded-xl border border-[#e3e3e3] shadow-sm p-6 space-y-5">
+                <h2 className="text-sm font-bold text-[#202223] pb-3 border-b border-gray-100 uppercase tracking-wider">Tax & Handling Charges</h2>
+                <p className="text-xs text-[#5c5f62]">Configure tax percentages and handling charges applied at checkout.</p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-xs font-semibold text-[#5c5f62] mb-1.5">GST (%)</label>
+                        <input 
+                            type="number" 
+                            min="0"
+                            max="100"
+                            value={form.gstPercent} 
+                            onChange={e => set('gstPercent', Number(e.target.value))}
+                            className="w-full px-3 py-2 border border-[#d3d3d3] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30 bg-white" 
+                            placeholder="e.g. 18" 
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-semibold text-[#5c5f62] mb-1.5">Platform Commission / Handling Fee (%)</label>
+                        <input 
+                            type="number" 
+                            min="0"
+                            max="100"
+                            value={form.platformCommission} 
+                            onChange={e => set('platformCommission', Number(e.target.value))}
+                            className="w-full px-3 py-2 border border-[#d3d3d3] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30 bg-white" 
+                            placeholder="e.g. 2" 
+                        />
                     </div>
                 </div>
             </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import StorefrontLayout from '../../components/storefront/StorefrontLayout';
 import { getStorePath } from '../../components/storefront/storeUrlHelper';
@@ -20,8 +20,97 @@ const StorefrontCheckout = ({ cart, cartCount, onClearCart, customer, onLogout, 
         pincode: ''
     });
 
+    const [savedAddresses, setSavedAddresses] = useState([]);
+    const [selectedAddressId, setSelectedAddressId] = useState('');
+    const [showNewAddressForm, setShowNewAddressForm] = useState(false);
+    const [saveAddressToBook, setSaveAddressToBook] = useState(false);
+
+    // Prefill default shipping address if customer is logged in
+    useEffect(() => {
+        if (customer && customer._id && storeId) {
+            fetch(`${GATEWAY_URL}/customers/${customer._id}`, {
+                headers: { 'x-store-id': storeId }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.addresses) {
+                        setSavedAddresses(data.addresses);
+                        const defaultAddress = data.addresses.find(addr => addr.isDefault);
+                        if (defaultAddress) {
+                            setSelectedAddressId(defaultAddress._id);
+                            setShowNewAddressForm(false);
+                            setForm({
+                                name: defaultAddress.fullName || customer.name || '',
+                                email: customer.email || '',
+                                phone: defaultAddress.phoneNumber || customer.number || '',
+                                address: defaultAddress.addressLine1 + (defaultAddress.addressLine2 ? ', ' + defaultAddress.addressLine2 : ''),
+                                city: defaultAddress.city || '',
+                                state: defaultAddress.state || '',
+                                pincode: defaultAddress.postalCode || ''
+                            });
+                        } else if (data.addresses.length > 0) {
+                            const firstAddress = data.addresses[0];
+                            setSelectedAddressId(firstAddress._id);
+                            setShowNewAddressForm(false);
+                            setForm({
+                                name: firstAddress.fullName || customer.name || '',
+                                email: customer.email || '',
+                                phone: firstAddress.phoneNumber || customer.number || '',
+                                address: firstAddress.addressLine1 + (firstAddress.addressLine2 ? ', ' + firstAddress.addressLine2 : ''),
+                                city: firstAddress.city || '',
+                                state: firstAddress.state || '',
+                                pincode: firstAddress.postalCode || ''
+                            });
+                        } else {
+                            setSelectedAddressId('new');
+                            setShowNewAddressForm(true);
+                        }
+                    } else {
+                        setSelectedAddressId('new');
+                        setShowNewAddressForm(true);
+                    }
+                })
+                .catch(err => {
+                    console.error('Error prefilling address in checkout:', err);
+                    setSelectedAddressId('new');
+                    setShowNewAddressForm(true);
+                });
+        } else {
+            setSelectedAddressId('new');
+            setShowNewAddressForm(true);
+        }
+    }, [customer, storeId]);
+
+    const handleSelectAddress = (addr) => {
+        setSelectedAddressId(addr._id);
+        setShowNewAddressForm(false);
+        setForm({
+            name: addr.fullName || customer?.name || '',
+            email: customer?.email || '',
+            phone: addr.phoneNumber || customer?.number || '',
+            address: addr.addressLine1 + (addr.addressLine2 ? ', ' + addr.addressLine2 : ''),
+            city: addr.city || '',
+            state: addr.state || '',
+            pincode: addr.postalCode || ''
+        });
+    };
+
+    const handleSelectNewAddress = () => {
+        setSelectedAddressId('new');
+        setShowNewAddressForm(true);
+        setForm({
+            name: customer?.name || '',
+            email: customer?.email || '',
+            phone: customer?.number || '',
+            address: '',
+            city: '',
+            state: '',
+            pincode: ''
+        });
+    };
+
     const isCodEnabled = storeInfo?.paymentSettings?.codEnabled ?? true;
-    const isOnlineEnabled = storeInfo?.paymentSettings?.razorpayEnabled ?? false;
+    const isOnlineEnabled = storeInfo?.paymentSettings?.onlineEnabled ?? false;
 
     const [paymentMethod, setPaymentMethod] = useState('COD');
     const [error, setError] = useState('');
@@ -29,7 +118,7 @@ const StorefrontCheckout = ({ cart, cartCount, onClearCart, customer, onLogout, 
     const [orderSuccess, setOrderSuccess] = useState(null);
 
     // Set default payment method based on settings
-    React.useEffect(() => {
+    useEffect(() => {
         if (isCodEnabled) {
             setPaymentMethod('COD');
         } else if (isOnlineEnabled) {
@@ -37,7 +126,61 @@ const StorefrontCheckout = ({ cart, cartCount, onClearCart, customer, onLogout, 
         }
     }, [isCodEnabled, isOnlineEnabled]);
 
+    const [couponCode, setCouponCode] = useState('');
+    const [appliedCoupon, setAppliedCoupon] = useState(null);
+    const [couponDiscount, setCouponDiscount] = useState(0);
+    const [couponError, setCouponError] = useState('');
+    const [applyingCoupon, setApplyingCoupon] = useState(false);
+
     const subtotal = cart.reduce((sum, item) => sum + (item.sellingPrice * item.qty), 0);
+    const gstPercent = storeInfo?.gstPercent || 0;
+    const platformCommission = storeInfo?.platformCommission || 0;
+    const gstAmount = Math.round(subtotal * (gstPercent / 100));
+    const platformCommissionAmount = Math.round(subtotal * (platformCommission / 100));
+    const totalAmount = Math.max(0, subtotal - couponDiscount + gstAmount + platformCommissionAmount);
+
+    const handleApplyCoupon = async (e) => {
+        e.preventDefault();
+        if (!couponCode.trim()) return;
+        setApplyingCoupon(true);
+        setCouponError('');
+        try {
+            const res = await fetch(`${GATEWAY_URL}/coupons/validate?code=${couponCode.trim()}&cartAmount=${subtotal}`, {
+                headers: { 'x-store-id': storeId }
+            });
+            const data = await res.json();
+            if (res.ok && data.valid) {
+                const cop = data.coupon;
+                setAppliedCoupon(cop);
+                let disc = 0;
+                if (cop.discountType === 'percentage') {
+                    disc = Math.round(subtotal * (cop.discountValue / 100));
+                } else if (cop.discountType === 'flat') {
+                    disc = cop.discountValue;
+                }
+                setCouponDiscount(Math.min(disc, subtotal));
+                setCouponError('');
+            } else {
+                setCouponError(data.message || 'Invalid coupon code');
+                setAppliedCoupon(null);
+                setCouponDiscount(0);
+            }
+        } catch (err) {
+            console.error('Error applying coupon:', err);
+            setCouponError('Network error while applying coupon.');
+            setAppliedCoupon(null);
+            setCouponDiscount(0);
+        } finally {
+            setApplyingCoupon(false);
+        }
+    };
+
+    const handleRemoveCoupon = () => {
+        setAppliedCoupon(null);
+        setCouponDiscount(0);
+        setCouponCode('');
+        setCouponError('');
+    };
 
     const handleInputChange = (e) => {
         setForm({
@@ -75,6 +218,31 @@ const StorefrontCheckout = ({ cart, cartCount, onClearCart, customer, onLogout, 
         }));
 
         try {
+            // Save new address to address book if checkbox is ticked
+            if (selectedAddressId === 'new' && saveAddressToBook && customer && customer._id) {
+                try {
+                    await fetch(`${GATEWAY_URL}/customers/${customer._id}/addresses`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'x-store-id': storeId
+                        },
+                        body: JSON.stringify({
+                            fullName: form.name,
+                            phoneNumber: form.phone,
+                            addressLine1: form.address,
+                            city: form.city,
+                            state: form.state,
+                            postalCode: form.pincode,
+                            country: 'India',
+                            isDefault: savedAddresses.length === 0
+                        })
+                    });
+                } catch (err) {
+                    console.error('Error saving new address from checkout:', err);
+                }
+            }
+
             const res = await fetch(`${GATEWAY_URL}/orders`, {
                 method: 'POST',
                 headers: {
@@ -82,6 +250,7 @@ const StorefrontCheckout = ({ cart, cartCount, onClearCart, customer, onLogout, 
                     'x-store-id': storeId
                 },
                 body: JSON.stringify({
+                    customerId: customer?._id || null,
                     customerName: form.name,
                     customerEmail: form.email,
                     customerPhone: form.phone,
@@ -92,7 +261,10 @@ const StorefrontCheckout = ({ cart, cartCount, onClearCart, customer, onLogout, 
                         pincode: form.pincode
                     },
                     products: productsPayload,
-                    totalAmount: subtotal,
+                    subtotal: subtotal,
+                    gstAmount: gstAmount,
+                    platformCommissionAmount: platformCommissionAmount,
+                    totalAmount: totalAmount,
                     status: 'pending',
                     paymentStatus: paymentMethod === 'Razorpay' ? 'paid' : 'pending',
                     paymentMethod: paymentMethod,
@@ -138,7 +310,7 @@ const StorefrontCheckout = ({ cart, cartCount, onClearCart, customer, onLogout, 
                         </p>
                         <p className="flex justify-between">
                             <span>Amount Paid</span>
-                            <span className="text-zinc-900 font-bold">₹{subtotal.toLocaleString()}</span>
+                            <span className="text-zinc-900 font-bold">₹{(orderSuccess.totalAmount || totalAmount).toLocaleString()}</span>
                         </p>
                     </div>
                     <Link 
@@ -202,96 +374,180 @@ const StorefrontCheckout = ({ cart, cartCount, onClearCart, customer, onLogout, 
                             )}
 
                             {step === 1 ? (
-                                <form onSubmit={handleNextStep} className="bg-white border border-zinc-200/60 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4" style={{ borderRadius: 'var(--border-radius)' }}>
+                                <form onSubmit={handleNextStep} className="bg-white border border-zinc-200/60 rounded-3xl p-6 sm:p-8 shadow-sm space-y-5" style={{ borderRadius: 'var(--border-radius)' }}>
                                     <h2 className="text-sm font-black text-zinc-900 uppercase tracking-widest mb-2 pb-2 border-b border-zinc-100">Shipping Information</h2>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-wider mb-1.5 pl-0.5">Full Name</label>
-                                            <input 
-                                                type="text" 
-                                                name="name" 
-                                                required
-                                                value={form.name} 
-                                                onChange={handleInputChange}
-                                                className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-zinc-50/30 focus:bg-white transition-all focus:border-[var(--color-primary)] input-premium" 
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-wider mb-1.5 pl-0.5">Phone Number</label>
-                                            <input 
-                                                type="tel" 
-                                                name="phone" 
-                                                required
-                                                value={form.phone} 
-                                                onChange={handleInputChange}
-                                                className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-zinc-50/30 focus:bg-white transition-all focus:border-[var(--color-primary)] input-premium" 
-                                            />
-                                        </div>
-                                    </div>
 
-                                    <div>
-                                        <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-wider mb-1.5 pl-0.5">Email Address</label>
-                                        <input 
-                                            type="email" 
-                                            name="email" 
-                                            required
-                                            value={form.email} 
-                                            onChange={handleInputChange}
-                                            className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-zinc-50/30 focus:bg-white transition-all focus:border-[var(--color-primary)] input-premium" 
-                                        />
-                                    </div>
+                                    {/* Saved Addresses List */}
+                                    {savedAddresses.length > 0 && (
+                                        <div className="space-y-3 mb-6">
+                                            <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-wider pl-0.5">Select a Saved Address</label>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                                {savedAddresses.map((addr) => (
+                                                    <div 
+                                                        key={addr._id}
+                                                        type="button"
+                                                        onClick={() => handleSelectAddress(addr)}
+                                                        className={`border p-4.5 rounded-2xl cursor-pointer transition-all flex flex-col justify-between relative text-left ${
+                                                            selectedAddressId === addr._id 
+                                                                ? 'border-[var(--color-primary)] bg-[var(--color-primary-light)]/20 shadow-[0_4px_12px_rgba(0,0,0,0.02)]' 
+                                                                : 'border-zinc-200 bg-zinc-50/10 hover:border-zinc-300'
+                                                        }`}
+                                                    >
+                                                        {selectedAddressId === addr._id && (
+                                                            <span 
+                                                                className="absolute top-3 right-3 text-[7px] font-black uppercase tracking-wider text-white px-1.5 py-0.5 rounded"
+                                                                style={{ backgroundColor: 'var(--color-primary)' }}
+                                                            >
+                                                                Selected
+                                                            </span>
+                                                        )}
+                                                        <div className="space-y-1">
+                                                            <p className="text-xs font-black text-zinc-800">{addr.fullName}</p>
+                                                            <p className="text-[10px] text-zinc-450 leading-normal">
+                                                                {addr.addressLine1}
+                                                                {addr.addressLine2 && `, ${addr.addressLine2}`}
+                                                                <br />
+                                                                {addr.city}, {addr.state} - {addr.postalCode}
+                                                            </p>
+                                                            <p className="text-[10px] text-zinc-400 font-bold uppercase mt-1">Phone: {addr.phoneNumber}</p>
+                                                        </div>
+                                                    </div>
+                                                ))}
 
-                                    <div>
-                                        <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-wider mb-1.5 pl-0.5">Street Address</label>
-                                        <input 
-                                            type="text" 
-                                            name="address" 
-                                            required
-                                            value={form.address} 
-                                            onChange={handleInputChange}
-                                            className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-zinc-50/30 focus:bg-white transition-all focus:border-[var(--color-primary)] input-premium" 
-                                        />
-                                    </div>
+                                                <div 
+                                                    type="button"
+                                                    onClick={handleSelectNewAddress}
+                                                    className={`border p-4.5 rounded-2xl cursor-pointer transition-all flex flex-col items-center justify-center border-dashed text-zinc-400 hover:text-zinc-700 min-h-[100px] ${
+                                                        selectedAddressId === 'new'
+                                                            ? 'border-[var(--color-primary)] bg-[var(--color-primary-light)]/10 text-[var(--color-primary)]'
+                                                            : 'border-zinc-200 hover:border-zinc-300 bg-zinc-50/10'
+                                                    }`}
+                                                >
+                                                    <svg className="w-5 h-5 mb-1" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                                    </svg>
+                                                    <span className="text-[9px] font-black uppercase tracking-wider">Use Another Address</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
 
-                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                        <div>
-                                            <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-wider mb-1.5 pl-0.5">City</label>
-                                            <input 
-                                                type="text" 
-                                                name="city" 
-                                                required
-                                                value={form.city} 
-                                                onChange={handleInputChange}
-                                                className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-zinc-50/30 focus:bg-white transition-all focus:border-[var(--color-primary)] input-premium" 
-                                            />
+                                    {/* Read-only Saved Address Card if selected */}
+                                    {!showNewAddressForm && selectedAddressId && (
+                                        <div className="bg-zinc-50 border border-zinc-150 p-5 rounded-2xl space-y-2 animate-scale-in text-left">
+                                            <p className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider pl-0.5">Shipping details</p>
+                                            <p className="text-xs font-black text-zinc-800">{form.name}</p>
+                                            <p className="text-xs text-zinc-650 leading-relaxed font-semibold">{form.address}, {form.city}, {form.state} - {form.pincode}</p>
+                                            <p className="text-xs text-zinc-650 font-bold mt-1">Phone: {form.phone}</p>
                                         </div>
-                                        <div>
-                                            <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-wider mb-1.5 pl-0.5">State</label>
-                                            <input 
-                                                type="text" 
-                                                name="state" 
-                                                required
-                                                value={form.state} 
-                                                onChange={handleInputChange}
-                                                className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-zinc-50/30 focus:bg-white transition-all focus:border-[var(--color-primary)] input-premium" 
-                                            />
+                                    )}
+
+                                    {/* New Address Input Form */}
+                                    {showNewAddressForm && (
+                                        <div className="space-y-4 pt-4 border-t border-zinc-100/60 animate-scale-in text-left">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                <div>
+                                                    <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-wider mb-1.5 pl-0.5">Full Name *</label>
+                                                    <input 
+                                                        type="text" 
+                                                        name="name" 
+                                                        required
+                                                        value={form.name} 
+                                                        onChange={handleInputChange}
+                                                        className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-zinc-50/30 focus:bg-white transition-all focus:border-[var(--color-primary)] input-premium" 
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-wider mb-1.5 pl-0.5">Phone Number *</label>
+                                                    <input 
+                                                        type="tel" 
+                                                        name="phone" 
+                                                        required
+                                                        value={form.phone} 
+                                                        onChange={handleInputChange}
+                                                        className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-zinc-50/30 focus:bg-white transition-all focus:border-[var(--color-primary)] input-premium" 
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-wider mb-1.5 pl-0.5">Email Address *</label>
+                                                <input 
+                                                    type="email" 
+                                                    name="email" 
+                                                    required
+                                                    value={form.email} 
+                                                    onChange={handleInputChange}
+                                                    className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-zinc-50/30 focus:bg-white transition-all focus:border-[var(--color-primary)] input-premium" 
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-wider mb-1.5 pl-0.5">Street Address *</label>
+                                                <input 
+                                                    type="text" 
+                                                    name="address" 
+                                                    required
+                                                    value={form.address} 
+                                                    onChange={handleInputChange}
+                                                    className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-zinc-50/30 focus:bg-white transition-all focus:border-[var(--color-primary)] input-premium" 
+                                                />
+                                            </div>
+
+                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                                <div>
+                                                    <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-wider mb-1.5 pl-0.5">City *</label>
+                                                    <input 
+                                                        type="text" 
+                                                        name="city" 
+                                                        required
+                                                        value={form.city} 
+                                                        onChange={handleInputChange}
+                                                        className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-zinc-50/30 focus:bg-white transition-all focus:border-[var(--color-primary)] input-premium" 
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-wider mb-1.5 pl-0.5">State *</label>
+                                                    <input 
+                                                        type="text" 
+                                                        name="state" 
+                                                        required
+                                                        value={form.state} 
+                                                        onChange={handleInputChange}
+                                                        className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-zinc-50/30 focus:bg-white transition-all focus:border-[var(--color-primary)] input-premium" 
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-wider mb-1.5 pl-0.5">Pincode *</label>
+                                                    <input 
+                                                        type="text" 
+                                                        name="pincode" 
+                                                        required
+                                                        value={form.pincode} 
+                                                        onChange={handleInputChange}
+                                                        className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-zinc-50/30 focus:bg-white transition-all focus:border-[var(--color-primary)] input-premium" 
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            {customer && (
+                                                <div className="flex items-center gap-2 pt-2 select-none">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        id="saveAddressToBook" 
+                                                        checked={saveAddressToBook} 
+                                                        onChange={(e) => setSaveAddressToBook(e.target.checked)}
+                                                        className="rounded border-zinc-300 text-[var(--color-primary)] focus:ring-[var(--color-primary)] cursor-pointer"
+                                                    />
+                                                    <label htmlFor="saveAddressToBook" className="text-[10px] font-bold text-zinc-650 cursor-pointer">Save this address to my address book</label>
+                                                </div>
+                                            )}
                                         </div>
-                                        <div>
-                                            <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-wider mb-1.5 pl-0.5">Pincode</label>
-                                            <input 
-                                                type="text" 
-                                                name="pincode" 
-                                                required
-                                                value={form.pincode} 
-                                                onChange={handleInputChange}
-                                                className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-zinc-50/30 focus:bg-white transition-all focus:border-[var(--color-primary)] input-premium" 
-                                            />
-                                        </div>
-                                    </div>
+                                    )}
 
                                     <button 
                                         type="submit"
-                                        className="w-full py-4 text-center text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all active:scale-[0.98] shadow-md hover:opacity-95 cursor-pointer btn-premium"
+                                        className="w-full py-4 text-center text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all active:scale-[0.98] shadow-md hover:opacity-95 cursor-pointer btn-premium mt-4"
                                         style={{ backgroundColor: 'var(--color-primary)', borderRadius: 'var(--border-radius)' }}
                                     >
                                         Continue to Payment
@@ -420,11 +676,70 @@ const StorefrontCheckout = ({ cart, cartCount, onClearCart, customer, onLogout, 
                                     ))}
                                 </div>
 
+                                {/* Coupon promo code form */}
+                                <div className="border-t border-zinc-100 pt-4 space-y-2">
+                                    <label className="block text-[9px] font-black text-zinc-400 uppercase tracking-wider pl-0.5 text-left">Promo Coupon Code</label>
+                                    {appliedCoupon ? (
+                                        <div className="flex items-center justify-between bg-emerald-50 border border-emerald-100 px-3 py-2 rounded-xl text-xs font-semibold text-emerald-800 animate-scale-in">
+                                            <span className="flex items-center gap-1.5">
+                                                <span className="text-[10px] font-black tracking-wider uppercase bg-emerald-600 text-white px-1.5 py-0.5 rounded">{appliedCoupon.code}</span>
+                                                Applied
+                                            </span>
+                                            <button 
+                                                type="button" 
+                                                onClick={handleRemoveCoupon}
+                                                className="text-[9px] font-black uppercase text-red-500 hover:text-red-750 tracking-wider transition-colors ml-2 cursor-pointer"
+                                            >
+                                                Remove
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <form onSubmit={handleApplyCoupon} className="flex gap-2">
+                                            <input 
+                                                type="text" 
+                                                value={couponCode}
+                                                onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                                                placeholder="ENTER CODE" 
+                                                className="flex-grow min-w-0 px-3 py-2 border border-zinc-200 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)] font-bold tracking-widest bg-zinc-50/20"
+                                            />
+                                            <button 
+                                                type="submit" 
+                                                disabled={applyingCoupon || !couponCode.trim()}
+                                                className="px-4 py-2 text-white text-[9px] font-black uppercase tracking-widest rounded-xl transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
+                                                style={{ backgroundColor: 'var(--color-primary)' }}
+                                            >
+                                                {applyingCoupon ? '...' : 'Apply'}
+                                            </button>
+                                        </form>
+                                    )}
+                                    {couponError && (
+                                        <p className="text-[9px] font-bold text-red-500 pl-0.5 text-left animate-slide-down">{couponError}</p>
+                                    )}
+                                </div>
+
                                 <div className="space-y-3 pt-3 border-t border-zinc-100 text-xs font-semibold text-zinc-650">
                                     <div className="flex justify-between">
                                         <span>Subtotal</span>
                                         <span className="text-zinc-950 font-bold">₹{subtotal.toLocaleString()}</span>
                                     </div>
+                                    {couponDiscount > 0 && (
+                                        <div className="flex justify-between text-emerald-700 font-bold animate-fade-in">
+                                            <span>Discount Code ({appliedCoupon?.code})</span>
+                                            <span>- ₹{couponDiscount.toLocaleString()}</span>
+                                        </div>
+                                    )}
+                                    {gstPercent > 0 && (
+                                        <div className="flex justify-between animate-fade-in">
+                                            <span>GST ({gstPercent}%)</span>
+                                            <span className="text-zinc-950 font-bold">₹{gstAmount.toLocaleString()}</span>
+                                        </div>
+                                    )}
+                                    {platformCommission > 0 && (
+                                        <div className="flex justify-between animate-fade-in">
+                                            <span>Handling Charges ({platformCommission}%)</span>
+                                            <span className="text-zinc-950 font-bold">₹{platformCommissionAmount.toLocaleString()}</span>
+                                        </div>
+                                    )}
                                     <div className="flex justify-between">
                                         <span>Shipping cost</span>
                                         <span className="text-emerald-700 font-bold uppercase tracking-wider text-[10px]">Free</span>
@@ -432,7 +747,7 @@ const StorefrontCheckout = ({ cart, cartCount, onClearCart, customer, onLogout, 
                                     <hr className="border-zinc-100" />
                                     <div className="flex justify-between text-sm font-black text-zinc-900 uppercase tracking-wide">
                                         <span>Order Total</span>
-                                        <span>₹{subtotal.toLocaleString()}</span>
+                                        <span>₹{totalAmount.toLocaleString()}</span>
                                     </div>
                                 </div>
                             </div>

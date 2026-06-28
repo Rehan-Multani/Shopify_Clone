@@ -3,6 +3,7 @@ import { useParams, Link, useLocation, Navigate } from 'react-router-dom';
 import DashboardSidebar from '../components/DashboardSidebar';
 import DashboardHeader from '../components/DashboardHeader';
 import OrdersTab from '../components/dashboard/OrdersTab';
+import OrderDetail from '../components/dashboard/OrderDetail';
 import DraftsTab from '../components/dashboard/DraftsTab';
 import AbandonedTab from '../components/dashboard/AbandonedTab';
 import CreateOrder from '../components/dashboard/CreateOrder';
@@ -161,6 +162,12 @@ const Dashboard = () => {
             if (location.pathname.endsWith('/drafts')) return <DraftsTab />;
             if (location.pathname.endsWith('/abandoned')) return <AbandonedTab />;
             if (location.pathname.endsWith('/new')) return <CreateOrder />;
+            
+            const pathParts = location.pathname.split('/');
+            const lastPart = pathParts[pathParts.length - 1];
+            if (lastPart && lastPart.match(/^[a-f0-9]{24}$/)) {
+                return <OrderDetail orderId={lastPart} />;
+            }
             return <OrdersTab />;
         }
 

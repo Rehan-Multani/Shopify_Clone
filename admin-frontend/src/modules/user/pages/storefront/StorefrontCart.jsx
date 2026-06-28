@@ -11,6 +11,11 @@ const StorefrontCart = ({ cart, cartCount, onUpdateCartQty, onRemoveFromCart, cu
     const storeId = storeInfo?._id || paramStoreId;
 
     const subtotal = cart.reduce((sum, item) => sum + (item.sellingPrice * item.qty), 0);
+    const gstPercent = storeInfo?.gstPercent || 0;
+    const platformCommission = storeInfo?.platformCommission || 0;
+    const gstAmount = Math.round(subtotal * (gstPercent / 100));
+    const platformCommissionAmount = Math.round(subtotal * (platformCommission / 100));
+    const totalAmount = subtotal + gstAmount + platformCommissionAmount;
     
     // Shipping goal target (e.g. Free shipping above 499)
     const shippingThreshold = 499;
@@ -134,6 +139,18 @@ const StorefrontCart = ({ cart, cartCount, onUpdateCartQty, onRemoveFromCart, cu
                                     <span>Subtotal</span>
                                     <span className="text-zinc-950 font-bold">₹{subtotal.toLocaleString()}</span>
                                 </div>
+                                {gstPercent > 0 && (
+                                    <div className="flex justify-between animate-fade-in">
+                                        <span>GST ({gstPercent}%)</span>
+                                        <span className="text-zinc-950 font-bold">₹{gstAmount.toLocaleString()}</span>
+                                    </div>
+                                )}
+                                {platformCommission > 0 && (
+                                    <div className="flex justify-between animate-fade-in">
+                                        <span>Handling Charges ({platformCommission}%)</span>
+                                        <span className="text-zinc-950 font-bold">₹{platformCommissionAmount.toLocaleString()}</span>
+                                    </div>
+                                )}
                                 <div className="flex justify-between">
                                     <span>Shipping</span>
                                     <span className="text-emerald-700 font-bold uppercase tracking-wider text-[10px]">Free</span>
@@ -141,7 +158,7 @@ const StorefrontCart = ({ cart, cartCount, onUpdateCartQty, onRemoveFromCart, cu
                                 <hr className="border-zinc-100" />
                                 <div className="flex justify-between text-sm font-black text-zinc-900 uppercase tracking-wide">
                                     <span>Total Amount</span>
-                                    <span>₹{subtotal.toLocaleString()}</span>
+                                    <span>₹{totalAmount.toLocaleString()}</span>
                                 </div>
                             </div>
 

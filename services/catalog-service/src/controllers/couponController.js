@@ -159,3 +159,49 @@ export const toggleCouponStatus = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+// @desc    Validate coupon for customer checkout
+// @route   GET /api/coupons/validate
+// @access  Public
+export const validateCoupon = async (req, res) => {
+    try {
+        const storeId = req.headers['x-store-id'];
+        const { code, cartAmount } = req.query;
+
+        if (!storeId) {
+            return res.status(400).json({ message: 'Store ID header (x-store-id) is required' });
+        }
+        if (!code) {
+            return res.status(400).json({ message: 'Coupon code query parameter is required' });
+        }
+
+        const coupon = await Coupon.findOne({ store: storeId, code: code.trim().toUpperCase() });
+        if (!coupon) {
+            return res.status(404).json({ valid: false, message: 'Coupon code not found' });
+        }
+
+        if (!coupon.isValid) {
+            return res.status(400).json({ valid: false, message: 'This coupon is inactive, expired, or fully used' });
+        }
+
+        if (cartAmount && Number(cartAmount) < coupon.minimumOrderAmount) {
+            return res.status(400).json({ 
+                valid: false, 
+                message: `Minimum order amount to apply this coupon is ₹${coupon.minimumOrderAmount}` 
+            });
+        }
+
+        res.json({
+            valid: true,
+            coupon: {
+                _id: coupon._id,
+                code: coupon.code,
+                discountType: coupon.discountType,
+                discountValue: coupon.discountValue,
+                minimumOrderAmount: coupon.minimumOrderAmount
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};

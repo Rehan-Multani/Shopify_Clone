@@ -265,6 +265,12 @@ const OrdersTab = () => {
                                         </td>
                                         <td className="px-5 py-3.5 text-right">
                                             <div className="flex items-center justify-end gap-2 flex-wrap">
+                                                <Link 
+                                                    to={`/dashboard/orders/${order._id}`}
+                                                    className="text-xs font-bold text-[#202223] hover:bg-gray-100 bg-gray-50 px-2.5 py-1 rounded-lg border border-gray-200 transition-all active:scale-95"
+                                                >
+                                                    View Details
+                                                </Link>
                                                 {order.paymentStatus !== 'paid' && (
                                                     <button 
                                                         onClick={() => handleUpdateStatus(order._id, order.status, 'paid')}

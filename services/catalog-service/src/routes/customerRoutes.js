@@ -11,7 +11,13 @@ import {
     getSubscribers,
     deleteSubscriber,
     registerCustomer,
-    loginCustomer
+    loginCustomer,
+    toggleWishlist,
+    getWishlist,
+    addCustomerAddress,
+    updateCustomerAddress,
+    deleteCustomerAddress,
+    setDefaultCustomerAddress
 } from '../controllers/customerController.js';
 import { uploadProductImagesMiddleware } from '../../../shared/uploadMiddleware.js';
 
@@ -23,6 +29,22 @@ router.post('/import', importCustomers);
 // Customer Auth routes
 router.post('/register', registerCustomer);
 router.post('/login', loginCustomer);
+
+// Wishlist routes
+router.route('/:id/wishlist')
+    .get(getWishlist)
+    .put(toggleWishlist);
+
+// Address book routes
+router.route('/:id/addresses')
+    .post(addCustomerAddress);
+
+router.route('/:id/addresses/:addressId')
+    .put(updateCustomerAddress)
+    .delete(deleteCustomerAddress);
+
+router.route('/:id/addresses/:addressId/default')
+    .put(setDefaultCustomerAddress);
 
 // Newsletter Subscriber routes
 router.post('/subscribe', subscribeNewsletter);

@@ -7,6 +7,9 @@ import StorefrontCart from '../../pages/storefront/StorefrontCart';
 import StorefrontCheckout from '../../pages/storefront/StorefrontCheckout';
 import StorefrontAuth from '../../pages/storefront/StorefrontAuth';
 import StorefrontPage from '../../pages/storefront/StorefrontPage';
+import StorefrontWishlist from '../../pages/storefront/StorefrontWishlist';
+import StorefrontAccount from '../../pages/storefront/StorefrontAccount';
+import StorefrontOrderTrack from '../../pages/storefront/StorefrontOrderTrack';
 import { getStorePath } from './storeUrlHelper';
 
 const GATEWAY_URL = import.meta.env.VITE_API_BASE_URL;
@@ -251,6 +254,35 @@ const StorefrontContainer = ({ resolvedStoreId }) => {
                     onLogout={handleLogout}
                     storeInfo={storeInfo}
                 />
+            } />
+            <Route path="/wishlist" element={
+                <StorefrontWishlist 
+                    cartCount={cartCount}
+                    onAddToCart={handleAddToCart}
+                    customer={customer}
+                    onLogout={handleLogout}
+                    storeInfo={storeInfo}
+                />
+            } />
+            <Route path="/account" element={
+                <ProtectedRoute customer={customer} storeId={storeId} redirect="account">
+                    <StorefrontAccount 
+                        cartCount={cartCount}
+                        customer={customer}
+                        onLogout={handleLogout}
+                        storeInfo={storeInfo}
+                    />
+                </ProtectedRoute>
+            } />
+            <Route path="/orders/:orderId/track" element={
+                <ProtectedRoute customer={customer} storeId={storeId} redirect="account">
+                    <StorefrontOrderTrack 
+                        cartCount={cartCount}
+                        customer={customer}
+                        onLogout={handleLogout}
+                        storeInfo={storeInfo}
+                    />
+                </ProtectedRoute>
             } />
         </Routes>
     );

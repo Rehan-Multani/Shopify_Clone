@@ -27,7 +27,7 @@ const getLast6MonthsMockData = (totalRevenue) => {
 export const createStore = async (req, res) => {
     try {
         const merchantId = req.merchant._id;
-        const { storeName, storeDescription, contactEmail, contactPhone, address, city, state, pincode, storeLogo, storeBanner, socialLinks } = req.body;
+        const { storeName, storeDescription, contactEmail, contactPhone, address, city, state, pincode, storeLogo, storeBanner, socialLinks, gstPercent, platformCommission } = req.body;
 
         const nameExists = await Store.findOne({
             storeName: { $regex: new RegExp(`^${storeName.trim()}$`, 'i') }
@@ -66,7 +66,9 @@ export const createStore = async (req, res) => {
             pincode: pincode || '',
             storeLogo: storeLogo || '',
             storeBanner: storeBanner || '',
-            socialLinks: socialLinks || {}
+            socialLinks: socialLinks || {},
+            gstPercent: gstPercent || 0,
+            platformCommission: platformCommission || 0
         });
 
         res.status(201).json(store);
@@ -116,7 +118,7 @@ export const updateStore = async (req, res) => {
             return res.status(404).json({ message: 'Store not found' });
         }
 
-        const { storeName, storeDescription, contactEmail, contactPhone, address, city, state, pincode, storeLogo, storeBanner, socialLinks, isActive, paymentSettings } = req.body;
+        const { storeName, storeDescription, contactEmail, contactPhone, address, city, state, pincode, storeLogo, storeBanner, socialLinks, isActive, paymentSettings, gstPercent, platformCommission } = req.body;
 
         if (storeName !== undefined && storeName.trim() !== store.storeName) {
             const nameExists = await Store.findOne({
@@ -161,6 +163,8 @@ export const updateStore = async (req, res) => {
         if (socialLinks !== undefined) store.socialLinks = socialLinks;
         if (isActive !== undefined) store.isActive = isActive;
         if (paymentSettings !== undefined) store.paymentSettings = paymentSettings;
+        if (gstPercent !== undefined) store.gstPercent = gstPercent;
+        if (platformCommission !== undefined) store.platformCommission = platformCommission;
 
         const updatedStore = await store.save();
         res.json(updatedStore);
@@ -512,15 +516,23 @@ export const publishStoreDomain = async (req, res) => {
             return res.status(400).json({ success: false, message: 'No custom domain configured. Please set a domain first.' });
         }
 
-        console.log(`[Publish Step 1/7] Received publish request for store: ${req.params.id}`);
+        console.log(`[Publish Step 1/5] Received publish request for store: ${req.params.id}`);
         store.domainPublished = true;
         await store.save();
-        console.log(`[Publish Step 2/7] Database updated domainPublished to true`);
+        console.log(`[Publish Step 2/5] Database updated domainPublished to true`);
 
         const domain = store.customDomain;
-        console.log(`[Publish Step 3/7] Targeted domain is: ${domain}`);
+        console.log(`[Publish Step 3/5] Targeted domain is: ${domain}`);
+
+        // Strict domain validation to prevent command injection
+        const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9](?:\.[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9])*$/;
+        if (!domainRegex.test(domain)) {
+            console.error(`[Publish Error] Invalid custom domain format detected: ${domain}`);
+            return res.status(400).json({ success: false, message: 'Invalid custom domain format. Only alphanumeric characters, hyphens, and dots are allowed.' });
+        }
+
         // Fetch platform settings from database for IP and SSH credentials
-        console.log(`[Publish Step 4/7] Fetching SSH credentials from PlatformSettings...`);
+        console.log(`[Publish Step 4/5] Fetching SSH credentials from PlatformSettings...`);
         let settings = await PlatformSetting.findOne();
         if (!settings) {
             console.log(`[Publish Warning] PlatformSetting not found, creating default Settings entry...`);
@@ -533,94 +545,77 @@ export const publishStoreDomain = async (req, res) => {
 
         console.log(`[Publish Config Status] IP: ${serverIp}, User: ${sshUser}, Password Present: ${!!sshPass}`);
 
-        // Update root path to be dynamic pointing to remote server location specific to this store domain
-        const remoteWebRoot = `/var/www/${domain}`;
+        // Single shared frontend build directory path on the server
+        const sharedWebRoot = '/var/www/admin-frontend/dist';
 
-        // Dynamic nginx config content for this specific domain
+        const isRootDomain = domain.split('.').length === 2;
+        const serverNames = isRootDomain ? `${domain} www.${domain}` : domain;
+        const certbotDomains = isRootDomain ? `-d ${domain} -d www.${domain}` : `-d ${domain}`;
+
+        // Dynamic nginx config content for this specific domain pointing to the shared build
         const nginxConfig = `
 server {
     listen 80;
     listen [::]:80;
-    server_name ${domain} www.${domain};
+    server_name ${serverNames};
 
-    root ${remoteWebRoot}/dist;
+    root ${sharedWebRoot};
     index index.html;
 
     location / {
         try_files $uri $uri/ /index.html;
     }
 
-    location /api {
-        proxy_pass http://127.0.0.1:5000;
+    location /api/ {
+        proxy_pass http://10.20.30.247/api/;
         proxy_http_version 1.1;
-        proxy_set_header Host $host;
+        proxy_set_header Host admin.cloudedata.in;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
     location /uploads/ {
-        alias /var/www/Shopify_Clone/services/gateway/public/uploads/;
-        expires 30d;
-        add_header Cache-Control "public, immutable";
+        proxy_pass http://10.20.30.247/uploads/;
+        proxy_set_header Host admin.cloudedata.in;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
     }
 }
 `;
 
         // Write the Nginx configuration locally in the services/store-service directory
         const localTempPath = path.resolve(process.cwd(), `${domain}.conf`);
-        console.log(`[Publish Step 5/7] Writing temporary config locally to: ${localTempPath}`);
+        console.log(`[Publish Step 5/5] Writing temporary config locally to: ${localTempPath}`);
         const fsLib = await import('fs');
         fsLib.writeFileSync(localTempPath, nginxConfig.trim());
-        console.log(`[Publish Step 5/7 Success] File written successfully`);
-
-        // Phase: Generate admin-frontend Production Build dynamically before transfer
-        console.log(`[Frontend Build] Starting production build for admin-frontend...`);
-        const frontendPath = path.resolve(process.cwd(), '../../admin-frontend');
-        
-        await new Promise((resolveBuild, rejectBuild) => {
-            exec('npm run build', { cwd: frontendPath }, (buildErr, buildStdout, buildStderr) => {
-                if (buildErr) {
-                    console.error(`[Build Error] Frontend build compilation failed:`, buildErr.message);
-                    return rejectBuild(buildErr);
-                }
-                console.log(`[Build Success] Frontend build compiled successfully:\n`, buildStdout);
-                resolveBuild();
-            });
-        });
-
-        // Pack the compiled build into a zip/tarball file to transfer cleanly over SFTP
-        const { execSync } = await import('child_process');
-        const zipName = `${domain}-dist.tar.gz`;
-        const localZipPath = path.resolve(process.cwd(), zipName);
-        console.log(`[Compression] Packing dist folder to: ${localZipPath}`);
-        
-        // Execute tar compression depending on OS platform
-        if (process.platform === 'win32') {
-            execSync(`tar -czf "${localZipPath}" -C "${frontendPath}/dist" .`);
-        } else {
-            execSync(`tar -czf "${localZipPath}" -C "${frontendPath}/dist" .`);
-        }
-        console.log(`[Compression Success] Pack file created`);
+        console.log(`[Publish Step 5/5 Success] File written successfully`);
 
         const destPath = `/etc/nginx/sites-available/${domain}.conf`;
         const linkPath = `/etc/nginx/sites-enabled/${domain}.conf`;
 
         let deployCmd;
         if (!sshPass) {
-            console.log(`[Publish Step 6/7] Initializing Local/Native Deployment...`);
+            console.log(`[Publish Deployment] Initializing Local/Native Deployment...`);
             deployCmd = `
-                sudo mkdir -p ${remoteWebRoot}/dist && \
-                sudo tar -xzf ${localZipPath} -C ${remoteWebRoot}/dist && \
                 sudo cp ${localTempPath} ${destPath} && \
                 sudo ln -sf ${destPath} ${linkPath} && \
                 sudo nginx -t && \
                 sudo nginx -s reload && \
-                sudo certbot --nginx -d ${domain} -d www.${domain} --non-interactive --agree-tos -m admin@storify.com --redirect && \
+                sudo certbot --nginx ${certbotDomains} --non-interactive --agree-tos -m admin@storify.com --redirect && \
                 sudo nginx -s reload
             `;
             exec(deployCmd, (error, stdout, stderr) => {
                 console.log(`[Execution Finish] Shell output returned`);
+                // Always clean up the local temp configuration file
+                try {
+                    fsLib.unlinkSync(localTempPath);
+                    console.log(`[Cleanup] Deleted local temporary config file.`);
+                } catch (cleanupErr) {
+                    console.log(`[Cleanup Warning] Local files cleanup skipped:`, cleanupErr.message);
+                }
+
                 if (error) {
                     console.error(`[Deployment Error - STEP FAILED] Error message:`, error.message);
                     console.error(`[Deployment Stderr Output]:`, stderr);
@@ -632,7 +627,7 @@ server {
                 }
             });
         } else {
-            console.log(`[Publish Step 6/7] Initializing Remote SSH2 Client connection to: ${sshUser}@${serverIp}...`);
+            console.log(`[Publish Deployment] Initializing Remote SSH2 Client connection to: ${sshUser}@${serverIp}...`);
             const { Client } = await import('ssh2');
             const conn = new Client();
 
@@ -647,7 +642,6 @@ server {
                     }
 
                     const remoteTempPath = `/tmp/${domain}.conf`;
-                    const remoteZipPath = `/tmp/${zipName}`;
 
                     console.log(`[SFTP Upload] Transferring configuration file: ${localTempPath} -> ${remoteTempPath}`);
                     sftp.fastPut(localTempPath, remoteTempPath, {}, (uploadErr) => {
@@ -658,34 +652,42 @@ server {
                         }
                         console.log(`[SFTP Success] Config file transferred successfully.`);
 
-                        console.log(`[SFTP Upload] Transferring frontend build archive: ${localZipPath} -> ${remoteZipPath}`);
-                        sftp.fastPut(localZipPath, remoteZipPath, {}, (zipUploadErr) => {
-                            if (zipUploadErr) {
-                                console.error(`[SFTP Build Upload Error]`, zipUploadErr.message);
+                        // Phase 2: Execute remote linkage and Nginx reload commands
+                        console.log(`[SSH2 Process] Configuring Nginx on remote host...`);
+                        const deployCmds = [
+                            `sudo mv -f ${remoteTempPath} ${destPath}`,
+                            `sudo ln -sf ${destPath} ${linkPath}`,
+                            `sudo nginx -t`,
+                            `sudo nginx -s reload`,
+                            `sudo certbot --nginx ${certbotDomains} --non-interactive --agree-tos -m admin@storify.com --redirect`,
+                            `sudo nginx -s reload`
+                        ].join(' && ');
+
+                        conn.exec(deployCmds, (execErr, stream) => {
+                            if (execErr) {
+                                console.error(`[SSH2 Exec Error]`, execErr.message);
                                 conn.end();
                                 return;
                             }
-                            console.log(`[SFTP Success] Frontend build archive transferred successfully.`);
 
-                            // Phase 2: Execute remote extract, linkage and Nginx reload commands
-                            console.log(`[SSH2 Process] Deploying build and configuring Nginx on remote host...`);
-                            const deployCmds = [
-                                `sudo mkdir -p ${remoteWebRoot}/dist`,
-                                `sudo tar -xzf ${remoteZipPath} -C ${remoteWebRoot}/dist`,
-                                `sudo rm -f ${remoteZipPath}`,
-                                `sudo mv -f ${remoteTempPath} ${destPath}`,
-                                `sudo ln -sf ${destPath} ${linkPath}`,
-                                `sudo nginx -t`,
-                                `sudo nginx -s reload`,
-                                `sudo certbot --nginx -d ${domain} -d www.${domain} --non-interactive --agree-tos -m admin@storify.com --redirect`,
-                                `sudo nginx -s reload`
-                            ].join(' && ');
+                            let stdoutData = '';
+                            let stderrData = '';
 
-                            console.log(`[SSH2 Execute Command]: ${deployCmds}`);
-                            conn.exec(deployCmds, (execErr, stream) => {
-                                if (execErr) {
-                                    console.error(`[SSH2 Exec Error]`, execErr.message);
-                                    conn.end();
+                            stream.on('close', (code, signal) => {
+                                console.log(`[SSH2 Command Finish] Exit code: ${code}`);
+                                conn.end();
+                                
+                                // Delete local temporary files after successful execution
+                                try {
+                                    fsLib.unlinkSync(localTempPath);
+                                    console.log(`[Cleanup] Deleted local temporary config file.`);
+                                } catch (cleanupErr) {
+                                    console.log(`[Cleanup Warning] Local files cleanup skipped:`, cleanupErr.message);
+                                }
+
+                                if (code !== 0) {
+                                    console.error(`[Deployment Error - STEP FAILED]`);
+                                    console.error(`[Deployment Stderr Output]:\n`, stderrData);
                                     return;
                                 }
                                 console.log(`[Deployment Success - COMPLETE] Output:\n`, stdoutData);
@@ -694,14 +696,22 @@ server {
                                 }
                             }).on('data', (data) => {
                                 stdoutData += data.toString();
-                            }).stderr.on('data', (data) => {
-                                stderrData += data.toString();
                             });
+                            
+                            if (stream && stream.stderr) {
+                                stream.stderr.on('data', (data) => {
+                                    stderrData += data.toString();
+                                });
+                            }
                         });
                     });
                 });
             }).on('error', (connErr) => {
                 console.error(`[SSH2 Connection Error] Failed to connect to ${serverIp}:`, connErr.message);
+                // Clean up local temp file on connection error
+                try {
+                    fsLib.unlinkSync(localTempPath);
+                } catch (err) {}
             }).connect({
                 host: serverIp,
                 port: 22,

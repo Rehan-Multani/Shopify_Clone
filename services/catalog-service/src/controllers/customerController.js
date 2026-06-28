@@ -1,5 +1,7 @@
 import Customer from '../models/Customer.js';
 import Subscriber from '../models/Subscriber.js';
+import Wishlist from '../models/Wishlist.js';
+import Address from '../models/Address.js';
 import mongoose from 'mongoose';
 import sharp from 'sharp';
 import path from 'path';
@@ -13,7 +15,11 @@ export const getCustomers = async (req, res) => {
         if (!storeId) {
             return res.status(400).json({ message: 'Store ID header (x-store-id) is required' });
         }
-        const customers = await Customer.find({ merchant: req.merchant._id, store: storeId }).sort({ createdAt: -1 });
+        const merchantId = req.merchant ? req.merchant._id : null;
+        const query = { store: storeId };
+        if (merchantId) query.merchant = merchantId;
+
+        const customers = await Customer.find(query).sort({ createdAt: -1 });
         res.json(customers);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -28,11 +34,23 @@ export const getCustomer = async (req, res) => {
         if (!storeId) {
             return res.status(400).json({ message: 'Store ID header (x-store-id) is required' });
         }
-        const customer = await Customer.findOne({ _id: req.params.id, merchant: req.merchant._id, store: storeId });
+
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(400).json({ message: 'Invalid customer ID format' });
+        }
+
+        const merchantId = req.merchant ? req.merchant._id : null;
+        const query = { _id: req.params.id, store: storeId };
+        if (merchantId) query.merchant = merchantId;
+
+        const customer = await Customer.findOne(query);
         if (!customer) {
             return res.status(404).json({ message: 'Customer not found' });
         }
-        res.json(customer);
+        const customerAddresses = await Address.find({ customer: customer._id }).sort({ isDefault: -1, createdAt: -1 });
+        const customerObj = customer.toObject();
+        customerObj.addresses = customerAddresses;
+        res.json(customerObj);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -406,6 +424,183 @@ export const loginCustomer = async (req, res) => {
             message: 'Logged in successfully',
             customer: customerObj
         });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Toggle product in customer wishlist
+// @route   PUT /api/customers/:id/wishlist
+// @access  Public
+export const toggleWishlist = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { productId } = req.body;
+        if (!productId) return res.status(400).json({ message: 'Product ID is required' });
+
+        const customer = await Customer.findById(id);
+        if (!customer) return res.status(404).json({ message: 'Customer not found' });
+
+        let wishlist = await Wishlist.findOne({ customer: id });
+        if (!wishlist) {
+            wishlist = await Wishlist.create({
+                customer: id,
+                store: customer.store,
+                merchant: customer.merchant,
+                products: []
+            });
+        }
+
+        const index = wishlist.products.indexOf(productId);
+        let action = 'added';
+        if (index > -1) {
+            wishlist.products.splice(index, 1);
+            action = 'removed';
+        } else {
+            wishlist.products.push(productId);
+        }
+
+        await wishlist.save();
+        res.json({ success: true, message: `Product ${action} successfully`, wishlist: wishlist.products });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Get customer wishlist products
+// @route   GET /api/customers/:id/wishlist
+// @access  Public
+export const getWishlist = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const wishlist = await Wishlist.findOne({ customer: id }).populate('products');
+        res.json({ success: true, wishlist: wishlist ? wishlist.products : [] });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Add address to customer address book
+// @route   POST /api/customers/:id/addresses
+// @access  Public
+export const addCustomerAddress = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { fullName, addressLine1, addressLine2, city, state, postalCode, country, phoneNumber, isDefault } = req.body;
+
+        if (!fullName || !addressLine1 || !city || !state || !postalCode || !phoneNumber) {
+            return res.status(400).json({ message: 'Required address fields are missing' });
+        }
+
+        const customer = await Customer.findById(id);
+        if (!customer) return res.status(404).json({ message: 'Customer not found' });
+
+        const existingAddressesCount = await Address.countDocuments({ customer: id });
+        const setAsDefault = existingAddressesCount === 0 || isDefault;
+
+        if (setAsDefault) {
+            await Address.updateMany({ customer: id }, { isDefault: false });
+        }
+
+        await Address.create({
+            customer: id,
+            store: customer.store,
+            merchant: customer.merchant,
+            fullName,
+            addressLine1,
+            addressLine2,
+            city,
+            state,
+            postalCode,
+            country: country || 'India',
+            phoneNumber,
+            isDefault: setAsDefault
+        });
+
+        const addresses = await Address.find({ customer: id }).sort({ isDefault: -1, createdAt: -1 });
+        res.status(201).json({ success: true, addresses });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Update address in customer address book
+// @route   PUT /api/customers/:id/addresses/:addressId
+// @access  Public
+export const updateCustomerAddress = async (req, res) => {
+    try {
+        const { id, addressId } = req.params;
+        const { fullName, addressLine1, addressLine2, city, state, postalCode, country, phoneNumber, isDefault } = req.body;
+
+        const address = await Address.findOne({ _id: addressId, customer: id });
+        if (!address) return res.status(404).json({ message: 'Address not found' });
+
+        if (isDefault && !address.isDefault) {
+            await Address.updateMany({ customer: id }, { isDefault: false });
+            address.isDefault = true;
+        }
+
+        if (fullName) address.fullName = fullName;
+        if (addressLine1) address.addressLine1 = addressLine1;
+        if (addressLine2 !== undefined) address.addressLine2 = addressLine2;
+        if (city) address.city = city;
+        if (state) address.state = state;
+        if (postalCode) address.postalCode = postalCode;
+        if (country) address.country = country;
+        if (phoneNumber) address.phoneNumber = phoneNumber;
+
+        await address.save();
+        const addresses = await Address.find({ customer: id }).sort({ isDefault: -1, createdAt: -1 });
+        res.json({ success: true, addresses });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Delete address from customer address book
+// @route   DELETE /api/customers/:id/addresses/:addressId
+// @access  Public
+export const deleteCustomerAddress = async (req, res) => {
+    try {
+        const { id, addressId } = req.params;
+
+        const address = await Address.findOne({ _id: addressId, customer: id });
+        if (!address) return res.status(404).json({ message: 'Address not found' });
+
+        const wasDefault = address.isDefault;
+        await Address.deleteOne({ _id: addressId });
+
+        if (wasDefault) {
+            const firstAddress = await Address.findOne({ customer: id });
+            if (firstAddress) {
+                firstAddress.isDefault = true;
+                await firstAddress.save();
+            }
+        }
+
+        const addresses = await Address.find({ customer: id }).sort({ isDefault: -1, createdAt: -1 });
+        res.json({ success: true, addresses });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Set default address in customer address book
+// @route   PUT /api/customers/:id/addresses/:addressId/default
+// @access  Public
+export const setDefaultCustomerAddress = async (req, res) => {
+    try {
+        const { id, addressId } = req.params;
+
+        const address = await Address.findOne({ _id: addressId, customer: id });
+        if (!address) return res.status(404).json({ message: 'Address not found' });
+
+        await Address.updateMany({ customer: id }, { isDefault: false });
+        address.isDefault = true;
+        await address.save();
+
+        const addresses = await Address.find({ customer: id }).sort({ isDefault: -1, createdAt: -1 });
+        res.json({ success: true, addresses });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

@@ -46,7 +46,10 @@ export const gatewayAuthMiddleware = async (req, res, next) => {
     } else if (path.startsWith('/api/store-pages')) {
         requiredAuth = method === 'GET' ? null : 'merchant';
     } else if (path.startsWith('/api/customers')) {
-        if (method === 'POST' && (path.endsWith('/subscribe') || path.endsWith('/register') || path.endsWith('/login'))) {
+        if (
+            (method === 'POST' && (path.endsWith('/subscribe') || path.endsWith('/register') || path.endsWith('/login'))) ||
+            path.match(/^\/api\/customers\/[a-f0-9]{24}(\/.*)?$/i)
+        ) {
             requiredAuth = null;
         } else {
             requiredAuth = 'merchant';
