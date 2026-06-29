@@ -46,9 +46,9 @@ customerSchema.index({ store: 1, email: 1 }, { unique: true });
 customerSchema.index({ store: 1, number: 1 }, { unique: true });
 
 // Pre-save hook to hash the password
-customerSchema.pre('save', async function(next) {
+customerSchema.pre('save', async function() {
     if (!this.password || !this.isModified('password')) {
-        return next();
+        return;
     }
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);

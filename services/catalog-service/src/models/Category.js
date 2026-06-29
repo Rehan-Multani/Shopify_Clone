@@ -31,6 +31,15 @@ const categorySchema = new mongoose.Schema({
         type: Boolean,
         default: true
     },
+    isApproved: {
+        type: Boolean,
+        default: true
+    },
+    vendor: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Vendor',
+        default: null
+    },
     slug: {
         type: String,
         unique: false

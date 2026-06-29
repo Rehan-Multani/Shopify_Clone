@@ -50,7 +50,7 @@ const AddStoreSingle = () => {
                 const data = await res.json();
                 if (res.ok) {
                     const merchantInfo = JSON.parse(localStorage.getItem('merchantInfo') || '{}');
-                    const currentPlanType = merchantInfo?.plan?.planType || 'Single Vendor';
+                    const currentPlanType = merchantInfo?.plan?.planType || merchantInfo?.planType || 'Single Vendor';
                     const filteredPlans = data.filter(p => p.planType === currentPlanType);
                     setPlans(filteredPlans);
                     if (!isEdit) {

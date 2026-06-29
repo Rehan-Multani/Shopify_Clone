@@ -182,13 +182,15 @@ app.use('/api/master-admin/overview', createServiceProxy(MERCHANT_ADMIN_SERVICE_
 }));
 
 
+app.use('/api/admin', createServiceProxy(MERCHANT_ADMIN_SERVICE_URL));
 
-// 3. Catalog Service Routes
+
 app.use('/api/products', createServiceProxy(CATALOG_SERVICE_URL));
 app.use('/api/categories', createServiceProxy(CATALOG_SERVICE_URL));
 app.use('/api/coupons', createServiceProxy(CATALOG_SERVICE_URL));
 app.use('/api/customers', createServiceProxy(CATALOG_SERVICE_URL));
 app.use('/api/banners', createServiceProxy(CATALOG_SERVICE_URL));
+app.use('/api/vendors', createServiceProxy(CATALOG_SERVICE_URL));
 
 // 4. Store Service Routes
 app.use('/api/themes', createServiceProxy(STORE_SERVICE_URL));

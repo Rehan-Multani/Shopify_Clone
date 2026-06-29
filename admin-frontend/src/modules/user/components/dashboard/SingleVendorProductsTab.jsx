@@ -17,7 +17,9 @@ const SingleVendorProductsTab = () => {
     const [previewProduct, setPreviewProduct] = useState(null);
     const [previewActiveImg, setPreviewActiveImg] = useState('');
 
-    const token = localStorage.getItem('merchantToken');
+    const isVendor = window.location.pathname.startsWith('/vendor');
+    const token = isVendor ? localStorage.getItem('vendorToken') : (localStorage.getItem('merchantToken') || localStorage.getItem('vendorToken'));
+    const dashboardPrefix = isVendor ? '/vendor/dashboard' : '/dashboard';
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
 
@@ -44,6 +46,28 @@ const SingleVendorProductsTab = () => {
     };
 
     useEffect(() => { fetchData(); }, []);
+
+    const handleApproveProduct = async (productId) => {
+        try {
+            const storeId = localStorage.getItem('activeStoreId') || '';
+            const res = await fetch(`${API_URL}/products/${productId}/approve`, {
+                method: 'PUT',
+                headers: { 
+                    'Authorization': `Bearer ${token}`,
+                    'x-store-id': storeId
+                }
+            });
+            const data = await res.json();
+            if (res.ok) {
+                showToast('Product approved successfully');
+                fetchData();
+            } else {
+                showToast(data.message || 'Failed to approve product', 'error');
+            }
+        } catch (err) {
+            showToast('Failed to approve product', 'error');
+        }
+    };
 
     const showToast = (message, type = 'success') => {
         setToast({ show: true, message, type });
@@ -202,7 +226,7 @@ const SingleVendorProductsTab = () => {
                     <p className="text-sm text-[#5c5f62] mt-1">{products.length} products total</p>
                 </div>
                 <Link
-                    to="/dashboard/products/new"
+                    to={`${dashboardPrefix}/products/new`}
                     className="inline-flex items-center gap-2 bg-[#1a1c23] text-white px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-black transition-all shadow-md active:scale-95"
                 >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -288,7 +312,7 @@ const SingleVendorProductsTab = () => {
                     </div>
                     <h3 className="font-bold text-[#202223] mb-1">No products found</h3>
                     <p className="text-sm text-[#5c5f62] mb-4">Add your first product to start selling</p>
-                    <Link to="/dashboard/products/new" className="inline-flex items-center gap-2 bg-[#1a1c23] text-white px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-black transition-all">
+                    <Link to={`${dashboardPrefix}/products/new`} className="inline-flex items-center gap-2 bg-[#1a1c23] text-white px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-black transition-all">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
                         </svg>
@@ -306,6 +330,7 @@ const SingleVendorProductsTab = () => {
                                             <th className="text-left text-[10px] font-black text-gray-500 tracking-[0.15em] uppercase px-5 py-3">Product</th>
                                             <th className="text-left text-[10px] font-black text-gray-500 tracking-[0.15em] uppercase px-5 py-3 hidden lg:table-cell">Category</th>
                                             <th className="text-left text-[10px] font-black text-gray-500 tracking-[0.15em] uppercase px-5 py-3 hidden md:table-cell">SKU</th>
+                                            <th className="text-left text-[10px] font-black text-gray-500 tracking-[0.15em] uppercase px-5 py-3">Created By</th>
                                             <th className="text-right text-[10px] font-black text-gray-500 tracking-[0.15em] uppercase px-5 py-3">Price</th>
                                             <th className="text-center text-[10px] font-black text-gray-500 tracking-[0.15em] uppercase px-5 py-3 hidden md:table-cell">Stock</th>
                                             <th className="text-left text-[10px] font-black text-gray-500 tracking-[0.15em] uppercase px-5 py-3">Status</th>
@@ -342,6 +367,15 @@ const SingleVendorProductsTab = () => {
                                                     <td className="px-5 py-3 hidden md:table-cell">
                                                         <span className="text-xs font-mono bg-gray-100 px-2 py-1 rounded text-[#5c5f62]">{product.sku || '—'}</span>
                                                     </td>
+                                                    <td className="px-5 py-3">
+                                                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold ${
+                                                            product.vendor 
+                                                                ? 'bg-purple-50 text-purple-700 border border-purple-100' 
+                                                                : 'bg-blue-50 text-blue-700 border border-blue-100'
+                                                        }`}>
+                                                            {product.vendor ? `Vendor (${product.vendor.name})` : 'Admin'}
+                                                        </span>
+                                                    </td>
                                                     <td className="px-5 py-3 text-right">
                                                         <div className="flex items-center justify-end gap-2 flex-wrap">
                                                             <span className="font-bold text-sm text-[#202223]">{formatPrice(product.sellingPrice)}</span>
@@ -359,17 +393,39 @@ const SingleVendorProductsTab = () => {
                                                         </span>
                                                     </td>
                                                     <td className="px-5 py-3">
-                                                        <button
-                                                            onClick={() => handleToggleStatus(product._id, product.isActive)}
-                                                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all ${
-                                                                product.isActive
-                                                                    ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
-                                                                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                                                            }`}
-                                                        >
-                                                            <div className={`w-1.5 h-1.5 rounded-full ${product.isActive ? 'bg-emerald-500' : 'bg-gray-400'}`}></div>
-                                                            {product.isActive ? 'Active' : 'Inactive'}
-                                                        </button>
+                                                        {product.isApproved === false ? (
+                                                            <div className="flex items-center gap-1.5">
+                                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-100">
+                                                                    <div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div>
+                                                                    Pending Approval
+                                                                </span>
+                                                                {!isVendor && (
+                                                                    <button
+                                                                        onClick={() => handleApproveProduct(product._id)}
+                                                                        className="px-2 py-1 bg-[#1a1c23] hover:bg-black text-white rounded text-[10px] font-bold transition-all shadow-sm"
+                                                                    >
+                                                                        Approve
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        ) : (
+                                                            <button
+                                                                onClick={() => {
+                                                                    if (!isVendor) {
+                                                                        handleToggleStatus(product._id, product.isActive);
+                                                                    }
+                                                                }}
+                                                                disabled={isVendor}
+                                                                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all ${
+                                                                    product.isActive
+                                                                        ? 'bg-emerald-50 text-emerald-700' + (isVendor ? '' : ' hover:bg-emerald-100')
+                                                                        : 'bg-gray-100 text-gray-500' + (isVendor ? '' : ' hover:bg-gray-200')
+                                                                } ${isVendor ? 'cursor-default' : 'cursor-pointer'}`}
+                                                            >
+                                                                <div className={`w-1.5 h-1.5 rounded-full ${product.isActive ? 'bg-emerald-500' : 'bg-gray-400'}`}></div>
+                                                                {product.isActive ? 'Active' : 'Inactive'}
+                                                            </button>
+                                                        )}
                                                     </td>
                                                     <td className="px-5 py-3">
                                                         <div className="flex items-center justify-end gap-1.5">
@@ -384,7 +440,7 @@ const SingleVendorProductsTab = () => {
                                                                 </svg>
                                                             </button>
                                                             <Link
-                                                                to={`/dashboard/products/edit/${product._id}`}
+                                                                to={`${dashboardPrefix}/products/edit/${product._id}`}
                                                                 className="p-2 hover:bg-gray-100 rounded-lg transition-all text-gray-400 hover:text-black"
                                                                 title="Edit"
                                                             >
@@ -458,10 +514,17 @@ const SingleVendorProductsTab = () => {
                                                 </div>
                                             </div>
 
-                                            {/* Category */}
-                                            <div>
+                                            {/* Category and Created By */}
+                                            <div className="flex items-center justify-between gap-2 flex-wrap">
                                                 <span className="inline-flex items-center bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded text-[10px] font-bold">
                                                     {product.category?.name || 'Uncategorized'}
+                                                </span>
+                                                <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold ${
+                                                    product.vendor 
+                                                        ? 'bg-purple-50 text-purple-700 border border-purple-100' 
+                                                        : 'bg-blue-50 text-blue-700 border border-blue-100'
+                                                }`}>
+                                                    {product.vendor ? `Vendor (${product.vendor.name})` : 'Admin'}
                                                 </span>
                                             </div>
 
@@ -494,8 +557,17 @@ const SingleVendorProductsTab = () => {
                                             {/* Footer Actions */}
                                             <div className="flex items-center justify-between pt-3 border-t border-gray-50 mt-auto">
                                                 <button
-                                                    onClick={() => handleToggleStatus(product._id, product.isActive)}
-                                                    className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold transition-all ${statusColor}`}
+                                                    onClick={() => {
+                                                        if (!isVendor) {
+                                                            handleToggleStatus(product._id, product.isActive);
+                                                        }
+                                                    }}
+                                                    disabled={isVendor}
+                                                    className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold transition-all ${
+                                                        product.isActive
+                                                            ? 'bg-emerald-50 text-emerald-700' + (isVendor ? '' : ' hover:bg-emerald-100')
+                                                            : 'bg-gray-100 text-gray-500' + (isVendor ? '' : ' hover:bg-gray-200')
+                                                    } ${isVendor ? 'cursor-default' : 'cursor-pointer'}`}
                                                 >
                                                     <div className={`w-1 h-1 rounded-full ${product.isActive ? 'bg-emerald-500' : 'bg-gray-400'}`}></div>
                                                     {product.isActive ? 'Active' : 'Inactive'}

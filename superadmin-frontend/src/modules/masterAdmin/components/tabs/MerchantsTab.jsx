@@ -533,15 +533,26 @@ const MerchantsTab = () => {
                                     <tr key={m._id} className={`border-b border-[#f5f5f5] hover:bg-[#fafafa] transition-colors ${i === paginated.length - 1 ? 'border-0' : ''}`}>
                                         <td className="px-5 py-3.5">
                                             <div className="flex items-center gap-3">
-                                                {m.profile ? (
-                                                    <img src={m.profile.startsWith('http') || m.profile.startsWith('data:') ? m.profile : `${API_URL.replace('/api', '')}${m.profile}`} alt={m.name} className="w-8 h-8 rounded-full object-cover flex-shrink-0" 
-                                                        onError={(e) => { e.target.src = ''; e.target.onerror = null; }} />
-                                                ) : (
-                                                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-black text-white flex-shrink-0"
-                                                        style={{ background: avatarColors[m.name.length % avatarColors.length] }}>
-                                                        {m.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
-                                                    </div>
-                                                )}
+                                                 <div className="relative w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+                                                     {m.profile && (
+                                                         <img 
+                                                             src={m.profile.startsWith('http') || m.profile.startsWith('data:') ? m.profile : `${API_URL.replace('/api', '')}${m.profile}`} 
+                                                             alt={m.name} 
+                                                             className="w-full h-full object-cover" 
+                                                             onError={(e) => { 
+                                                                 e.target.style.display = 'none'; 
+                                                                 if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex'; 
+                                                             }} 
+                                                         />
+                                                     )}
+                                                     <div className="w-full h-full flex items-center justify-center text-xs font-black text-white"
+                                                         style={{ 
+                                                             background: avatarColors[m.name.length % avatarColors.length],
+                                                             display: m.profile ? 'none' : 'flex' 
+                                                         }}>
+                                                         {m.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+                                                     </div>
+                                                 </div>
                                                 <div>
                                                     <p className="text-sm font-bold text-[#202223]">{m.name}</p>
                                                     <p className="text-[11px] text-[#9CA3AF]">{m.email}</p>

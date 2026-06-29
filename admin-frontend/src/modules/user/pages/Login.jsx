@@ -33,9 +33,8 @@ const Login = () => {
         localStorage.setItem('merchantInfo', JSON.stringify(data.merchant));
         localStorage.setItem('merchantToken', data.token);
         localStorage.setItem('shopStoreName', data.merchant.name);
-        if (data.merchant.plan && typeof data.merchant.plan === 'object') {
-          localStorage.setItem('adminPanelType', data.merchant.plan.planType === 'Multi Vendor' ? 'multi' : 'single');
-        }
+        const planType = data.merchant.plan?.planType || data.merchant.planType || 'Single Vendor';
+        localStorage.setItem('adminPanelType', planType === 'Multi Vendor' ? 'multi' : 'single');
         navigate('/dashboard');
       } else {
         setError(data.message || 'Invalid email or password');

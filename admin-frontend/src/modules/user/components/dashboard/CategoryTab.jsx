@@ -13,7 +13,9 @@ const CategoryTab = () => {
     const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
     const [viewMode, setViewMode] = useState(localStorage.getItem('viewMode_categories') || 'list');
 
-    const token = localStorage.getItem('merchantToken');
+    const isVendor = window.location.pathname.startsWith('/vendor');
+    const token = isVendor ? localStorage.getItem('vendorToken') : (localStorage.getItem('merchantToken') || localStorage.getItem('vendorToken'));
+    const dashboardPrefix = isVendor ? '/vendor/dashboard' : '/dashboard';
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 5;
 
@@ -36,7 +38,31 @@ const CategoryTab = () => {
         }
     };
 
-    useEffect(() => { fetchCategories(); }, []);
+    useEffect(() => {
+        fetchCategories();
+    }, []);
+
+    const handleApproveCategory = async (catId) => {
+        try {
+            const storeId = localStorage.getItem('activeStoreId') || '';
+            const res = await fetch(`${API_URL}/categories/${catId}/approve`, {
+                method: 'PUT',
+                headers: { 
+                    'Authorization': `Bearer ${token}`,
+                    'x-store-id': storeId
+                }
+            });
+            const data = await res.json();
+            if (res.ok) {
+                showToast('Category approved successfully');
+                fetchCategories();
+            } else {
+                showToast(data.message || 'Failed to approve category', 'error');
+            }
+        } catch (err) {
+            showToast('Failed to approve category', 'error');
+        }
+    };
 
     const showToast = (message, type = 'success') => {
         setToast({ show: true, message, type });
@@ -83,7 +109,16 @@ const CategoryTab = () => {
 
     const filtered = categories.filter(c => {
         const matchesSearch = c.name.toLowerCase().includes(search.toLowerCase());
-        const matchesStatus = statusFilter === 'all' || (statusFilter === 'active' ? c.isActive : !c.isActive);
+        
+        let matchesStatus = true;
+        if (statusFilter === 'active') {
+            matchesStatus = c.isActive && c.isApproved !== false;
+        } else if (statusFilter === 'inactive') {
+            matchesStatus = !c.isActive && c.isApproved !== false;
+        } else if (statusFilter === 'pending') {
+            matchesStatus = c.isApproved === false;
+        }
+
         return matchesSearch && matchesStatus;
     });
 
@@ -155,7 +190,7 @@ const CategoryTab = () => {
                     <p className="text-sm text-[#5c5f62] mt-1">Manage your product categories</p>
                 </div>
                 <Link
-                    to="/dashboard/category/new"
+                    to={`${dashboardPrefix}/category/new`}
                     className="inline-flex items-center gap-2 bg-[#1a1c23] text-white px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-black transition-all shadow-md active:scale-95"
                 >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -180,7 +215,7 @@ const CategoryTab = () => {
                     />
                 </div>
                 <div className="flex gap-1 bg-white border border-gray-200 rounded-lg p-1">
-                    {['all', 'active', 'inactive'].map(f => (
+                    {['all', 'pending', 'active', 'inactive'].map(f => (
                         <button
                             key={f}
                             onClick={() => setStatusFilter(f)}
@@ -226,7 +261,7 @@ const CategoryTab = () => {
                     </div>
                     <h3 className="font-bold text-[#202223] mb-1">No categories found</h3>
                     <p className="text-sm text-[#5c5f62] mb-4">Create your first category to organize your products</p>
-                    <Link to="/dashboard/category/new" className="inline-flex items-center gap-2 bg-[#1a1c23] text-white px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-black transition-all">
+                    <Link to={`${dashboardPrefix}/category/new`} className="inline-flex items-center gap-2 bg-[#1a1c23] text-white px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-black transition-all">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
                         </svg>
@@ -244,8 +279,9 @@ const CategoryTab = () => {
                                             <th className="text-left text-[10px] font-black text-gray-500 tracking-[0.15em] uppercase px-5 py-3">Image</th>
                                             <th className="text-left text-[10px] font-black text-gray-500 tracking-[0.15em] uppercase px-5 py-3">Name</th>
                                             <th className="text-left text-[10px] font-black text-gray-500 tracking-[0.15em] uppercase px-5 py-3 hidden md:table-cell">Description</th>
+                                            <th className="text-left text-[10px] font-black text-gray-500 tracking-[0.15em] uppercase px-5 py-3">Created By</th>
                                             <th className="text-left text-[10px] font-black text-gray-500 tracking-[0.15em] uppercase px-5 py-3">Status</th>
-                                            <th className="text-right text-[10px] font-black text-gray-500 tracking-[0.15em] uppercase px-5 py-3">Actions</th>
+                                            {!isVendor && <th className="text-right text-[10px] font-black text-gray-500 tracking-[0.15em] uppercase px-5 py-3">Actions</th>}
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -271,40 +307,73 @@ const CategoryTab = () => {
                                                     <span className="text-sm text-[#5c5f62] line-clamp-1 max-w-[200px]">{cat.description || '—'}</span>
                                                 </td>
                                                 <td className="px-5 py-3">
-                                                    <button
-                                                        onClick={() => handleToggleStatus(cat._id, cat.isActive)}
-                                                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all ${
-                                                            cat.isActive 
-                                                                ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100' 
-                                                                : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                                                        }`}
-                                                    >
-                                                        <div className={`w-1.5 h-1.5 rounded-full ${cat.isActive ? 'bg-emerald-500' : 'bg-gray-400'}`}></div>
-                                                        {cat.isActive ? 'Active' : 'Inactive'}
-                                                    </button>
+                                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold ${
+                                                        cat.vendor 
+                                                            ? 'bg-purple-50 text-purple-700 border border-purple-100' 
+                                                            : 'bg-blue-50 text-blue-700 border border-blue-100'
+                                                    }`}>
+                                                        {cat.vendor ? `Vendor (${cat.vendor.name})` : 'Admin'}
+                                                    </span>
                                                 </td>
                                                 <td className="px-5 py-3">
-                                                    <div className="flex items-center justify-end gap-1.5">
-                                                        <Link
-                                                            to={`/dashboard/category/edit/${cat._id}`}
-                                                            className="p-2 hover:bg-gray-100 rounded-lg transition-all text-gray-400 hover:text-black"
-                                                            title="Edit"
-                                                        >
-                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                                            </svg>
-                                                        </Link>
+                                                    {cat.isApproved === false ? (
+                                                        <div className="flex items-center gap-1.5">
+                                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-100">
+                                                                <div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div>
+                                                                Pending Approval
+                                                            </span>
+                                                            {!isVendor && (
+                                                                <button
+                                                                    onClick={() => handleApproveCategory(cat._id)}
+                                                                    className="px-2 py-1 bg-[#1a1c23] hover:bg-black text-white rounded text-[10px] font-bold transition-all shadow-sm"
+                                                                >
+                                                                    Approve
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    ) : (
                                                         <button
-                                                            onClick={() => setDeleteModal({ open: true, id: cat._id, name: cat.name })}
-                                                            className="p-2 hover:bg-red-50 rounded-lg transition-all text-gray-400 hover:text-red-500"
-                                                            title="Delete"
+                                                            onClick={() => {
+                                                                if (!isVendor) {
+                                                                    handleToggleStatus(cat._id, cat.isActive);
+                                                                }
+                                                            }}
+                                                            disabled={isVendor}
+                                                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all ${
+                                                                cat.isActive 
+                                                                    ? 'bg-emerald-50 text-emerald-700' + (isVendor ? '' : ' hover:bg-emerald-100')
+                                                                    : 'bg-gray-100 text-gray-500' + (isVendor ? '' : ' hover:bg-gray-200')
+                                                            } ${isVendor ? 'cursor-default' : 'cursor-pointer'}`}
                                                         >
-                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                            </svg>
+                                                            <div className={`w-1.5 h-1.5 rounded-full ${cat.isActive ? 'bg-emerald-500' : 'bg-gray-400'}`}></div>
+                                                            {cat.isActive ? 'Active' : 'Inactive'}
                                                         </button>
-                                                    </div>
+                                                    )}
                                                 </td>
+                                                {!isVendor && (
+                                                    <td className="px-5 py-3">
+                                                        <div className="flex items-center justify-end gap-1.5">
+                                                            <Link
+                                                                to={`${dashboardPrefix}/category/edit/${cat._id}`}
+                                                                className="p-2 hover:bg-gray-100 rounded-lg transition-all text-gray-400 hover:text-black"
+                                                                title="Edit"
+                                                            >
+                                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                                                </svg>
+                                                            </Link>
+                                                            <button
+                                                                onClick={() => setDeleteModal({ open: true, id: cat._id, name: cat.name })}
+                                                                className="p-2 hover:bg-red-50 rounded-lg transition-all text-gray-400 hover:text-red-500"
+                                                                title="Delete"
+                                                            >
+                                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                                </svg>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                )}
                                             </tr>
                                         ))}
                                     </tbody>
@@ -335,42 +404,63 @@ const CategoryTab = () => {
                                         {/* Category Body */}
                                         <div className="p-4 flex-grow flex flex-col space-y-3">
                                             <div className="space-y-1">
-                                                <h3 className="font-bold text-sm text-[#202223] truncate">{cat.name}</h3>
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <h3 className="font-bold text-sm text-[#202223] truncate">{cat.name}</h3>
+                                                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold ${
+                                                        cat.vendor 
+                                                            ? 'bg-purple-50 text-purple-700 border border-purple-100' 
+                                                            : 'bg-blue-50 text-blue-700 border border-blue-100'
+                                                    }`}>
+                                                        {cat.vendor ? 'Vendor' : 'Admin'}
+                                                    </span>
+                                                </div>
                                                 <p className="text-xs text-gray-500 line-clamp-2 h-8" title={cat.description}>
                                                     {cat.description || 'No description provided.'}
                                                 </p>
+                                                {cat.vendor && (
+                                                    <p className="text-[10px] text-gray-400">
+                                                        Uploaded by: <span className="font-semibold text-gray-600">{cat.vendor.name}</span>
+                                                    </p>
+                                                )}
                                             </div>
 
                                             {/* Footer Actions */}
                                             <div className="flex items-center justify-between pt-3 border-t border-gray-50 mt-auto">
                                                 <button
-                                                    onClick={() => handleToggleStatus(cat._id, cat.isActive)}
-                                                    className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold transition-all ${statusColor}`}
+                                                    onClick={() => {
+                                                        if (!isVendor) {
+                                                            handleToggleStatus(cat._id, cat.isActive);
+                                                        }
+                                                    }}
+                                                    disabled={isVendor}
+                                                    className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold transition-all ${statusColor} ${isVendor ? 'cursor-default' : 'cursor-pointer'}`}
                                                 >
                                                     <div className={`w-1 h-1 rounded-full ${cat.isActive ? 'bg-emerald-500' : 'bg-gray-400'}`}></div>
                                                     {cat.isActive ? 'Active' : 'Inactive'}
                                                 </button>
 
-                                                <div className="flex items-center gap-1">
-                                                    <Link
-                                                        to={`/dashboard/category/edit/${cat._id}`}
-                                                        className="p-1.5 hover:bg-gray-50 rounded-lg text-gray-400 hover:text-black transition-colors"
-                                                        title="Edit"
-                                                    >
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                                        </svg>
-                                                    </Link>
-                                                    <button
-                                                        onClick={() => setDeleteModal({ open: true, id: cat._id, name: cat.name })}
-                                                        className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-500 transition-colors"
-                                                        title="Delete"
-                                                    >
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                        </svg>
-                                                    </button>
-                                                </div>
+                                                {!isVendor && (
+                                                    <div className="flex items-center gap-1">
+                                                        <Link
+                                                            to={`${dashboardPrefix}/category/edit/${cat._id}`}
+                                                            className="p-1.5 hover:bg-gray-50 rounded-lg text-gray-400 hover:text-black transition-colors"
+                                                            title="Edit"
+                                                        >
+                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                                            </svg>
+                                                        </Link>
+                                                        <button
+                                                            onClick={() => setDeleteModal({ open: true, id: cat._id, name: cat.name })}
+                                                            className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-500 transition-colors"
+                                                            title="Delete"
+                                                        >
+                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     </div>

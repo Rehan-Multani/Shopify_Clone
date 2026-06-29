@@ -181,11 +181,26 @@ const SupportTab = () => {
         }
     };
 
+    const merchantInfo = JSON.parse(localStorage.getItem('merchantInfo') || '{}');
+    const planType = merchantInfo?.plan?.planType || merchantInfo?.planType || 'Single Vendor';
+
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center pb-4 border-b border-gray-100">
                 <div>
-                    <h1 className="text-xl font-bold text-[#202223]">Support Center</h1>
+                    <div className="flex items-center gap-3">
+                        <h1 className="text-xl font-bold text-[#202223]">Support Center</h1>
+                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
+                            planType === 'Multi Vendor' 
+                                ? 'bg-purple-50 text-purple-700 border border-purple-200' 
+                                : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        }`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${
+                                planType === 'Multi Vendor' ? 'bg-purple-600' : 'bg-emerald-600'
+                            }`} />
+                            {planType}
+                        </span>
+                    </div>
                     <p className="text-xs text-[#5c5f62] mt-0.5">Need help? Raise a support request or contact the administration team.</p>
                 </div>
                 {!isCreating && (

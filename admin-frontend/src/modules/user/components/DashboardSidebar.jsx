@@ -6,6 +6,16 @@ const DashboardSidebar = ({ isOpen, setIsOpen, isChatOpen, setIsChatOpen, isColl
     const location = useLocation();
     const navigate = useNavigate();
     const [panelMode, setPanelMode] = useState(localStorage.getItem('adminPanelType') || 'single');
+    const merchantInfo = JSON.parse(localStorage.getItem('merchantInfo') || '{}');
+    const realPlanType = merchantInfo?.plan?.planType || merchantInfo?.planType || (panelMode === 'multi' ? 'Multi Vendor' : 'Single Vendor');
+
+    React.useEffect(() => {
+        const expectedMode = realPlanType === 'Multi Vendor' ? 'multi' : 'single';
+        if (localStorage.getItem('adminPanelType') !== expectedMode) {
+            localStorage.setItem('adminPanelType', expectedMode);
+            setPanelMode(expectedMode);
+        }
+    }, [realPlanType]);
 
     const handlePanelModeChange = (mode) => {
         localStorage.setItem('adminPanelType', mode);
@@ -56,6 +66,7 @@ const DashboardSidebar = ({ isOpen, setIsOpen, isChatOpen, setIsChatOpen, isColl
         { id: 'products', label: 'Products', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
         { id: 'category', label: 'Category', icon: 'M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z' },
         { id: 'customers', label: 'Customers', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
+        { id: 'vendors', label: 'Vendors', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z' },
         { id: 'banners', label: 'Banners', icon: 'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z' },
         { id: 'coupons', label: 'Coupons', icon: 'M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z' },
         { id: 'reports', label: 'Reports', icon: 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
@@ -101,20 +112,20 @@ const DashboardSidebar = ({ isOpen, setIsOpen, isChatOpen, setIsChatOpen, isColl
                     </Link>
                 </div>
 
-                <div className="px-6 mb-4 transition-all duration-300" style={{ paddingLeft: isCollapsed ? '16px' : '24px', paddingRight: isCollapsed ? '16px' : '24px' }}>
+                 <div className="px-6 mb-4 transition-all duration-300" style={{ paddingLeft: isCollapsed ? '16px' : '24px', paddingRight: isCollapsed ? '16px' : '24px' }}>
                     <div className="flex justify-center">
                         <div
-                            title={panelMode === 'multi' ? 'Multi Vendor' : 'Single Vendor'}
+                            title={realPlanType}
                             className={`inline-flex items-center gap-2 rounded-full text-xs font-semibold tracking-wide shadow-sm border transition-all duration-300
                                 ${isCollapsed ? 'p-2' : 'px-4 py-2'}
-                                ${panelMode === "multi"
+                                ${realPlanType === "Multi Vendor"
                                      ? "bg-purple-500/10 text-purple-400 border-purple-500/20"
                                      : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
                                  }`}
                         >
                             <span className="h-2 w-2 rounded-full bg-current opacity-80"></span>
                             {!isCollapsed && (
-                                <span>{panelMode === "multi" ? "Multi Vendor" : "Single Vendor"}</span>
+                                <span>{realPlanType}</span>
                             )}
                         </div>
                     </div>
@@ -177,90 +188,6 @@ const DashboardSidebar = ({ isOpen, setIsOpen, isChatOpen, setIsChatOpen, isColl
                             </div>
                         ))}
                     </div>
-
-                    {panelMode === 'multi' && !activeStoreId && (
-                        <>
-                            <div className="mt-8">
-                                {!isCollapsed && (
-                                    <div className="px-3 mb-2 flex items-center justify-between group">
-                                        <span className="text-[10px] font-black text-gray-400 tracking-[0.2em] uppercase">Sales channels</span>
-                                        <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/5 rounded transition-all text-gray-400">
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-                                        </button>
-                                    </div>
-                                )}
-                                <div className="space-y-1">
-                                    {salesChannels.map((item) => (
-                                        <div key={item.id}>
-                                            <Link
-                                                to={`/dashboard/${item.id}/${item.subItems ? item.subItems[0].id : ''}`}
-                                                onClick={() => setIsChatOpen(false)}
-                                                title={isCollapsed ? item.label : ''}
-                                                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-bold transition-all group relative ${isActive(item.id)
-                                                    ? 'bg-[#008060]/12 text-white shadow-sm border-l-4 border-[#008060] rounded-r-lg rounded-l-none'
-                                                    : 'text-[#9ca3af] hover:bg-white/5 hover:text-white font-semibold'
-                                                    }`}
-                                            >
-                                                <svg className={`w-5 h-5 flex-shrink-0 transition-colors ${isActive(item.id)
-                                                    ? 'text-[#008060]'
-                                                    : 'text-[#9ca3af] group-hover:text-white'
-                                                    }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
-                                                </svg>
-                                                {!isCollapsed && <span>{item.label}</span>}
-                                            </Link>
-
-                                            {/* Sub-items rendering for sales channels */}
-                                            {!isCollapsed && isActive(item.id) && item.subItems && (
-                                                <div className="mt-1 ml-4 space-y-0.5 relative">
-                                                    <div className="absolute left-[13px] top-[-10px] bottom-[18px] w-[1.5px] bg-white/10 rounded-full"></div>
-                                                    {item.subItems.map((subItem) => {
-                                                        const isSubActive = location.pathname.includes(`/dashboard/${item.id}/${subItem.id}`);
-                                                        return (
-                                                            <div key={subItem.id} className="relative flex items-center group">
-                                                                <div className="ml-[13px] mr-2 flex-shrink-0">
-                                                                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-white/10">
-                                                                        <path d="M0 0V8C0 9.10457 0.89543 10 2 10H10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                                                                        <path d="M8 7.5L10.5 10L8 12.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                                                    </svg>
-                                                                </div>
-                                                                <Link
-                                                                    to={`/dashboard/${item.id}/${subItem.id}`}
-                                                                    className={`flex-grow py-1.5 px-2 text-sm transition-all rounded-md ${isSubActive
-                                                                        ? 'text-[#008060] font-bold bg-white/5 shadow-sm translate-x-1 border-l-2 border-[#008060] rounded-l-none'
-                                                                        : 'text-[#9ca3af] hover:text-white font-medium hover:translate-x-1'
-                                                                        }`}
-                                                                >
-                                                                    {subItem.label}
-                                                                </Link>
-                                                            </div>
-                                                        );
-                                                    })}
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div className="mt-8">
-                                {!isCollapsed && (
-                                    <div className="px-3 mb-2 flex items-center justify-between group">
-                                        <span className="text-xs font-bold text-[#9ca3af] tracking-wider uppercase">Apps</span>
-                                        <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/5 rounded transition-all">
-                                            <svg className="w-4 h-4 text-[#9ca3af]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-                                        </button>
-                                    </div>
-                                )}
-                                <button title={isCollapsed ? "Add App" : ""} className="w-full flex items-center gap-3 px-3 py-1.5 rounded-lg text-sm font-semibold text-[#9ca3af] hover:bg-white/5 transition-all">
-                                    <div className="w-5 h-5 flex items-center justify-center bg-white/10 rounded flex-shrink-0">
-                                        <svg className="w-3 h-3 text-[#9ca3af]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" /></svg>
-                                    </div>
-                                    {!isCollapsed && <span>Add</span>}
-                                </button>
-                            </div>
-                        </>
-                    )}
                 </nav>
 
                 <div className="p-4 border-t border-white/5 space-y-4">

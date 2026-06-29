@@ -38,13 +38,13 @@ export const gatewayAuthMiddleware = async (req, res, next) => {
             requiredAuth = 'merchant';
         }
     } else if (path.startsWith('/api/products')) {
-        requiredAuth = method === 'GET' ? null : 'merchant';
+        requiredAuth = method === 'GET' ? null : 'merchant_or_vendor';
     } else if (path.startsWith('/api/categories')) {
-        requiredAuth = method === 'GET' ? null : 'merchant';
+        requiredAuth = method === 'GET' ? null : 'merchant_or_vendor';
     } else if (path.startsWith('/api/coupons')) {
-        requiredAuth = method === 'GET' ? null : 'merchant';
+        requiredAuth = method === 'GET' ? null : 'merchant_or_vendor';
     } else if (path.startsWith('/api/store-pages')) {
-        requiredAuth = method === 'GET' ? null : 'merchant';
+        requiredAuth = method === 'GET' ? null : 'merchant_or_vendor';
     } else if (path.startsWith('/api/customers')) {
         if (
             (method === 'POST' && (path.endsWith('/subscribe') || path.endsWith('/register') || path.endsWith('/login'))) ||
@@ -70,6 +70,9 @@ export const gatewayAuthMiddleware = async (req, res, next) => {
                         req.headers['x-admin-id'] = verified.id;
                     } else if (verified.type === 'merchant') {
                         req.headers['x-merchant-id'] = verified.id;
+                    } else if (verified.type === 'vendor') {
+                        req.headers['x-vendor-id'] = verified.id;
+                        req.headers['x-store-id'] = verified.storeId;
                     }
                 }
             } catch (err) {
@@ -92,12 +95,8 @@ export const gatewayAuthMiddleware = async (req, res, next) => {
         // Enforce required roles
         if (requiredAuth === 'admin' && verified.type !== 'admin') {
             return res.status(401).json({ message: 'Not authorized, admin privileges required' });
-        }
-        if (requiredAuth === 'merchant' && verified.type !== 'merchant') {
-            return res.status(401).json({ message: 'Not authorized, merchant privileges required' });
-        }
-        if (requiredAuth === 'merchant_or_admin' && verified.type !== 'merchant' && verified.type !== 'admin') {
-            return res.status(401).json({ message: 'Not authorized' });
+        } else if (requiredAuth === 'merchant_or_vendor' && verified.type !== 'merchant' && verified.type !== 'vendor') {
+            return res.status(401).json({ message: 'Not authorized, merchant or vendor privileges required' });
         }
         
         // Inject trusted headers for downstream services
@@ -105,6 +104,9 @@ export const gatewayAuthMiddleware = async (req, res, next) => {
             req.headers['x-admin-id'] = verified.id;
         } else if (verified.type === 'merchant') {
             req.headers['x-merchant-id'] = verified.id;
+        } else if (verified.type === 'vendor') {
+            req.headers['x-vendor-id'] = verified.id;
+            req.headers['x-store-id'] = verified.storeId;
         }
         
         next();
@@ -122,15 +124,23 @@ function extractToken(req) {
     if (req.cookies && req.cookies.jwt_merchant) {
         return { token: req.cookies.jwt_merchant, type: 'merchant' };
     }
+    if (req.cookies && req.cookies.jwt_vendor) {
+        return { token: req.cookies.jwt_vendor, type: 'vendor' };
+    }
     
     // Fallback to authorization header
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         const token = req.headers.authorization.split(' ')[1];
         if (token && token !== 'null' && token !== 'undefined') {
             // Guess type from path
-            const isLikeAdmin = req.path.startsWith('/api/master-admin') || 
-                                (req.path.startsWith('/api/merchants') && !req.path.includes('/login'));
-            return { token, type: isLikeAdmin ? 'admin' : 'merchant' };
+            const path = req.path;
+            if (path.startsWith('/api/master-admin') || (path.startsWith('/api/merchants') && !path.includes('/login'))) {
+                return { token, type: 'admin' };
+            }
+            if (path.startsWith('/api/auth/vendor') || path.includes('vendor')) {
+                return { token, type: 'vendor' };
+            }
+            return { token, type: 'merchant' };
         }
     }
     return null;

@@ -62,6 +62,8 @@ import BannersTab from '../components/dashboard/BannersTab';
 import AddBanner from '../components/dashboard/AddBanner';
 import ThemeCustomizer from '../components/dashboard/ThemeCustomizer';
 import DomainsTab from '../components/dashboard/DomainsTab';
+import VendorsTabSingle from '../components/dashboard/VendorsTabSingle';
+import AddVendorSingle from '../components/dashboard/AddVendorSingle';
 
 const Dashboard = () => {
     const { tab } = useParams();
@@ -97,31 +99,21 @@ const Dashboard = () => {
 
     const renderContent = () => {
         if (tab === 'category') {
-            if (panelMode === 'single') {
-                if (location.pathname.endsWith('/new')) return <AddCategorySingle />;
-                if (location.pathname.includes('/edit/')) return <AddCategorySingle />;
-                return <CategoryTab />;
-            }
-            if (location.pathname.endsWith('/new')) return <AddCollection />;
-            return <CollectionsTab />;
+            if (location.pathname.endsWith('/new')) return <AddCategorySingle />;
+            if (location.pathname.includes('/edit/')) return <AddCategorySingle />;
+            return <CategoryTab />;
         }
 
         if (tab === 'coupons') {
-            if (panelMode === 'single') {
-                if (location.pathname.endsWith('/new')) return <CreateCouponSingle />;
-                if (location.pathname.includes('/edit/')) return <CreateCouponSingle />;
-                return <CouponsTab />;
-            }
-            if (location.pathname.endsWith('/new')) return <CreateDiscount />;
-            return <DiscountsTab />;
+            if (location.pathname.endsWith('/new')) return <CreateCouponSingle />;
+            if (location.pathname.includes('/edit/')) return <CreateCouponSingle />;
+            return <CouponsTab />;
         }
 
         if (tab === 'stores') {
-            if (panelMode === 'single') {
-                if (location.pathname.endsWith('/new')) return <AddStoreSingle />;
-                if (location.pathname.includes('/edit/')) return <AddStoreSingle />;
-                return <StoresTabSingle />;
-            }
+            if (location.pathname.endsWith('/new')) return <AddStoreSingle />;
+            if (location.pathname.includes('/edit/')) return <AddStoreSingle />;
+            return <StoresTabSingle />;
         }
 
         if (tab === 'analytics') {
@@ -172,26 +164,12 @@ const Dashboard = () => {
         }
 
         if (tab === 'products') {
-            if (panelMode === 'single') {
-                if (location.pathname.endsWith('/new')) return <AddSingleVendorProduct />;
-                if (location.pathname.includes('/edit/')) return <AddSingleVendorProduct />;
-                if (location.pathname.includes('/view/')) return <ViewSingleVendorProduct />;
-                if (location.pathname.endsWith('/inventory')) return <InventoryTab />;
-                if (location.pathname.endsWith('/purchase-orders')) return <PurchaseOrdersTab />;
-                return <SingleVendorProductsTab />;
-            }
-            if (location.pathname.endsWith('/collections/new')) return <AddCollection />;
-            if (location.pathname.endsWith('/collections')) return <CollectionsTab />;
+            if (location.pathname.endsWith('/new')) return <AddSingleVendorProduct />;
+            if (location.pathname.includes('/edit/')) return <AddSingleVendorProduct />;
+            if (location.pathname.includes('/view/')) return <ViewSingleVendorProduct />;
             if (location.pathname.endsWith('/inventory')) return <InventoryTab />;
-            if (location.pathname.endsWith('/purchase-orders/new')) return <CreatePurchaseOrder />;
             if (location.pathname.endsWith('/purchase-orders')) return <PurchaseOrdersTab />;
-            if (location.pathname.endsWith('/transfers/new')) return <CreateTransfer />;
-            if (location.pathname.endsWith('/transfers')) return <TransfersTab />;
-            if (location.pathname.endsWith('/gift-cards/product/new')) return <CreateGiftCardProduct />;
-            if (location.pathname.endsWith('/gift-cards/new')) return <CreateGiftCard />;
-            if (location.pathname.endsWith('/gift-cards')) return <GiftCardsTab />;
-            if (location.pathname.endsWith('/new')) return <AddProduct />;
-            return <ProductsTab />;
+            return <SingleVendorProductsTab />;
         }
 
         if (tab === 'customers') {
@@ -199,6 +177,12 @@ const Dashboard = () => {
             if (location.pathname.includes('/edit/')) return <AddCustomer />;
             if (location.pathname.includes('/view/')) return <ViewCustomer />;
             return <CustomersTab />;
+        }
+
+        if (tab === 'vendors') {
+            if (location.pathname.endsWith('/new')) return <AddVendorSingle />;
+            if (location.pathname.includes('/edit/')) return <AddVendorSingle />;
+            return <VendorsTabSingle />;
         }
 
         if (tab === 'marketing') {

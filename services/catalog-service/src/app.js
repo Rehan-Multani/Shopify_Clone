@@ -10,6 +10,7 @@ import categoryRoutes from './routes/categoryRoutes.js';
 import couponRoutes from './routes/couponRoutes.js';
 import customerRoutes from './routes/customerRoutes.js';
 import bannerRoutes from './routes/bannerRoutes.js';
+import vendorRoutes from './routes/vendorRoutes.js';
 
 const app = express();
 
@@ -25,30 +26,39 @@ const uploadDir = process.env.UPLOAD_DIR ? path.resolve(process.env.UPLOAD_DIR) 
 app.use('/uploads', express.static(uploadDir));
 
 import jwt from 'jsonwebtoken';
+import Vendor from './models/Vendor.js';
 
 // Reconstruct merchant and admin objects from trusted Gateway headers or decode directly if bypassed
-app.use((req, res, next) => {
+app.use(async (req, res, next) => {
     if (req.headers['x-merchant-id']) {
         req.merchant = { _id: req.headers['x-merchant-id'] };
+    }
+    if (req.headers['x-vendor-id']) {
+        req.vendor = { _id: req.headers['x-vendor-id'] };
     }
     if (req.headers['x-admin-id']) {
         req.admin = { _id: req.headers['x-admin-id'] };
     }
 
-    if (!req.merchant && !req.admin) {
+    if (!req.merchant && !req.admin && !req.vendor) {
         let token;
         if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
             token = req.headers.authorization.split(' ')[1];
-        } else if (req.cookies && (req.cookies.jwt_merchant || req.cookies.jwt_admin)) {
-            token = req.cookies.jwt_merchant || req.cookies.jwt_admin;
+        } else if (req.cookies && (req.cookies.jwt_merchant || req.cookies.jwt_admin || req.cookies.jwt_vendor)) {
+            token = req.cookies.jwt_merchant || req.cookies.jwt_admin || req.cookies.jwt_vendor;
         }
 
         if (token) {
             try {
                 const decoded = jwt.verify(token, process.env.JWT_SECRET || 'super_secret_jwt_key_for_storify_2026');
                 if (decoded && decoded.id) {
-                    req.merchant = { _id: decoded.id };
-                    req.admin = { _id: decoded.id };
+                    const isVendor = await Vendor.findById(decoded.id);
+                    if (isVendor) {
+                        req.vendor = { _id: decoded.id };
+                    } else {
+                        req.merchant = { _id: decoded.id };
+                        req.admin = { _id: decoded.id };
+                    }
                 }
             } catch (err) {
                 // Ignore token errors
@@ -65,6 +75,7 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/coupons', couponRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/banners', bannerRoutes);
+app.use('/api/vendors', vendorRoutes);
 
 // Health check
 app.get('/api/catalog/health', (req, res) => {

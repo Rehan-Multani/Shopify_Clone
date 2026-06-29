@@ -1,15 +1,26 @@
 import Coupon from '../models/Coupon.js';
+import Vendor from '../models/Vendor.js';
 
-// @desc    Get all coupons for logged-in merchant's store
+// @desc    Get all coupons for logged-in merchant's store or vendor's coupons
 // @route   GET /api/coupons
-// @access  Private/Merchant
+// @access  Private/Merchant/Vendor (Header-based)
 export const getCoupons = async (req, res) => {
     try {
         const storeId = req.headers['x-store-id'];
         if (!storeId) {
             return res.status(400).json({ message: 'Store ID header (x-store-id) is required' });
         }
-        const coupons = await Coupon.find({ merchant: req.merchant._id, store: storeId }).sort({ createdAt: -1 });
+
+        let filter;
+        if (req.merchant) {
+            filter = { merchant: req.merchant._id, store: storeId };
+        } else if (req.vendor) {
+            filter = { store: storeId, vendor: req.vendor._id };
+        } else {
+            filter = { store: storeId, isActive: true, isApproved: true };
+        }
+
+        const coupons = await Coupon.find(filter).sort({ createdAt: -1 });
         res.json(coupons);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -18,7 +29,7 @@ export const getCoupons = async (req, res) => {
 
 // @desc    Create a coupon
 // @route   POST /api/coupons
-// @access  Private/Merchant
+// @access  Private/Merchant/Vendor (Header-based)
 export const createCoupon = async (req, res) => {
     try {
         const storeId = req.headers['x-store-id'];
@@ -45,9 +56,29 @@ export const createCoupon = async (req, res) => {
             return res.status(400).json({ message: 'A coupon with this code already exists' });
         }
 
+        let merchantId;
+        let isApproved = true;
+        let vendorId = null;
+
+        if (req.merchant) {
+            merchantId = req.merchant._id;
+        } else if (req.vendor) {
+            const vendorProfile = await Vendor.findById(req.vendor._id);
+            if (!vendorProfile) {
+                return res.status(404).json({ message: 'Vendor not found' });
+            }
+            merchantId = vendorProfile.merchant;
+            isApproved = false; // Requires approval from the store admin
+            vendorId = req.vendor._id;
+        } else {
+            return res.status(401).json({ message: 'Not authorized' });
+        }
+
         const coupon = await Coupon.create({
-            merchant: req.merchant._id,
+            merchant: merchantId,
             store: storeId,
+            vendor: vendorId,
+            isApproved,
             code: code.trim().toUpperCase(),
             discountType: discountType || 'percentage',
             discountValue: Number(discountValue),
@@ -67,15 +98,24 @@ export const createCoupon = async (req, res) => {
 
 // @desc    Update a coupon
 // @route   PUT /api/coupons/:id
-// @access  Private/Merchant
+// @access  Private/Merchant/Vendor (Header-based)
 export const updateCoupon = async (req, res) => {
     try {
         const storeId = req.headers['x-store-id'];
         if (!storeId) {
             return res.status(400).json({ message: 'Store ID header (x-store-id) is required' });
         }
-        const coupon = await Coupon.findOne({ _id: req.params.id, merchant: req.merchant._id, store: storeId });
 
+        let filter;
+        if (req.merchant) {
+            filter = { _id: req.params.id, merchant: req.merchant._id, store: storeId };
+        } else if (req.vendor) {
+            filter = { _id: req.params.id, store: storeId, vendor: req.vendor._id };
+        } else {
+            return res.status(401).json({ message: 'Not authorized' });
+        }
+
+        const coupon = await Coupon.findOne(filter);
         if (!coupon) {
             return res.status(404).json({ message: 'Coupon not found' });
         }
@@ -108,6 +148,11 @@ export const updateCoupon = async (req, res) => {
         coupon.isActive = isActive !== undefined ? isActive : coupon.isActive;
         coupon.description = description !== undefined ? description : coupon.description;
 
+        // If updated by vendor, reset approval status
+        if (req.vendor) {
+            coupon.isApproved = false;
+        }
+
         const updatedCoupon = await coupon.save();
         res.json(updatedCoupon);
     } catch (error) {
@@ -117,15 +162,24 @@ export const updateCoupon = async (req, res) => {
 
 // @desc    Delete a coupon
 // @route   DELETE /api/coupons/:id
-// @access  Private/Merchant
+// @access  Private/Merchant/Vendor (Header-based)
 export const deleteCoupon = async (req, res) => {
     try {
         const storeId = req.headers['x-store-id'];
         if (!storeId) {
             return res.status(400).json({ message: 'Store ID header (x-store-id) is required' });
         }
-        const coupon = await Coupon.findOne({ _id: req.params.id, merchant: req.merchant._id, store: storeId });
 
+        let filter;
+        if (req.merchant) {
+            filter = { _id: req.params.id, merchant: req.merchant._id, store: storeId };
+        } else if (req.vendor) {
+            filter = { _id: req.params.id, store: storeId, vendor: req.vendor._id };
+        } else {
+            return res.status(401).json({ message: 'Not authorized' });
+        }
+
+        const coupon = await Coupon.findOne(filter);
         if (!coupon) {
             return res.status(404).json({ message: 'Coupon not found' });
         }
@@ -139,15 +193,24 @@ export const deleteCoupon = async (req, res) => {
 
 // @desc    Toggle coupon active/inactive status
 // @route   PATCH /api/coupons/:id/toggle
-// @access  Private/Merchant
+// @access  Private/Merchant/Vendor (Header-based)
 export const toggleCouponStatus = async (req, res) => {
     try {
         const storeId = req.headers['x-store-id'];
         if (!storeId) {
             return res.status(400).json({ message: 'Store ID header (x-store-id) is required' });
         }
-        const coupon = await Coupon.findOne({ _id: req.params.id, merchant: req.merchant._id, store: storeId });
 
+        let filter;
+        if (req.merchant) {
+            filter = { _id: req.params.id, merchant: req.merchant._id, store: storeId };
+        } else if (req.vendor) {
+            filter = { _id: req.params.id, store: storeId, vendor: req.vendor._id };
+        } else {
+            return res.status(401).json({ message: 'Not authorized' });
+        }
+
+        const coupon = await Coupon.findOne(filter);
         if (!coupon) {
             return res.status(404).json({ message: 'Coupon not found' });
         }
@@ -155,6 +218,31 @@ export const toggleCouponStatus = async (req, res) => {
         coupon.isActive = !coupon.isActive;
         const updatedCoupon = await coupon.save();
         res.json(updatedCoupon);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Approve a coupon
+// @route   PUT /api/coupons/:id/approve
+// @access  Private/Merchant
+export const approveCoupon = async (req, res) => {
+    try {
+        const storeId = req.headers['x-store-id'];
+        if (!storeId) {
+            return res.status(400).json({ message: 'Store ID header (x-store-id) is required' });
+        }
+        if (!req.merchant) {
+            return res.status(403).json({ message: 'Only store admins can approve coupons' });
+        }
+        const coupon = await Coupon.findOne({ _id: req.params.id, merchant: req.merchant._id, store: storeId });
+        if (!coupon) {
+            return res.status(404).json({ message: 'Coupon not found' });
+        }
+
+        coupon.isApproved = true;
+        await coupon.save();
+        res.json({ success: true, message: 'Coupon approved successfully', coupon });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -178,6 +266,10 @@ export const validateCoupon = async (req, res) => {
         const coupon = await Coupon.findOne({ store: storeId, code: code.trim().toUpperCase() });
         if (!coupon) {
             return res.status(404).json({ valid: false, message: 'Coupon code not found' });
+        }
+
+        if (!coupon.isApproved) {
+            return res.status(400).json({ valid: false, message: 'This coupon is awaiting store approval' });
         }
 
         if (!coupon.isValid) {

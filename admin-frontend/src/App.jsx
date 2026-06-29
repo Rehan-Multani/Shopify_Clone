@@ -12,6 +12,9 @@ import MerchantProtectedRoute from './modules/user/components/MerchantProtectedR
 import ForgotPassword from './modules/user/pages/ForgotPassword';
 import StorefrontContainer from './modules/user/components/storefront/StorefrontContainer';
 import NotFound from './modules/user/pages/NotFound';
+import VendorLogin from './modules/user/pages/VendorLogin';
+import VendorProtectedRoute from './modules/user/components/VendorProtectedRoute';
+import VendorDashboard from './modules/user/pages/VendorDashboard';
 
 function App() {
   const [resolvedStore, setResolvedStore] = useState(null);
@@ -100,6 +103,17 @@ function App() {
           <MerchantProtectedRoute>
             <Dashboard />
           </MerchantProtectedRoute>
+        } />
+        <Route path="/vendor/login" element={<VendorLogin />} />
+        <Route path="/vendor/dashboard" element={
+          <VendorProtectedRoute>
+            <VendorDashboard />
+          </VendorProtectedRoute>
+        } />
+        <Route path="/vendor/dashboard/:tab/*" element={
+          <VendorProtectedRoute>
+            <VendorDashboard />
+          </VendorProtectedRoute>
         } />
         <Route path="/signup" element={<Signup />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />

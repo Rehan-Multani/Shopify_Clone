@@ -15,14 +15,11 @@ const ReportsTab = () => {
         try {
             setLoading(true);
             setError('');
-            const token = localStorage.getItem('merchantToken');
+            const token = localStorage.getItem('merchantToken') || localStorage.getItem('vendorToken');
             
             // Get selected store from localStorage if exists
-            const merchantInfo = JSON.parse(localStorage.getItem('merchantInfo') || '{}');
-            let storeQuery = '';
-            if (merchantInfo && merchantInfo.stores && merchantInfo.stores.length > 0) {
-                storeQuery = `?storeId=${merchantInfo.stores[0]}`;
-            }
+            const activeStoreId = localStorage.getItem('activeStoreId') || '';
+            const storeQuery = activeStoreId ? `?storeId=${activeStoreId}` : '';
 
             const res = await fetch(`${GATEWAY_URL}/stores/analytics-stats${storeQuery}`, {
                 headers: {

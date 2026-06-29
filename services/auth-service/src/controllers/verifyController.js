@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import MasterAdmin from '../models/MasterAdmin.js';
 import Merchant from '../models/Merchant.js';
+import Vendor from '../models/Vendor.js';
 
 // @desc    Verify JWT token & return user details
 // @route   POST /api/auth/verify
@@ -29,8 +30,17 @@ export const verifyToken = async (req, res) => {
                 return res.status(403).json({ valid: false, message: 'Your account is suspended. Please contact support.' });
             }
             return res.json({ valid: true, id: merchant._id, type: 'merchant' });
+        } else if (type === 'vendor') {
+            const vendor = await Vendor.findById(decoded.id);
+            if (!vendor) {
+                return res.status(401).json({ valid: false, message: 'Vendor not found' });
+            }
+            if (!vendor.isActive) {
+                return res.status(403).json({ valid: false, message: 'Your vendor account is deactivated.' });
+            }
+            return res.json({ valid: true, id: vendor._id, type: 'vendor', storeId: vendor.store });
         } else {
-            // Check admin first, then merchant
+            // Check admin first, then merchant, then vendor
             const admin = await MasterAdmin.findById(decoded.id);
             if (admin) {
                 return res.json({ valid: true, id: admin._id, type: 'admin' });
@@ -42,6 +52,14 @@ export const verifyToken = async (req, res) => {
                     return res.status(403).json({ valid: false, message: 'Your account is suspended. Please contact support.' });
                 }
                 return res.json({ valid: true, id: merchant._id, type: 'merchant' });
+            }
+
+            const vendor = await Vendor.findById(decoded.id);
+            if (vendor) {
+                if (!vendor.isActive) {
+                    return res.status(403).json({ valid: false, message: 'Your vendor account is deactivated.' });
+                }
+                return res.json({ valid: true, id: vendor._id, type: 'vendor', storeId: vendor.store });
             }
 
             return res.status(401).json({ valid: false, message: 'User not found' });

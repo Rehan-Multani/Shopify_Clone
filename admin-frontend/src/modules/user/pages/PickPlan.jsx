@@ -13,7 +13,7 @@ const PickPlan = () => {
 
     // Get merchant's current plan type from localStorage
     const merchantInfo = JSON.parse(localStorage.getItem('merchantInfo') || '{}');
-    const currentPlanType = merchantInfo?.plan?.planType || 'Single Vendor';
+    const currentPlanType = merchantInfo?.plan?.planType || merchantInfo?.planType || 'Single Vendor';
 
     const benefits = [
         "World's best checkout",

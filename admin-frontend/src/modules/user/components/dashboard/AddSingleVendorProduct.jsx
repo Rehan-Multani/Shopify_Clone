@@ -7,7 +7,9 @@ const API_URL = CATALOG_API_URL;
 const AddSingleVendorProduct = () => {
     const navigate = useNavigate();
     const fileInputRef = useRef(null);
-    const token = localStorage.getItem('merchantToken');
+    const isVendor = window.location.pathname.startsWith('/vendor');
+    const token = isVendor ? localStorage.getItem('vendorToken') : (localStorage.getItem('merchantToken') || localStorage.getItem('vendorToken'));
+    const dashboardPrefix = isVendor ? '/vendor/dashboard' : '/dashboard';
 
     const [form, setForm] = useState({
         name: '',
@@ -21,7 +23,7 @@ const AddSingleVendorProduct = () => {
         weight: '',
         tags: '',
         isFeatured: false,
-        isActive: true
+        isActive: false
     });
 
     const [imageFiles, setImageFiles] = useState([]);
@@ -39,7 +41,7 @@ const AddSingleVendorProduct = () => {
                     headers: { 'Authorization': `Bearer ${token}`, 'x-store-id': storeId }
                 });
                 const data = await res.json();
-                if (res.ok) setCategories(data.filter(c => c.isActive));
+                if (res.ok) setCategories(data);
             } catch (err) {
                 console.error('Failed to fetch categories:', err);
             }
@@ -222,7 +224,7 @@ const AddSingleVendorProduct = () => {
             const data = await res.json();
 
             if (res.ok) {
-                navigate('/dashboard/products');
+                navigate(`${dashboardPrefix}/products`);
             } else {
                 setError(data.message || `Failed to ${isEdit ? 'update' : 'create'} product`);
             }
@@ -238,7 +240,7 @@ const AddSingleVendorProduct = () => {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <button onClick={() => navigate('/dashboard/products')} className="p-2 hover:bg-gray-100 rounded-lg transition-all text-[#5c5f62]">
+                    <button onClick={() => navigate(`${dashboardPrefix}/products`)} className="p-2 hover:bg-gray-100 rounded-lg transition-all text-[#5c5f62]">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                         </svg>
@@ -510,7 +512,7 @@ const AddSingleVendorProduct = () => {
 
             {/* Bottom Actions */}
             <div className="flex items-center justify-end gap-3 pt-4 pb-8">
-                <button onClick={() => navigate('/dashboard/products')} className="px-5 py-2.5 text-sm font-bold text-[#5c5f62] hover:bg-gray-100 rounded-lg transition-all">
+                <button onClick={() => navigate(`${dashboardPrefix}/products`)} className="px-5 py-2.5 text-sm font-bold text-[#5c5f62] hover:bg-gray-100 rounded-lg transition-all">
                     Discard
                 </button>
                 <button

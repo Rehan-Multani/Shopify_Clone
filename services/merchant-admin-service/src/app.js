@@ -5,6 +5,10 @@ import merchantRoutes from './routes/merchantRoutes.js';
 import planRoutes from './routes/planRoutes.js';
 import supportRoutes from './routes/supportRoutes.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
+import path from 'path';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const app = express();
 
@@ -12,6 +16,10 @@ app.use(cors({
     origin: ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:5174', 'http://127.0.0.1:5174'],
     credentials: true,
 }));
+
+const uploadDir = process.env.UPLOAD_DIR ? path.resolve(process.env.UPLOAD_DIR) : path.join(process.cwd(), 'public', 'uploads');
+app.use('/uploads', express.static(uploadDir));
+app.use('/admin/uploads', express.static(uploadDir));
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));

@@ -7,12 +7,14 @@ const API_URL = CATALOG_API_URL;
 const AddCategory = () => {
     const navigate = useNavigate();
     const fileInputRef = useRef(null);
-    const token = localStorage.getItem('merchantToken');
+    const isVendor = window.location.pathname.startsWith('/vendor');
+    const token = isVendor ? localStorage.getItem('vendorToken') : (localStorage.getItem('merchantToken') || localStorage.getItem('vendorToken'));
+    const dashboardPrefix = isVendor ? '/vendor/dashboard' : '/dashboard';
 
     const [form, setForm] = useState({
         name: '',
         description: '',
-        isActive: true
+        isActive: false
     });
     const [imageFile, setImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState('');
@@ -137,7 +139,7 @@ const AddCategory = () => {
             const data = await res.json();
 
             if (res.ok) {
-                navigate('/dashboard/category');
+                navigate(`${dashboardPrefix}/category`);
             } else {
                 setError(data.message || `Failed to ${isEdit ? 'update' : 'create'} category`);
             }
@@ -153,7 +155,7 @@ const AddCategory = () => {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <button onClick={() => navigate('/dashboard/category')} className="p-2 hover:bg-gray-100 rounded-lg transition-all text-[#5c5f62]">
+                    <button onClick={() => navigate(`${dashboardPrefix}/category`)} className="p-2 hover:bg-gray-100 rounded-lg transition-all text-[#5c5f62]">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                         </svg>
@@ -245,28 +247,30 @@ const AddCategory = () => {
                 </div>
 
                 {/* Status */}
-                <div className="space-y-4">
-                    <h2 className="text-lg font-bold text-[#202223] pb-2 border-b border-gray-100">Status</h2>
-                    <div className="flex items-center justify-between max-w-sm bg-gray-50 p-4 rounded-xl border border-gray-100">
-                        <div>
-                            <span className="font-bold text-sm text-[#202223]">{form.isActive ? 'Active' : 'Inactive'}</span>
-                            <p className="text-xs text-gray-400 mt-0.5">
-                                {form.isActive ? 'Visible to customers' : 'Hidden from customers'}
-                            </p>
+                {!isVendor && (
+                    <div className="space-y-4">
+                        <h2 className="text-lg font-bold text-[#202223] pb-2 border-b border-gray-100">Status</h2>
+                        <div className="flex items-center justify-between max-w-sm bg-gray-50 p-4 rounded-xl border border-gray-100">
+                            <div>
+                                <span className="font-bold text-sm text-[#202223]">{form.isActive ? 'Active' : 'Inactive'}</span>
+                                <p className="text-xs text-gray-400 mt-0.5">
+                                    {form.isActive ? 'Visible to customers' : 'Hidden from customers'}
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => setForm(p => ({ ...p, isActive: !p.isActive }))}
+                                className={`relative w-11 h-6 rounded-full transition-colors ${form.isActive ? 'bg-emerald-500' : 'bg-gray-300'}`}
+                            >
+                                <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${form.isActive ? 'translate-x-5' : ''}`}></span>
+                            </button>
                         </div>
-                        <button
-                            onClick={() => setForm(p => ({ ...p, isActive: !p.isActive }))}
-                            className={`relative w-11 h-6 rounded-full transition-colors ${form.isActive ? 'bg-emerald-500' : 'bg-gray-300'}`}
-                        >
-                            <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${form.isActive ? 'translate-x-5' : ''}`}></span>
-                        </button>
                     </div>
-                </div>
+                )}
             </div>
 
             {/* Bottom Actions */}
             <div className="flex items-center justify-end gap-3 pt-4 pb-8">
-                <button onClick={() => navigate('/dashboard/category')} className="px-5 py-2.5 text-sm font-bold text-[#5c5f62] hover:bg-gray-100 rounded-lg transition-all">
+                <button onClick={() => navigate(`${dashboardPrefix}/category`)} className="px-5 py-2.5 text-sm font-bold text-[#5c5f62] hover:bg-gray-100 rounded-lg transition-all">
                     Discard
                 </button>
                 <button

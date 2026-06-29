@@ -9,7 +9,9 @@ const OrdersTab = () => {
     const [filter, setFilter] = useState('all');
     const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
 
-    const token = localStorage.getItem('merchantToken');
+    const token = localStorage.getItem('merchantToken') || localStorage.getItem('vendorToken');
+    const isVendor = window.location.pathname.startsWith('/vendor');
+    const dashboardPrefix = isVendor ? '/vendor/dashboard' : '/dashboard';
     const storeId = localStorage.getItem('activeStoreId') || '';
     const API_URL = import.meta.env.VITE_STORE_API_URL;
 
@@ -124,7 +126,7 @@ const OrdersTab = () => {
                 </div>
                 <div className="flex items-center gap-3">
                     <Link 
-                        to="/dashboard/orders/new" 
+                        to={`${dashboardPrefix}/orders/new`} 
                         className="inline-flex items-center gap-2 bg-[#1a1c23] text-white px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-black transition-all shadow-md active:scale-95"
                     >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -212,7 +214,7 @@ const OrdersTab = () => {
                                 Create an order manually or drive sales to your store to see customers' orders here.
                             </p>
                         </div>
-                        <Link to="/dashboard/orders/new" className="bg-[#1a1c23] text-white px-6 py-2.5 rounded-lg font-bold text-sm hover:bg-black transition-all shadow-md active:scale-95 block">
+                        <Link to={`${dashboardPrefix}/orders/new`} className="bg-[#1a1c23] text-white px-6 py-2.5 rounded-lg font-bold text-sm hover:bg-black transition-all shadow-md active:scale-95 block">
                             Create order
                         </Link>
                     </div>
@@ -266,7 +268,7 @@ const OrdersTab = () => {
                                         <td className="px-5 py-3.5 text-right">
                                             <div className="flex items-center justify-end gap-2 flex-wrap">
                                                 <Link 
-                                                    to={`/dashboard/orders/${order._id}`}
+                                                    to={`${dashboardPrefix}/orders/${order._id}`}
                                                     className="text-xs font-bold text-[#202223] hover:bg-gray-100 bg-gray-50 px-2.5 py-1 rounded-lg border border-gray-200 transition-all active:scale-95"
                                                 >
                                                     View Details

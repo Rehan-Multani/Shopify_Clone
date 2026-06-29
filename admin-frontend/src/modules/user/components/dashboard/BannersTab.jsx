@@ -49,8 +49,8 @@ const BannersTab = () => {
             const storeId = localStorage.getItem('activeStoreId') || '';
             const res = await fetch(`${API_URL}/banners/${id}`, {
                 method: 'PUT',
-                headers: { 
-                    'Content-Type': 'application/json', 
+                headers: {
+                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
                     'x-store-id': storeId
                 },
@@ -134,11 +134,10 @@ const BannersTab = () => {
         <div className="space-y-6">
             {/* Toast Notification */}
             {toast.show && (
-                <div className={`fixed top-4 right-4 z-50 px-5 py-3 rounded-xl shadow-2xl text-sm font-bold flex items-center gap-2 animate-in slide-in-from-top-4 duration-300 ${
-                    toast.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'
-                }`}>
+                <div className={`fixed top-4 right-4 z-50 px-5 py-3 rounded-xl shadow-2xl text-sm font-bold flex items-center gap-2 animate-in slide-in-from-top-4 duration-300 ${toast.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'
+                    }`}>
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        {toast.type === 'success' 
+                        {toast.type === 'success'
                             ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                             : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
                         }
@@ -183,9 +182,8 @@ const BannersTab = () => {
                         <button
                             key={f}
                             onClick={() => setStatusFilter(f)}
-                            className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all capitalize ${
-                                statusFilter === f ? 'bg-[#1a1c23] text-white shadow-sm' : 'text-[#5c5f62] hover:bg-gray-50'
-                            }`}
+                            className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all capitalize ${statusFilter === f ? 'bg-[#1a1c23] text-white shadow-sm' : 'text-[#5c5f62] hover:bg-gray-50'
+                                }`}
                         >
                             {f}
                         </button>
@@ -244,11 +242,10 @@ const BannersTab = () => {
                                         <td className="px-5 py-3">
                                             <button
                                                 onClick={() => handleToggleStatus(banner._id, banner.isActive)}
-                                                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all ${
-                                                    banner.isActive 
-                                                        ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100' 
+                                                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all ${banner.isActive
+                                                        ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
                                                         : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                                                }`}
+                                                    }`}
                                             >
                                                 <div className={`w-1.5 h-1.5 rounded-full ${banner.isActive ? 'bg-emerald-500' : 'bg-gray-400'}`}></div>
                                                 {banner.isActive ? 'Active' : 'Inactive'}
@@ -300,11 +297,10 @@ const BannersTab = () => {
                                     <button
                                         key={i + 1}
                                         onClick={() => setCurrentPage(i + 1)}
-                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                                            currentPage === i + 1
+                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${currentPage === i + 1
                                                 ? 'bg-[#1a1c23] text-white shadow-sm'
                                                 : 'text-[#5c5f62] hover:bg-gray-50 border border-transparent'
-                                        }`}
+                                            }`}
                                     >
                                         {i + 1}
                                     </button>
