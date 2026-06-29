@@ -595,129 +595,197 @@ server {
         const destPath = `/etc/nginx/sites-available/${domain}.conf`;
         const linkPath = `/etc/nginx/sites-enabled/${domain}.conf`;
 
-        let deployCmd;
+        const buildFrontendPromise = (frontendPath) => {
+            return new Promise((resolve, reject) => {
+                console.log(`[Auto-Build] Initiating React production build at ${frontendPath}...`);
+                exec('npm run build', {
+                    cwd: frontendPath,
+                    env: {
+                        ...process.env,
+                        VITE_API_BASE_URL: '/api',
+                        VITE_STORE_API_URL: '/api',
+                        VITE_AUTH_API_URL: '/api/auth',
+                        VITE_MERCHANT_ADMIN_API_URL: '/api/admin',
+                        VITE_ADMIN_API_URL: '/api/admin',
+                        VITE_CATALOG_API_URL: '/api',
+                        VITE_BILLING_API_URL: '/api/billing'
+                    }
+                }, (err, stdout, stderr) => {
+                    if (err) {
+                        console.error("[Auto-Build Error]", err.message);
+                        return reject(err);
+                    }
+                    console.log("[Auto-Build Success] Build created.");
+                    resolve();
+                });
+            });
+        };
+
+        const frontendPath = path.resolve(process.cwd(), '../../admin-frontend');
+
         if (!sshPass) {
             console.log(`[Publish Deployment] Initializing Local/Native Deployment...`);
-            deployCmd = `
-                sudo cp ${localTempPath} ${destPath} && \
-                sudo ln -sf ${destPath} ${linkPath} && \
-                sudo nginx -t && \
-                sudo nginx -s reload && \
-                sudo certbot --nginx ${certbotDomains} --non-interactive --agree-tos -m admin@storify.com --redirect && \
-                sudo nginx -s reload
-            `;
-            exec(deployCmd, (error, stdout, stderr) => {
-                console.log(`[Execution Finish] Shell output returned`);
-                // Always clean up the local temp configuration file
-                try {
-                    fsLib.unlinkSync(localTempPath);
-                    console.log(`[Cleanup] Deleted local temporary config file.`);
-                } catch (cleanupErr) {
-                    console.log(`[Cleanup Warning] Local files cleanup skipped:`, cleanupErr.message);
-                }
+            const localDistPath = path.resolve(process.cwd(), '../../admin-frontend/dist');
+            
+            buildFrontendPromise(frontendPath).then(() => {
+                const deployCmd = `
+                    sudo mkdir -p /var/www/admin-frontend/dist && \
+                    if [ -d "${localDistPath}" ]; then \
+                        sudo cp -r "${localDistPath}"/* /var/www/admin-frontend/dist/ || true; \
+                    fi && \
+                    sudo chmod -R 755 /var/www/admin-frontend && \
+                    sudo cp ${localTempPath} ${destPath} && \
+                    sudo ln -sf ${destPath} ${linkPath} && \
+                    sudo nginx -t && \
+                    sudo nginx -s reload && \
+                    sudo certbot --nginx ${certbotDomains} --non-interactive --agree-tos -m admin@storify.com --redirect && \
+                    sudo nginx -s reload
+                `;
+                exec(deployCmd, (error, stdout, stderr) => {
+                    console.log(`[Execution Finish] Shell output returned`);
+                    try {
+                        fsLib.unlinkSync(localTempPath);
+                        console.log(`[Cleanup] Deleted local temporary config file.`);
+                    } catch (cleanupErr) {
+                        console.log(`[Cleanup Warning] Local files cleanup skipped:`, cleanupErr.message);
+                    }
 
-                if (error) {
-                    console.error(`[Deployment Error - STEP FAILED] Error message:`, error.message);
-                    console.error(`[Deployment Stderr Output]:`, stderr);
-                    return;
-                }
-                console.log(`[Deployment Success - COMPLETE] Output:\n`, stdout);
-                if (stderr) {
-                    console.log(`[Deployment Warnings/Info]:`, stderr);
-                }
+                    if (error) {
+                        console.error(`[Deployment Error - STEP FAILED] Error message:`, error.message);
+                        console.error(`[Deployment Stderr Output]:`, stderr);
+                        return;
+                    }
+                    console.log(`[Deployment Success - COMPLETE] Output:\n`, stdout);
+                });
+            }).catch(buildErr => {
+                console.error(`[Local Build Deployment Blocked] Build failed:`, buildErr.message);
             });
         } else {
             console.log(`[Publish Deployment] Initializing Remote SSH2 Client connection to: ${sshUser}@${serverIp}...`);
             const { Client } = await import('ssh2');
-            const conn = new Client();
+            const { execSync } = await import('child_process');
 
-            conn.on('ready', () => {
-                console.log(`[SSH2 Ready] Connection established. Initializing SFTP...`);
+            buildFrontendPromise(frontendPath).then(() => {
+                const archiveName = `shared-dist-${Date.now()}.tar.gz`;
+                const localArchivePath = path.resolve(process.cwd(), archiveName);
                 
-                conn.sftp((err, sftp) => {
-                    if (err) {
-                        console.error(`[SFTP Error] Failed to start SFTP session:`, err.message);
-                        conn.end();
-                        return;
-                    }
+                try {
+                    const tarCmd = `tar -czf "${localArchivePath}" -C "${frontendPath}/dist" .`;
+                    execSync(tarCmd);
+                    console.log(`[Compression Success] Archive created at ${localArchivePath}`);
+                } catch (tarErr) {
+                    console.error("[Compression Error] Failed to compress build:", tarErr.message);
+                    return;
+                }
 
-                    const remoteTempPath = `/tmp/${domain}.conf`;
-
-                    console.log(`[SFTP Upload] Transferring configuration file: ${localTempPath} -> ${remoteTempPath}`);
-                    sftp.fastPut(localTempPath, remoteTempPath, {}, (uploadErr) => {
-                        if (uploadErr) {
-                            console.error(`[SFTP Config Upload Error]`, uploadErr.message);
+                const conn = new Client();
+                conn.on('ready', () => {
+                    console.log(`[SSH2 Ready] Connection established. Initializing SFTP...`);
+                    
+                    conn.sftp((err, sftp) => {
+                        if (err) {
+                            console.error(`[SFTP Error] Failed to start SFTP session:`, err.message);
                             conn.end();
+                            try { fsLib.unlinkSync(localArchivePath); } catch (e) {}
                             return;
                         }
-                        console.log(`[SFTP Success] Config file transferred successfully.`);
 
-                        // Phase 2: Execute remote linkage and Nginx reload commands
-                        console.log(`[SSH2 Process] Configuring Nginx on remote host...`);
-                        const deployCmds = [
-                            `sudo mv -f ${remoteTempPath} ${destPath}`,
-                            `sudo ln -sf ${destPath} ${linkPath}`,
-                            `sudo nginx -t`,
-                            `sudo nginx -s reload`,
-                            `sudo certbot --nginx ${certbotDomains} --non-interactive --agree-tos -m admin@storify.com --redirect`,
-                            `sudo nginx -s reload`
-                        ].join(' && ');
+                        const remoteTempPath = `/tmp/${domain}.conf`;
+                        const remoteArchivePath = `/tmp/${archiveName}`;
 
-                        conn.exec(deployCmds, (execErr, stream) => {
-                            if (execErr) {
-                                console.error(`[SSH2 Exec Error]`, execErr.message);
+                        console.log(`[SFTP Upload] Transferring configuration file: ${localTempPath} -> ${remoteTempPath}`);
+                        sftp.fastPut(localTempPath, remoteTempPath, {}, (uploadErr) => {
+                            if (uploadErr) {
+                                console.error(`[SFTP Config Upload Error]`, uploadErr.message);
                                 conn.end();
+                                try { fsLib.unlinkSync(localArchivePath); } catch (e) {}
                                 return;
                             }
+                            console.log(`[SFTP Success] Config file transferred successfully.`);
 
-                            let stdoutData = '';
-                            let stderrData = '';
-
-                            stream.on('close', (code, signal) => {
-                                console.log(`[SSH2 Command Finish] Exit code: ${code}`);
-                                conn.end();
-                                
-                                // Delete local temporary files after successful execution
-                                try {
-                                    fsLib.unlinkSync(localTempPath);
-                                    console.log(`[Cleanup] Deleted local temporary config file.`);
-                                } catch (cleanupErr) {
-                                    console.log(`[Cleanup Warning] Local files cleanup skipped:`, cleanupErr.message);
-                                }
-
-                                if (code !== 0) {
-                                    console.error(`[Deployment Error - STEP FAILED]`);
-                                    console.error(`[Deployment Stderr Output]:\n`, stderrData);
+                            console.log(`[SFTP Upload] Transferring frontend archive: ${localArchivePath} -> ${remoteArchivePath}`);
+                            sftp.fastPut(localArchivePath, remoteArchivePath, {}, (archiveUploadErr) => {
+                                try { fsLib.unlinkSync(localArchivePath); } catch (e) {}
+                                if (archiveUploadErr) {
+                                    console.error(`[SFTP Archive Upload Error]`, archiveUploadErr.message);
+                                    conn.end();
                                     return;
                                 }
-                                console.log(`[Deployment Success - COMPLETE] Output:\n`, stdoutData);
-                                if (stderrData) {
-                                    console.log(`[Deployment Warnings/Info]:\n`, stderrData);
-                                }
-                            }).on('data', (data) => {
-                                stdoutData += data.toString();
-                            });
-                            
-                            if (stream && stream.stderr) {
-                                stream.stderr.on('data', (data) => {
-                                    stderrData += data.toString();
+                                console.log(`[SFTP Success] Frontend archive transferred.`);
+
+                                // Phase 2: Execute remote linkage and Nginx reload commands
+                                console.log(`[SSH2 Process] Configuring Nginx and deploying frontend on remote host...`);
+                                const deployCmds = [
+                                    `sudo mkdir -p /var/www/admin-frontend/dist`,
+                                    `sudo tar -xzf ${remoteArchivePath} -C /var/www/admin-frontend/dist`,
+                                    `sudo rm -f ${remoteArchivePath}`,
+                                    `sudo chmod -R 755 /var/www/admin-frontend`,
+                                    `sudo mv -f ${remoteTempPath} ${destPath}`,
+                                    `sudo ln -sf ${destPath} ${linkPath}`,
+                                    `sudo nginx -t`,
+                                    `sudo nginx -s reload`,
+                                    `sudo certbot --nginx ${certbotDomains} --non-interactive --agree-tos -m admin@storify.com --redirect`,
+                                    `sudo nginx -s reload`
+                                ].join(' && ');
+
+                                conn.exec(deployCmds, (execErr, stream) => {
+                                    if (execErr) {
+                                        console.error(`[SSH2 Exec Error]`, execErr.message);
+                                        conn.end();
+                                        return;
+                                    }
+
+                                    let stdoutData = '';
+                                    let stderrData = '';
+
+                                    stream.on('close', (code, signal) => {
+                                        console.log(`[SSH2 Command Finish] Exit code: ${code}`);
+                                        conn.end();
+                                        
+                                        // Delete local temporary files after successful execution
+                                        try {
+                                            fsLib.unlinkSync(localTempPath);
+                                            console.log(`[Cleanup] Deleted local temporary config file.`);
+                                        } catch (cleanupErr) {
+                                            console.log(`[Cleanup Warning] Local files cleanup skipped:`, cleanupErr.message);
+                                        }
+
+                                        if (code !== 0) {
+                                            console.error(`[Deployment Error - STEP FAILED]`);
+                                            console.error(`[Deployment Stderr Output]:\n`, stderrData);
+                                            return;
+                                        }
+                                        console.log(`[Deployment Success - COMPLETE] Output:\n`, stdoutData);
+                                        if (stderrData) {
+                                            console.log(`[Deployment Warnings/Info]:\n`, stderrData);
+                                        }
+                                    }).on('data', (data) => {
+                                        stdoutData += data.toString();
+                                    });
+                                    
+                                    if (stream && stream.stderr) {
+                                        stream.stderr.on('data', (data) => {
+                                            stderrData += data.toString();
+                                        });
+                                    }
                                 });
-                            }
+                            });
                         });
                     });
+                }).on('error', (connErr) => {
+                    console.error(`[SSH2 Connection Error] Failed to connect to ${serverIp}:`, connErr.message);
+                    try {
+                        fsLib.unlinkSync(localTempPath);
+                    } catch (err) {}
+                }).connect({
+                    host: serverIp,
+                    port: 22,
+                    username: sshUser,
+                    password: sshPass,
+                    readyTimeout: 20000
                 });
-            }).on('error', (connErr) => {
-                console.error(`[SSH2 Connection Error] Failed to connect to ${serverIp}:`, connErr.message);
-                // Clean up local temp file on connection error
-                try {
-                    fsLib.unlinkSync(localTempPath);
-                } catch (err) {}
-            }).connect({
-                host: serverIp,
-                port: 22,
-                username: sshUser,
-                password: sshPass,
-                readyTimeout: 20000
+            }).catch(buildErr => {
+                console.error(`[Remote SSH Deployment Blocked] Build failed:`, buildErr.message);
             });
         }
 
