@@ -60,10 +60,11 @@ import AnalyticsTab from '../components/dashboard/AnalyticsTab';
 import SupportTab from '../components/dashboard/SupportTab';
 import BannersTab from '../components/dashboard/BannersTab';
 import AddBanner from '../components/dashboard/AddBanner';
-import ThemeCustomizer from '../components/dashboard/ThemeCustomizer';
+import WebsiteBuilder from '../components/dashboard/website-builder/WebsiteBuilder';
 import DomainsTab from '../components/dashboard/DomainsTab';
 import VendorsTabSingle from '../components/dashboard/VendorsTabSingle';
 import AddVendorSingle from '../components/dashboard/AddVendorSingle';
+import VendorDetailWrapper from '../components/dashboard/VendorDetailWrapper';
 
 const Dashboard = () => {
     const { tab } = useParams();
@@ -134,8 +135,8 @@ const Dashboard = () => {
             return <ThemesTab />;
         }
 
-        if (tab === 'theme-customizer') {
-            return <ThemeCustomizer />;
+        if (tab === 'theme-customizer' || tab === 'website-builder') {
+            return <WebsiteBuilder />;
         }
 
         if (tab === 'merchant-profile') {
@@ -181,7 +182,16 @@ const Dashboard = () => {
 
         if (tab === 'vendors') {
             if (location.pathname.endsWith('/new')) return <AddVendorSingle />;
-            if (location.pathname.includes('/edit/')) return <AddVendorSingle />;
+            if (location.pathname.includes('/view/')) {
+                const pathParts = location.pathname.split('/');
+                const vendorId = pathParts[pathParts.length - 1];
+                return <VendorDetailWrapper vendorId={vendorId} />;
+            }
+            if (location.pathname.includes('/edit/')) {
+                const pathParts = location.pathname.split('/');
+                const vendorId = pathParts[pathParts.length - 1];
+                return <AddVendorSingle isEdit={true} vendorId={vendorId} />;
+            }
             return <VendorsTabSingle />;
         }
 
@@ -231,6 +241,10 @@ const Dashboard = () => {
         // Default: Home View
         return <MerchantDashboard />;
     };
+
+    if (tab === 'theme-customizer' || tab === 'website-builder') {
+        return <WebsiteBuilder />;
+    }
 
     const isFullFocusPage = location.pathname.endsWith('/content/metaobjects/new');
 

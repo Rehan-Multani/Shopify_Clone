@@ -6,8 +6,8 @@ const API_URL = CATALOG_API_URL;
 
 const CreateCoupon = () => {
     const navigate = useNavigate();
-    const token = localStorage.getItem('merchantToken') || localStorage.getItem('vendorToken');
     const isVendor = window.location.pathname.startsWith('/vendor');
+    const token = isVendor ? localStorage.getItem('vendorToken') : (localStorage.getItem('merchantToken') || localStorage.getItem('vendorToken'));
     const dashboardPrefix = isVendor ? '/vendor/dashboard' : '/dashboard';
 
     const [form, setForm] = useState({

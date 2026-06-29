@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-const OrdersTab = () => {
+const OrdersTab = ({ vendorId }) => {
     const navigate = useNavigate();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -9,8 +9,8 @@ const OrdersTab = () => {
     const [filter, setFilter] = useState('all');
     const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
 
-    const token = localStorage.getItem('merchantToken') || localStorage.getItem('vendorToken');
     const isVendor = window.location.pathname.startsWith('/vendor');
+    const token = isVendor ? localStorage.getItem('vendorToken') : (localStorage.getItem('merchantToken') || localStorage.getItem('vendorToken'));
     const dashboardPrefix = isVendor ? '/vendor/dashboard' : '/dashboard';
     const storeId = localStorage.getItem('activeStoreId') || '';
     const API_URL = import.meta.env.VITE_STORE_API_URL;
@@ -23,16 +23,47 @@ const OrdersTab = () => {
     const fetchOrders = async () => {
         try {
             setLoading(true);
-            const res = await fetch(`${API_URL.replace('/stores', '')}/orders?storeId=${storeId}`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
+            if (vendorId) {
+                const [prodRes, ordRes] = await Promise.all([
+                    fetch(`${API_URL.replace('/stores', '')}/products`, {
+                        headers: { 'Authorization': `Bearer ${token}`, 'x-store-id': storeId }
+                    }),
+                    fetch(`${API_URL.replace('/stores', '')}/orders?storeId=${storeId}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    })
+                ]);
+                const prodData = await prodRes.json();
+                const ordData = await ordRes.json();
+                
+                if (ordRes.ok) {
+                    if (prodRes.ok) {
+                        const vendorProductIds = new Set(
+                            prodData
+                                .filter(p => p.vendor === vendorId || p.vendor?._id === vendorId)
+                                .map(p => p._id)
+                        );
+                        const vendorOrders = ordData.filter(o => 
+                            o.products?.some(p => vendorProductIds.has(p.productId))
+                        );
+                        setOrders(vendorOrders);
+                    } else {
+                        setOrders(ordData || []);
+                    }
+                } else {
+                    showToast(ordData.message || 'Failed to fetch orders', 'error');
                 }
-            });
-            const data = await res.json();
-            if (res.ok) {
-                setOrders(data || []);
             } else {
-                showToast(data.message || 'Failed to fetch orders', 'error');
+                const res = await fetch(`${API_URL.replace('/stores', '')}/orders?storeId=${storeId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    setOrders(data || []);
+                } else {
+                    showToast(data.message || 'Failed to fetch orders', 'error');
+                }
             }
         } catch (err) {
             console.error('Error fetching orders:', err);
@@ -44,7 +75,7 @@ const OrdersTab = () => {
 
     useEffect(() => {
         fetchOrders();
-    }, [storeId]);
+    }, [storeId, vendorId]);
 
     const handleUpdateStatus = async (id, status, paymentStatus) => {
         try {
@@ -84,10 +115,16 @@ const OrdersTab = () => {
         switch (status) {
             case 'accepted':
                 return 'bg-blue-50 text-blue-700 border-blue-200';
-            case 'rejected':
-                return 'bg-red-50 text-red-700 border-red-200';
+            case 'shipped':
+                return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+            case 'out_for_delivery':
+                return 'bg-purple-50 text-purple-700 border-purple-200';
             case 'completed':
+            case 'delivered':
                 return 'bg-green-50 text-green-700 border-green-200';
+            case 'rejected':
+            case 'cancelled':
+                return 'bg-red-50 text-red-700 border-red-200';
             default:
                 return 'bg-yellow-50 text-yellow-700 border-yellow-200';
         }
@@ -96,8 +133,12 @@ const OrdersTab = () => {
     const getStatusDotColor = (status) => {
         switch (status) {
             case 'accepted': return 'bg-blue-500';
-            case 'rejected': return 'bg-red-500';
-            case 'completed': return 'bg-green-500';
+            case 'shipped': return 'bg-indigo-500';
+            case 'out_for_delivery': return 'bg-purple-500';
+            case 'completed':
+            case 'delivered': return 'bg-green-500';
+            case 'rejected':
+            case 'cancelled': return 'bg-red-500';
             default: return 'bg-yellow-500';
         }
     };
@@ -124,17 +165,19 @@ const OrdersTab = () => {
                     <h1 className="text-xl lg:text-2xl font-bold text-[#202223] tracking-tight">Orders</h1>
                     <p className="text-sm text-[#5c5f62] mt-1">{orders.length} orders total</p>
                 </div>
-                <div className="flex items-center gap-3">
-                    <Link 
-                        to={`${dashboardPrefix}/orders/new`} 
-                        className="inline-flex items-center gap-2 bg-[#1a1c23] text-white px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-black transition-all shadow-md active:scale-95"
-                    >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-                        </svg>
-                        Create Order
-                    </Link>
-                </div>
+                {!isVendor && (
+                    <div className="flex items-center gap-3">
+                        <Link 
+                            to={`${dashboardPrefix}/orders/new`} 
+                            className="inline-flex items-center gap-2 bg-[#1a1c23] text-white px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-black transition-all shadow-md active:scale-95"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+                            </svg>
+                            Create Order
+                        </Link>
+                    </div>
+                )}
             </div>
 
             {/* Search and Filters */}
@@ -156,8 +199,10 @@ const OrdersTab = () => {
                         { id: 'all', label: 'All' },
                         { id: 'pending', label: 'Pending' },
                         { id: 'accepted', label: 'Accepted' },
-                        { id: 'rejected', label: 'Rejected' },
-                        { id: 'completed', label: 'Completed' }
+                        { id: 'shipped', label: 'Shipped' },
+                        { id: 'out_for_delivery', label: 'Out for Delivery' },
+                        { id: 'completed', label: 'Completed' },
+                        { id: 'rejected', label: 'Rejected' }
                     ].map(f => (
                         <button
                             key={f.id}
@@ -211,12 +256,17 @@ const OrdersTab = () => {
                         <div className="space-y-2">
                             <h2 className="text-base font-bold text-[#202223]">No orders found</h2>
                             <p className="text-sm text-[#5c5f62] leading-relaxed max-w-sm">
-                                Create an order manually or drive sales to your store to see customers' orders here.
+                                {isVendor 
+                                    ? "Drive sales to your store to see customers' orders here." 
+                                    : "Create an order manually or drive sales to your store to see customers' orders here."
+                                }
                             </p>
                         </div>
-                        <Link to={`${dashboardPrefix}/orders/new`} className="bg-[#1a1c23] text-white px-6 py-2.5 rounded-lg font-bold text-sm hover:bg-black transition-all shadow-md active:scale-95 block">
-                            Create order
-                        </Link>
+                        {!isVendor && (
+                            <Link to={`${dashboardPrefix}/orders/new`} className="bg-[#1a1c23] text-white px-6 py-2.5 rounded-lg font-bold text-sm hover:bg-black transition-all shadow-md active:scale-95 block">
+                                Create order
+                            </Link>
+                        )}
                     </div>
                 </div>
             ) : (
@@ -298,6 +348,22 @@ const OrdersTab = () => {
                                                     </>
                                                 )}
                                                 {order.status === 'accepted' && (
+                                                    <button 
+                                                        onClick={() => handleUpdateStatus(order._id, 'shipped', order.paymentStatus)}
+                                                        className="text-xs font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50 px-2 py-1 rounded-lg border border-indigo-100 transition-all active:scale-95"
+                                                    >
+                                                        Ship Order
+                                                    </button>
+                                                )}
+                                                {order.status === 'shipped' && (
+                                                    <button 
+                                                        onClick={() => handleUpdateStatus(order._id, 'out_for_delivery', order.paymentStatus)}
+                                                        className="text-xs font-bold text-purple-600 hover:text-purple-700 bg-purple-50 px-2 py-1 rounded-lg border border-purple-100 transition-all active:scale-95"
+                                                    >
+                                                        Out For Delivery
+                                                    </button>
+                                                )}
+                                                {order.status === 'out_for_delivery' && (
                                                     <button 
                                                         onClick={() => handleUpdateStatus(order._id, 'completed', order.paymentStatus)}
                                                         className="text-xs font-bold text-green-600 hover:text-green-700 bg-green-50 px-2 py-1 rounded-lg border border-green-100 transition-all active:scale-95"

@@ -15,7 +15,8 @@ const ReportsTab = () => {
         try {
             setLoading(true);
             setError('');
-            const token = localStorage.getItem('merchantToken') || localStorage.getItem('vendorToken');
+            const isVendor = window.location.pathname.startsWith('/vendor');
+            const token = isVendor ? localStorage.getItem('vendorToken') : (localStorage.getItem('merchantToken') || localStorage.getItem('vendorToken'));
             
             // Get selected store from localStorage if exists
             const activeStoreId = localStorage.getItem('activeStoreId') || '';

@@ -10,7 +10,7 @@ const Login = () => {
   const [onboardingStep, setOnboardingStep] = useState(1);
   const [selections, setSelections] = useState({}); // { 1: [ids], 2: [ids] }
   const [storeName, setStoreName] = useState('');
-  const [email, setEmail] = useState('mrmmultani@gmail.com');
+  const [email, setEmail] = useState('john@gmail.com');
   const [password, setPassword] = useState('1234');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
@@ -33,8 +33,11 @@ const Login = () => {
         localStorage.setItem('merchantInfo', JSON.stringify(data.merchant));
         localStorage.setItem('merchantToken', data.token);
         localStorage.setItem('shopStoreName', data.merchant.name);
-        const planType = data.merchant.plan?.planType || data.merchant.planType || 'Single Vendor';
-        localStorage.setItem('adminPanelType', planType === 'Multi Vendor' ? 'multi' : 'single');
+        
+        // Auto select type: john@gmail.com is forced to multi, mrmmultani is forced to single
+        const isMulti = email.trim().toLowerCase() === 'john@gmail.com' || data.merchant.plan?.planType === 'Multi Vendor';
+        localStorage.setItem('adminPanelType', isMulti ? 'multi' : 'single');
+        
         navigate('/dashboard');
       } else {
         setError(data.message || 'Invalid email or password');
@@ -336,7 +339,39 @@ const Login = () => {
         )}
 
         {/* Form area */}
-        <form onSubmit={handleMerchantLogin} className="space-y-4">
+        <form onSubmit={handleMerchantLogin} className="space-y-5">
+          {/* Demo Login Tab Selector */}
+          <div className="flex gap-2 bg-[#111827] p-1 rounded-lg border border-white/5">
+            <button
+              type="button"
+              onClick={() => {
+                setEmail('mrmmultani@gmail.com');
+                setPassword('1234');
+              }}
+              className={`flex-1 py-2 text-xs font-bold rounded-md transition-all cursor-pointer ${
+                email.trim().toLowerCase() === 'mrmmultani@gmail.com' 
+                  ? 'bg-emerald-600 text-white shadow-sm' 
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              Single Vendor Demo
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setEmail('john@gmail.com');
+                setPassword('1234');
+              }}
+              className={`flex-1 py-2 text-xs font-bold rounded-md transition-all cursor-pointer ${
+                email.trim().toLowerCase() === 'john@gmail.com' 
+                  ? 'bg-blue-600 text-white shadow-sm' 
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              Multi Vendor Demo
+            </button>
+          </div>
+
           <div className="space-y-1.5">
             <label className="text-[13px] font-semibold text-gray-300 block ml-0.5">
               Email Address
@@ -386,7 +421,7 @@ const Login = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className={`w-full bg-storify text-white font-bold rounded-lg py-3 mt-2 text-[15px] transition-all flex justify-center items-center ${isLoading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-storify-glow active:scale-[0.98]'}`}
+            className={`w-full bg-storify text-white font-bold rounded-lg py-3 mt-2 text-[15px] transition-all flex justify-center items-center cursor-pointer ${isLoading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-storify-glow active:scale-[0.98]'}`}
           >
             {isLoading ? (
               <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

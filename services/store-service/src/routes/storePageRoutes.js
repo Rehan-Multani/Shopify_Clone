@@ -5,13 +5,15 @@ import {
     updatePage, 
     deletePage, 
     updatePageSections, 
-    updateSectionSettings 
+    updateSectionSettings,
+    createPage
 } from '../controllers/storePageController.js';
 
 const router = express.Router();
 
 router.route('/')
-    .get(getPages);
+    .get(getPages)
+    .post(createPage);
 
 router.route('/:slug')
     .get(getPageBySlug)

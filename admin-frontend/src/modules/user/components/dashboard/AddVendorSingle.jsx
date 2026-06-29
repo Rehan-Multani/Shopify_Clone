@@ -4,18 +4,24 @@ import { useNavigate } from 'react-router-dom';
 const CATALOG_API_URL = import.meta.env.VITE_CATALOG_API_URL;
 const API_URL = CATALOG_API_URL;
 
-const AddVendorSingle = () => {
+const AddVendorSingle = ({ isEdit: propIsEdit, vendorId: propVendorId } = {}) => {
     const navigate = useNavigate();
     const logoInputRef = useRef(null);
     const profileInputRef = useRef(null);
     
-    const token = localStorage.getItem('merchantToken');
+    const isVendorPortal = window.location.pathname.includes('/vendor/');
+    const token = isVendorPortal 
+        ? (localStorage.getItem('vendorToken') || localStorage.getItem('merchantToken'))
+        : (localStorage.getItem('merchantToken') || localStorage.getItem('vendorToken'));
     const storeId = localStorage.getItem('activeStoreId') || '';
 
     // Route checks
     const pathParts = window.location.pathname.split('/');
-    const isEdit = pathParts.includes('edit');
-    const vendorId = isEdit ? pathParts[pathParts.indexOf('edit') + 1] : null;
+    const routeIsEdit = pathParts.includes('edit');
+    const routeVendorId = routeIsEdit ? pathParts[pathParts.indexOf('edit') + 1] : null;
+
+    const isEdit = propIsEdit !== undefined ? propIsEdit : routeIsEdit;
+    const vendorId = propVendorId || routeVendorId;
 
     const [form, setForm] = useState({
         name: '',
@@ -111,7 +117,7 @@ const AddVendorSingle = () => {
             };
             fetchVendor();
         }
-    }, [isEdit, vendorId, storeId]);
+    }, [isEdit, vendorId, storeId, token]);
 
     const set = (k, v) => setForm(prev => ({ ...prev, [k]: v }));
     const setBank = (k, v) => setForm(prev => ({
@@ -268,7 +274,12 @@ const AddVendorSingle = () => {
 
             const data = await res.json();
             if (res.ok) {
-                navigate('/dashboard/vendors');
+                showToast(isEdit ? 'Profile updated successfully!' : 'Vendor saved successfully!', 'success');
+                if (isVendorPortal) {
+                    navigate('/vendor/dashboard');
+                } else {
+                    navigate('/dashboard/vendors');
+                }
             } else {
                 showToast(data.message || 'Failed to save vendor details', 'error');
             }
@@ -294,7 +305,7 @@ const AddVendorSingle = () => {
             {/* Header */}
             <div className="flex items-center gap-3">
                 <button 
-                    onClick={() => navigate('/dashboard/vendors')}
+                    onClick={() => navigate(isVendorPortal ? '/vendor/dashboard' : '/dashboard/vendors')}
                     className="p-2 hover:bg-gray-100 rounded-lg transition-all text-[#5c5f62]"
                 >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -509,175 +520,183 @@ const AddVendorSingle = () => {
                     </div>
                 </div>
 
-                {/* 3. Address details Card */}
-                <div className="bg-white rounded-2xl border border-gray-200 p-6 md:p-8 shadow-sm space-y-4">
-                    <h3 className="text-base font-bold text-[#202223] border-b border-gray-100 pb-3">3. Address details</h3>
-                    
-                    <div>
-                        <label className="block text-sm font-bold text-[#202223] mb-1.5">Street Address</label>
-                        <input 
-                            type="text" 
-                            value={form.address}
-                            onChange={e => set('address', e.target.value)}
-                            className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all" 
-                            placeholder="e.g. 123 Business Avenue, Sector 5" 
-                        />
-                    </div>
+                    <>
+                        {/* 3. Address details Card */}
+                        <div className="bg-white rounded-2xl border border-gray-200 p-6 md:p-8 shadow-sm space-y-4">
+                            <h3 className="text-base font-bold text-[#202223] border-b border-gray-100 pb-3">3. Address details</h3>
+                            
+                            <div>
+                                <label className="block text-sm font-bold text-[#202223] mb-1.5">Street Address</label>
+                                <input 
+                                    type="text" 
+                                    value={form.address}
+                                    onChange={e => set('address', e.target.value)}
+                                    className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all" 
+                                    placeholder="e.g. 123 Business Avenue, Sector 5" 
+                                />
+                            </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label className="block text-sm font-bold text-[#202223] mb-1.5">City</label>
-                            <input 
-                                type="text" 
-                                value={form.city}
-                                onChange={e => set('city', e.target.value)}
-                                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all" 
-                                placeholder="e.g. Mumbai" 
-                            />
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label className="block text-sm font-bold text-[#202223] mb-1.5">City</label>
+                                    <input 
+                                        type="text" 
+                                        value={form.city}
+                                        onChange={e => set('city', e.target.value)}
+                                        className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all" 
+                                        placeholder="e.g. Mumbai" 
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-bold text-[#202223] mb-1.5">State</label>
+                                    <input 
+                                        type="text" 
+                                        value={form.state}
+                                        onChange={e => set('state', e.target.value)}
+                                        className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all" 
+                                        placeholder="e.g. Maharashtra" 
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-bold text-[#202223] mb-1.5">Pincode</label>
+                                    <input 
+                                        type="text" 
+                                        value={form.pincode}
+                                        onChange={e => set('pincode', e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                        className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all" 
+                                        placeholder="e.g. 400001" 
+                                    />
+                                </div>
+                            </div>
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-bold text-[#202223] mb-1.5">State</label>
-                            <input 
-                                type="text" 
-                                value={form.state}
-                                onChange={e => set('state', e.target.value)}
-                                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all" 
-                                placeholder="e.g. Maharashtra" 
-                            />
+                        {/* 4. Tax details & Commission Card */}
+                        <div className="bg-white rounded-2xl border border-gray-200 p-6 md:p-8 shadow-sm space-y-4">
+                            <h3 className="text-base font-bold text-[#202223] border-b border-gray-100 pb-3">4. Tax & Commission Configurations</h3>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label className="block text-sm font-bold text-[#202223] mb-1.5">GST Number</label>
+                                    <input 
+                                        type="text" 
+                                        value={form.gstNumber}
+                                        onChange={e => set('gstNumber', e.target.value.toUpperCase())}
+                                        disabled={isEdit}
+                                        className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all disabled:bg-zinc-50/80 disabled:text-zinc-500 disabled:cursor-not-allowed font-semibold" 
+                                        placeholder="e.g. 27AAAAA0000A1Z5" 
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-bold text-[#202223] mb-1.5">PAN Number</label>
+                                    <input 
+                                        type="text" 
+                                        value={form.panNumber}
+                                        onChange={e => set('panNumber', e.target.value.toUpperCase().slice(0, 10))}
+                                        disabled={isEdit}
+                                        className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all disabled:bg-zinc-50/80 disabled:text-zinc-500 disabled:cursor-not-allowed font-semibold" 
+                                        placeholder="e.g. ABCDE1234F" 
+                                    />
+                                </div>
+
+                                {!isVendorPortal && (
+                                    <div>
+                                        <label className="block text-sm font-bold text-[#202223] mb-1.5">Commission (%)</label>
+                                        <input 
+                                            type="number" 
+                                            value={form.commission}
+                                            onChange={e => set('commission', e.target.value)}
+                                            className={`w-full border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 transition-all ${
+                                                errors.commission ? 'border-red-500 focus:ring-red-500/20' : 'border-gray-200 focus:ring-black/5 focus:border-black'
+                                            }`} 
+                                            placeholder="e.g. 10" 
+                                        />
+                                        {errors.commission && <p className="text-xs text-red-500 mt-1 font-semibold">{errors.commission}</p>}
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-bold text-[#202223] mb-1.5">Pincode</label>
-                            <input 
-                                type="text" 
-                                value={form.pincode}
-                                onChange={e => set('pincode', e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all" 
-                                placeholder="e.g. 400001" 
-                            />
-                        </div>
-                    </div>
-                </div>
+                        {/* 5. Bank Account Card */}
+                        <div className="bg-white rounded-2xl border border-gray-200 p-6 md:p-8 shadow-sm space-y-4">
+                            <h3 className="text-base font-bold text-[#202223] border-b border-gray-100 pb-3">5. Bank Details (For Payouts)</h3>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-bold text-[#202223] mb-1.5">Account Holder Name</label>
+                                    <input 
+                                        type="text" 
+                                        value={form.bankDetails.accountHolderName}
+                                        onChange={e => setBank('accountHolderName', e.target.value)}
+                                        className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all" 
+                                        placeholder="e.g. John Doe" 
+                                    />
+                                </div>
 
-                {/* 4. Tax details & Commission Card */}
-                <div className="bg-white rounded-2xl border border-gray-200 p-6 md:p-8 shadow-sm space-y-4">
-                    <h3 className="text-base font-bold text-[#202223] border-b border-gray-100 pb-3">4. Tax & Commission Configurations</h3>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label className="block text-sm font-bold text-[#202223] mb-1.5">GST Number</label>
-                            <input 
-                                type="text" 
-                                value={form.gstNumber}
-                                onChange={e => set('gstNumber', e.target.value.toUpperCase())}
-                                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all" 
-                                placeholder="e.g. 27AAAAA0000A1Z5" 
-                            />
-                        </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-[#202223] mb-1.5">Bank Name</label>
+                                    <input 
+                                        type="text" 
+                                        value={form.bankDetails.bankName}
+                                        onChange={e => setBank('bankName', e.target.value)}
+                                        className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all" 
+                                        placeholder="e.g. HDFC Bank" 
+                                    />
+                                </div>
+                            </div>
 
-                        <div>
-                            <label className="block text-sm font-bold text-[#202223] mb-1.5">PAN Number</label>
-                            <input 
-                                type="text" 
-                                value={form.panNumber}
-                                onChange={e => set('panNumber', e.target.value.toUpperCase().slice(0, 10))}
-                                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all" 
-                                placeholder="e.g. ABCDE1234F" 
-                            />
-                        </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-bold text-[#202223] mb-1.5">Account Number</label>
+                                    <input 
+                                        type="text" 
+                                        value={form.bankDetails.accountNumber}
+                                        onChange={e => setBank('accountNumber', e.target.value.replace(/\D/g, ''))}
+                                        className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all" 
+                                        placeholder="e.g. 501002938475" 
+                                    />
+                                </div>
 
-                        <div>
-                            <label className="block text-sm font-bold text-[#202223] mb-1.5">Commission (%)</label>
-                            <input 
-                                type="number" 
-                                value={form.commission}
-                                onChange={e => set('commission', e.target.value)}
-                                className={`w-full border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 transition-all ${
-                                    errors.commission ? 'border-red-500 focus:ring-red-500/20' : 'border-gray-200 focus:ring-black/5 focus:border-black'
-                                }`} 
-                                placeholder="e.g. 10" 
-                            />
-                            {errors.commission && <p className="text-xs text-red-500 mt-1 font-semibold">{errors.commission}</p>}
-                        </div>
-                    </div>
-                </div>
-
-                {/* 5. Bank Account Card */}
-                <div className="bg-white rounded-2xl border border-gray-200 p-6 md:p-8 shadow-sm space-y-4">
-                    <h3 className="text-base font-bold text-[#202223] border-b border-gray-100 pb-3">5. Bank Details (For Payouts)</h3>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-bold text-[#202223] mb-1.5">Account Holder Name</label>
-                            <input 
-                                type="text" 
-                                value={form.bankDetails.accountHolderName}
-                                onChange={e => setBank('accountHolderName', e.target.value)}
-                                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all" 
-                                placeholder="e.g. John Doe" 
-                            />
+                                <div>
+                                    <label className="block text-sm font-bold text-[#202223] mb-1.5">IFSC Code</label>
+                                    <input 
+                                        type="text" 
+                                        value={form.bankDetails.ifscCode}
+                                        onChange={e => setBank('ifscCode', e.target.value.toUpperCase().slice(0, 11))}
+                                        className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all" 
+                                        placeholder="e.g. HDFC0000123" 
+                                    />
+                                </div>
+                            </div>
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-bold text-[#202223] mb-1.5">Bank Name</label>
-                            <input 
-                                type="text" 
-                                value={form.bankDetails.bankName}
-                                onChange={e => setBank('bankName', e.target.value)}
-                                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all" 
-                                placeholder="e.g. HDFC Bank" 
-                            />
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-bold text-[#202223] mb-1.5">Account Number</label>
-                            <input 
-                                type="text" 
-                                value={form.bankDetails.accountNumber}
-                                onChange={e => setBank('accountNumber', e.target.value.replace(/\D/g, ''))}
-                                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all" 
-                                placeholder="e.g. 501002938475" 
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-bold text-[#202223] mb-1.5">IFSC Code</label>
-                            <input 
-                                type="text" 
-                                value={form.bankDetails.ifscCode}
-                                onChange={e => setBank('ifscCode', e.target.value.toUpperCase().slice(0, 11))}
-                                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all" 
-                                placeholder="e.g. HDFC0000123" 
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                {/* 6. Settings Card */}
-                <div className="bg-white rounded-2xl border border-gray-200 p-6 md:p-8 shadow-sm space-y-4">
-                    <h3 className="text-base font-bold text-[#202223] border-b border-gray-100 pb-3">6. Configuration Settings</h3>
-                    
-                    <div>
-                        <label className="block text-sm font-bold text-[#202223] mb-1.5">Vendor Status</label>
-                        <select 
-                            value={form.isActive ? 'active' : 'inactive'}
-                            onChange={e => set('isActive', e.target.value === 'active')}
-                            className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all bg-white cursor-pointer"
-                        >
-                            <option value="active">Active (Permitted to sell & manage)</option>
-                            <option value="inactive">Inactive (Suspended/Blocked)</option>
-                        </select>
-                    </div>
-                </div>
+                        {/* 6. Settings Card */}
+                        {!isVendorPortal && (
+                            <div className="bg-white rounded-2xl border border-gray-200 p-6 md:p-8 shadow-sm space-y-4">
+                                <h3 className="text-base font-bold text-[#202223] border-b border-gray-100 pb-3">6. Configuration Settings</h3>
+                                
+                                <div>
+                                    <label className="block text-sm font-bold text-[#202223] mb-1.5">Vendor Status</label>
+                                    <select 
+                                        value={form.isActive ? 'active' : 'inactive'}
+                                        onChange={e => set('isActive', e.target.value === 'active')}
+                                        className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all bg-white cursor-pointer"
+                                    >
+                                        <option value="active">Active (Permitted to sell & manage)</option>
+                                        <option value="inactive">Inactive (Suspended/Blocked)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        )}
+                    </>
 
                 {/* Bottom Sticky Action Buttons */}
                 <div className="flex items-center justify-end gap-3 pt-6 border-t border-gray-200">
                     <button 
                         type="button"
-                        onClick={() => navigate('/dashboard/vendors')} 
+                        onClick={() => navigate(isVendorPortal ? '/vendor/dashboard' : '/dashboard/vendors')} 
                         disabled={saving}
                         className="px-5 py-2.5 text-sm font-bold text-[#5c5f62] hover:bg-gray-100 rounded-lg transition-all"
                     >
@@ -696,7 +715,7 @@ const AddVendorSingle = () => {
                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
                         )}
-                        {isEdit ? 'Update Vendor' : 'Save Vendor'}
+                        {isEdit ? (isVendorPortal ? 'Update Profile' : 'Update Vendor') : 'Save Vendor'}
                     </button>
                 </div>
             </form>

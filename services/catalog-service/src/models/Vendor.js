@@ -88,6 +88,41 @@ const vendorSchema = new mongoose.Schema({
     isActive: {
         type: Boolean,
         default: true
+    },
+    paymentSettings: {
+        razorpay: {
+            enabled: { type: Boolean, default: false },
+            keyId: { type: String, default: '' },
+            keySecret: { type: String, default: '' }
+        },
+        cashfree: {
+            enabled: { type: Boolean, default: false },
+            appId: { type: String, default: '' },
+            secretKey: { type: String, default: '' }
+        },
+        phonepe: {
+            enabled: { type: Boolean, default: false },
+            merchantId: { type: String, default: '' },
+            saltKey: { type: String, default: '' },
+            saltIndex: { type: String, default: '1' }
+        },
+        payu: {
+            enabled: { type: Boolean, default: false },
+            merchantKey: { type: String, default: '' },
+            merchantSalt: { type: String, default: '' }
+        },
+        stripe: {
+            enabled: { type: Boolean, default: false },
+            publishableKey: { type: String, default: '' },
+            secretKey: { type: String, default: '' }
+        },
+        cod: {
+            enabled: { type: Boolean, default: false }
+        }
+    },
+    gstPercentage: {
+        type: Number,
+        default: 0
     }
 }, {
     timestamps: true

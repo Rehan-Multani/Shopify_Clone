@@ -14,6 +14,66 @@ const THEME_TEMPLATES = [
         previewGradient: 'from-gray-900 to-gray-650'
     },
     {
+        name: 'Care & Comfort',
+        description: 'Deep green and warm tones, custom trust badges, and grid columns designed for baby care, adult hygiene, and wellness products.',
+        primaryColor: '#008060',
+        secondaryColor: '#faf9f6',
+        accentColor: '#059669',
+        fontFamily: 'Outfit',
+        previewGradient: 'from-emerald-800 to-teal-400',
+        headerConfig: {
+            announcementBar: {
+                enabled: true,
+                text: 'Free shipping on orders above ₹1599 📞 1800-123-4567 Hygiene & Care you can trust',
+                backgroundColor: '#008060',
+                textColor: '#ffffff'
+            }
+        },
+        footerConfig: {
+            copyrightText: '© 2026 QubanHC. All rights reserved.',
+            columns: [
+                {
+                    title: 'Quick Links',
+                    type: 'links',
+                    links: [
+                        { label: 'About Us', link: '/about' },
+                        { label: 'Blog', link: '/blog' },
+                        { label: 'Careers', link: '/careers' },
+                        { label: 'Press', link: '/press' },
+                        { label: 'Sitemap', link: '/sitemap' }
+                    ]
+                },
+                {
+                    title: 'Customer Service',
+                    type: 'links',
+                    links: [
+                        { label: 'Help Center', link: '/help' },
+                        { label: 'Returns & Refunds', link: '/returns' },
+                        { label: 'Shipping Info', link: '/shipping' },
+                        { label: 'Track Order', link: '/track-order' },
+                        { label: 'FAQs', link: '/faq' }
+                    ]
+                },
+                {
+                    title: 'My Account',
+                    type: 'links',
+                    links: [
+                        { label: 'Sign In', link: '/login' },
+                        { label: 'Create Account', link: '/register' },
+                        { label: 'Wishlist', link: '/wishlist' },
+                        { label: 'My Orders', link: '/orders' },
+                        { label: 'Settings', link: '/settings' }
+                    ]
+                },
+                {
+                    title: 'Stay Connected',
+                    type: 'newsletter',
+                    text: 'Subscribe for health tips, new products, and exclusive offers.'
+                }
+            ]
+        }
+    },
+    {
         name: 'Modern',
         description: 'Vibrant and bold layout featuring smooth micro-animations and rounded corners.',
         primaryColor: '#6366f1',
@@ -138,9 +198,87 @@ const ThemesTab = () => {
         fetchCurrentTheme();
     }, [storeId, token]);
 
+    const getDefaultConfigsForTemplate = (template) => {
+        if (template.headerConfig && template.footerConfig) {
+            return {
+                headerConfig: template.headerConfig,
+                footerConfig: template.footerConfig
+            };
+        }
+
+        const headerConfig = {
+            sticky: true,
+            transparent: false,
+            height: '70px',
+            searchEnabled: true,
+            cartEnabled: true,
+            wishlistEnabled: true,
+            profileEnabled: true,
+            announcementBar: {
+                enabled: true,
+                text: template.name === 'Modern' ? '⚡ FLASH SALE: 20% OFF ON ALL MODERN ESSENTIALS!'
+                    : template.name === 'Carbon' ? '🔋 Free shipping on premium gadgets & tech accessories!'
+                    : template.name === 'Aura' ? '🌿 100% Organic, vegan-friendly products delivered with love'
+                    : `✨ Welcome to our newly designed ${template.name} storefront!`,
+                backgroundColor: template.primaryColor,
+                textColor: '#ffffff'
+            },
+            menuItems: [
+                { label: 'Home', link: '/' },
+                { label: 'Catalog', link: '/catalog' },
+                { label: 'About', link: '/about' },
+                { label: 'Contact', link: '/contact' }
+            ]
+        };
+
+        const footerConfig = {
+            copyrightText: `© 2026 ${template.name} Store. All rights reserved.`,
+            showPaymentIcons: true,
+            showSocialIcons: true,
+            columns: [
+                {
+                    title: 'Quick Links',
+                    type: 'links',
+                    links: [
+                        { label: 'Home', link: '/' },
+                        { label: 'Catalog', link: '/catalog' },
+                        { label: 'About Us', link: '/about' }
+                    ]
+                },
+                {
+                    title: 'Policies',
+                    type: 'links',
+                    links: [
+                        { label: 'Privacy Policy', link: '/privacy-policy' },
+                        { label: 'Terms & Conditions', link: '/terms-and-conditions' },
+                        { label: 'Refund Policy', link: '/refund-policy' }
+                    ]
+                },
+                {
+                    title: 'Newsletter',
+                    type: 'newsletter',
+                    text: `Subscribe to get the latest updates and special offers from ${template.name}!`
+                }
+            ]
+        };
+
+        return { headerConfig, footerConfig };
+    };
+
     const handlePublishTheme = async (template) => {
         setPublishing(true);
         try {
+            const configs = getDefaultConfigsForTemplate(template);
+            const requestBody = {
+                themeName: template.name,
+                primaryColor: template.primaryColor,
+                secondaryColor: template.secondaryColor,
+                accentColor: template.accentColor,
+                fontFamily: template.fontFamily,
+                headerConfig: configs.headerConfig,
+                footerConfig: configs.footerConfig
+            };
+
             const res = await fetch(`${STORE_API_URL}/themes`, {
                 method: 'PUT',
                 headers: {
@@ -148,13 +286,7 @@ const ThemesTab = () => {
                     'Authorization': `Bearer ${token}`,
                     'x-store-id': storeId
                 },
-                body: JSON.stringify({
-                    themeName: template.name,
-                    primaryColor: template.primaryColor,
-                    secondaryColor: template.secondaryColor,
-                    accentColor: template.accentColor,
-                    fontFamily: template.fontFamily
-                })
+                body: JSON.stringify(requestBody)
             });
             const data = await res.json();
             if (res.ok && data.success) {
@@ -197,14 +329,7 @@ const ThemesTab = () => {
                         <p className="text-xs text-gray-500 font-medium">Manage and publish themes for your online store</p>
                     </div>
                 </div>
-                <div className="flex items-center gap-3">
-                    <button 
-                        onClick={() => navigate('/dashboard/theme-customizer')}
-                        className="px-6 py-2.5 bg-[#008060] hover:bg-[#006e52] text-white rounded-xl text-sm font-bold shadow-md transition-all active:scale-95 flex items-center gap-2"
-                    >
-                        Customize Theme
-                    </button>
-                </div>
+               
             </div>
 
             {/* Sub-tab Navigation */}

@@ -80,6 +80,9 @@ const createServiceProxy = (target, pathRewrite = null) => {
                 if (req.headers['x-merchant-id']) {
                     proxyReq.setHeader('x-merchant-id', req.headers['x-merchant-id']);
                 }
+                if (req.headers['x-vendor-id']) {
+                    proxyReq.setHeader('x-vendor-id', req.headers['x-vendor-id']);
+                }
             },
             proxyRes: (proxyRes, req, res) => {
                 const origin = req.headers.origin;

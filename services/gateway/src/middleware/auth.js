@@ -64,7 +64,10 @@ export const gatewayAuthMiddleware = async (req, res, next) => {
     if (!requiredAuth) {
         if (tokenInfo) {
             try {
-                const verified = await verifyTokenWithAuthService(tokenInfo.token, tokenInfo.type);
+                let verified = await verifyTokenWithAuthService(tokenInfo.token, tokenInfo.type);
+                if (!verified.valid) {
+                    verified = await verifyTokenWithAuthService(tokenInfo.token);
+                }
                 if (verified.valid) {
                     if (verified.type === 'admin') {
                         req.headers['x-admin-id'] = verified.id;
@@ -87,7 +90,10 @@ export const gatewayAuthMiddleware = async (req, res, next) => {
     }
     
     try {
-        const verified = await verifyTokenWithAuthService(tokenInfo.token, tokenInfo.type);
+        let verified = await verifyTokenWithAuthService(tokenInfo.token, tokenInfo.type);
+        if (!verified.valid) {
+            verified = await verifyTokenWithAuthService(tokenInfo.token);
+        }
         if (!verified.valid) {
             return res.status(401).json({ message: verified.message || 'Not authorized, token failed' });
         }

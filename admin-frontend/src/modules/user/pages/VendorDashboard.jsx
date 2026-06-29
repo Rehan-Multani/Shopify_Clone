@@ -12,6 +12,7 @@ import CouponsTab from '../components/dashboard/CouponsTab';
 import CreateCouponSingle from '../components/dashboard/CreateCouponSingle';
 import ReportsTab from '../components/dashboard/ReportsTab';
 import AddVendorSingle from '../components/dashboard/AddVendorSingle';
+import VendorSettingsTab from '../components/dashboard/VendorSettingsTab';
 
 const CATALOG_API_URL = import.meta.env.VITE_CATALOG_API_URL;
 
@@ -145,7 +146,7 @@ const VendorDashboard = () => {
         }
 
         if (tab === 'settings') {
-            return <AddVendorSingle isEdit={true} vendorId={vendorData?._id} />;
+            return <VendorSettingsTab vendorId={vendorData?._id} />;
         }
 
         if (tab === 'profile') {

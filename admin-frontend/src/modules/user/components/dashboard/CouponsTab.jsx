@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 const CATALOG_API_URL = import.meta.env.VITE_CATALOG_API_URL;
 const API_URL = CATALOG_API_URL;
 
-const CouponsTab = () => {
+const CouponsTab = ({ vendorId }) => {
     const [coupons, setCoupons] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -12,8 +12,8 @@ const CouponsTab = () => {
     const [deleteModal, setDeleteModal] = useState({ open: false, id: null, code: '' });
     const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
 
-    const token = localStorage.getItem('merchantToken') || localStorage.getItem('vendorToken');
     const isVendor = window.location.pathname.startsWith('/vendor');
+    const token = isVendor ? localStorage.getItem('vendorToken') : (localStorage.getItem('merchantToken') || localStorage.getItem('vendorToken'));
     const dashboardPrefix = isVendor ? '/vendor/dashboard' : '/dashboard';
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
@@ -32,7 +32,13 @@ const CouponsTab = () => {
                 }
             });
             const data = await res.json();
-            if (res.ok) setCoupons(data);
+            if (res.ok) {
+                if (vendorId) {
+                    setCoupons(data.filter(c => c.vendor === vendorId || c.vendor?._id === vendorId));
+                } else {
+                    setCoupons(data);
+                }
+            }
         } catch (err) {
             console.error('Failed to fetch coupons:', err);
         } finally {
@@ -198,15 +204,17 @@ const CouponsTab = () => {
                     <h1 className="text-xl lg:text-2xl font-bold text-[#202223] tracking-tight">Coupons</h1>
                     <p className="text-sm text-[#5c5f62] mt-1">Create discount coupons for your products</p>
                 </div>
-                <Link
-                    to={`${dashboardPrefix}/coupons/new`}
-                    className="inline-flex items-center gap-2 bg-[#1a1c23] text-white px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-black transition-all shadow-md active:scale-95"
-                >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-                    </svg>
-                    Create Coupon
-                </Link>
+                {!vendorId && (
+                    <Link
+                        to={`${dashboardPrefix}/coupons/new`}
+                        className="inline-flex items-center gap-2 bg-[#1a1c23] text-white px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-black transition-all shadow-md active:scale-95"
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+                        </svg>
+                        Create Coupon
+                    </Link>
+                )}
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3">
@@ -245,13 +253,20 @@ const CouponsTab = () => {
                         </svg>
                     </div>
                     <h3 className="font-bold text-[#202223] mb-1">No coupons found</h3>
-                    <p className="text-sm text-[#5c5f62] mb-4">Create your first coupon to offer discounts</p>
-                    <Link to={`${dashboardPrefix}/coupons/new`} className="inline-flex items-center gap-2 bg-[#1a1c23] text-white px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-black transition-all">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-                        </svg>
-                        Create Coupon
-                    </Link>
+                    <p className="text-sm text-[#5c5f62] mb-4">
+                        {vendorId 
+                            ? "No coupons registered for this vendor yet."
+                            : "Create your first coupon to offer discounts"
+                        }
+                    </p>
+                    {!vendorId && (
+                        <Link to={`${dashboardPrefix}/coupons/new`} className="inline-flex items-center gap-2 bg-[#1a1c23] text-white px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-black transition-all">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+                            </svg>
+                            Create Coupon
+                        </Link>
+                    )}
                 </div>
             ) : (
                 <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">

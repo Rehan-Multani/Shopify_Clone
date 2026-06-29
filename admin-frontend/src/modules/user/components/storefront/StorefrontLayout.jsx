@@ -6,6 +6,45 @@ import { getStorePath } from './storeUrlHelper';
 const GATEWAY_URL = import.meta.env.VITE_API_BASE_URL;
 const ASSETS_BASE_URL = GATEWAY_URL.replace('/api', '');
 
+const isDarkColor = (hex) => {
+    try {
+        const cleanHex = (hex || '').replace('#', '');
+        let r, g, b;
+        if (cleanHex.length === 3) {
+            r = parseInt(cleanHex[0] + cleanHex[0], 16);
+            g = parseInt(cleanHex[1] + cleanHex[1], 16);
+            b = parseInt(cleanHex[2] + cleanHex[2], 16);
+        } else {
+            r = parseInt(cleanHex.substring(0, 2), 16);
+            g = parseInt(cleanHex.substring(2, 4), 16);
+            b = parseInt(cleanHex.substring(4, 6), 16);
+        }
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        return brightness < 128;
+    } catch (e) {
+        return false;
+    }
+};
+
+const hexToRgba = (hex, alpha) => {
+    try {
+        const cleanHex = (hex || '').replace('#', '');
+        let r, g, b;
+        if (cleanHex.length === 3) {
+            r = parseInt(cleanHex[0] + cleanHex[0], 16);
+            g = parseInt(cleanHex[1] + cleanHex[1], 16);
+            b = parseInt(cleanHex[2] + cleanHex[2], 16);
+        } else {
+            r = parseInt(cleanHex.substring(0, 2), 16);
+            g = parseInt(cleanHex.substring(2, 4), 16);
+            b = parseInt(cleanHex.substring(4, 6), 16);
+        }
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    } catch (e) {
+        return `rgba(255, 255, 255, ${alpha})`;
+    }
+};
+
 const StorefrontLayout = ({ children, cartCount, customer, onLogout, storeInfo }) => {
     const { storeId: paramStoreId } = useParams();
     const storeId = storeInfo?._id || paramStoreId;
@@ -66,31 +105,43 @@ const StorefrontLayout = ({ children, cartCount, customer, onLogout, storeInfo }
             ? 'h-14 w-14 text-lg'
             : 'h-11 w-11 text-sm'; // default medium
 
+    const footerBg = storeInfo?.themeSettings?.secondaryColor || '#ffffff';
+    const isFooterDark = isDarkColor(footerBg);
+    const footerText = isFooterDark ? '#f4f4f5' : '#09090b';
+    const footerTextMuted = isFooterDark ? '#a1a1aa' : '#52525b';
+    const footerBorder = isFooterDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
+    const footerCardBg = isFooterDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)';
+
     return (
         <ThemeRenderer themeSettings={storeInfo?.themeSettings || {}}>
-            <div className="flex flex-col min-h-screen bg-[#fafafa] selection:bg-[var(--color-primary-semi)] selection:text-[var(--color-primary-dark)] text-zinc-900">
-                {/* Announcement Bar (Optional) */}
-                <div 
-                    className="w-full text-center py-2 text-[10px] font-black uppercase tracking-widest text-white flex items-center justify-center gap-1.5 z-50 relative"
-                    style={{ backgroundColor: 'var(--color-primary)' }}
-                >
-                    <span>✨ Free Shipping on all orders above ₹499</span>
-                </div>
+            <div className="flex flex-col min-h-screen bg-[var(--color-secondary)] selection:bg-[var(--color-primary-semi)] selection:text-[var(--color-primary-dark)] text-[var(--color-text)]">
+                {/* Dynamic Announcement Bar */}
+                {storeInfo?.themeSettings?.headerConfig?.announcementBar?.enabled !== false && (
+                    <div 
+                        className="w-full text-center py-2 text-[10px] font-black uppercase tracking-widest text-white flex items-center justify-center gap-1.5 z-50 relative"
+                        style={{ 
+                            backgroundColor: storeInfo?.themeSettings?.headerConfig?.announcementBar?.backgroundColor || 'var(--color-primary)',
+                            color: storeInfo?.themeSettings?.headerConfig?.announcementBar?.textColor || '#ffffff'
+                        }}
+                    >
+                        <span>{storeInfo?.themeSettings?.headerConfig?.announcementBar?.text || '✨ Free Shipping on all orders above ₹499'}</span>
+                    </div>
+                )}
 
                 {/* Header */}
                 <header 
-                    className={`sticky top-0 z-45 w-full transition-all duration-300 ${
+                    className={`${storeInfo?.themeSettings?.headerConfig?.sticky !== false ? 'sticky top-0 z-45' : 'relative z-45'} w-full transition-all duration-300 ${
                         isScrolled 
                             ? 'bg-white/80 backdrop-blur-md border-b border-zinc-200/50 shadow-[0_2px_12px_rgba(0,0,0,0.02)] py-3' 
-                            : 'bg-transparent py-5'
+                            : storeInfo?.themeSettings?.headerConfig?.transparent ? 'bg-transparent py-5' : 'bg-white border-b border-zinc-150 py-5'
                     }`}
                 >
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between min-h-[3rem]">
                         {/* Logo & Name */}
                         <Link to={getLink('/')} className="flex items-center gap-3.5 group">
-                            {storeInfo?.storeLogo ? (
+                            {storeInfo?.themeSettings?.headerConfig?.logoUrl || storeInfo?.storeLogo ? (
                                 <img 
-                                    src={storeInfo.storeLogo.startsWith('http') || storeInfo.storeLogo.startsWith('data:') ? storeInfo.storeLogo : `${ASSETS_BASE_URL}${storeInfo.storeLogo}`} 
+                                    src={storeInfo?.themeSettings?.headerConfig?.logoUrl || (storeInfo.storeLogo.startsWith('http') || storeInfo.storeLogo.startsWith('data:') ? storeInfo.storeLogo : `${ASSETS_BASE_URL}${storeInfo.storeLogo}`)} 
                                     alt={storeInfo.storeName} 
                                     className={`${logoSizeClass} ${logoShapeClass} object-cover border border-zinc-150 shadow-sm group-hover:scale-[1.03] transition-transform duration-300`} 
                                 />
@@ -104,41 +155,46 @@ const StorefrontLayout = ({ children, cartCount, customer, onLogout, storeInfo }
                             </span>
                         </Link>
 
-                        {/* Desktop Navigation */}
+                        {/* Desktop Dynamic Navigation */}
                         <nav className="hidden md:flex items-center gap-8 lg:gap-10">
-                            <Link 
-                                to={getLink('/')} 
-                                className={`text-[11px] font-bold uppercase tracking-wider relative py-1.5 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[var(--color-primary)] after:origin-left after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300 ${
-                                    location.pathname === getLink('/') || location.pathname === getLink('/') + '/'
-                                        ? 'text-zinc-950 after:scale-x-100' 
-                                        : 'text-zinc-500 hover:text-zinc-950'
-                                }`}
-                            >
-                                Home
-                            </Link>
-                            <Link 
-                                to={getLink('/catalog')} 
-                                className={`text-[11px] font-bold uppercase tracking-wider relative py-1.5 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[var(--color-primary)] after:origin-left after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300 ${
-                                    location.pathname.includes('/catalog') 
-                                        ? 'text-zinc-950 after:scale-x-100' 
-                                        : 'text-zinc-500 hover:text-zinc-950'
-                                }`}
-                            >
-                                Catalog
-                            </Link>
-                            {pages.filter(p => p.slug.toLowerCase().includes('contact')).map(page => (
-                                <Link 
-                                    key={page.slug}
-                                    to={getLink(`/pages/${page.slug}`)} 
-                                    className={`text-[11px] font-bold uppercase tracking-wider relative py-1.5 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[var(--color-primary)] after:origin-left after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300 ${
-                                        location.pathname.includes(`/pages/${page.slug}`) 
-                                            ? 'text-zinc-950 after:scale-x-100' 
-                                            : 'text-zinc-500 hover:text-zinc-950'
-                                    }`}
-                                >
-                                    {page.title}
-                                </Link>
-                            ))}
+                            {storeInfo?.themeSettings?.headerConfig?.menuItems ? (
+                                storeInfo.themeSettings.headerConfig.menuItems.map((item, idx) => (
+                                    <Link 
+                                        key={idx}
+                                        to={item.link.startsWith('/') ? getLink(item.link === '/' ? '' : item.link) : item.link} 
+                                        className={`text-[11px] font-bold uppercase tracking-wider relative py-1.5 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[var(--color-primary)] after:origin-left after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300 ${
+                                            location.pathname === getLink(item.link === '/' ? '' : item.link)
+                                                ? 'text-zinc-950 after:scale-x-100' 
+                                                : 'text-zinc-500 hover:text-zinc-950'
+                                        }`}
+                                    >
+                                        {item.label}
+                                    </Link>
+                                ))
+                            ) : (
+                                <>
+                                    <Link 
+                                        to={getLink('/')} 
+                                        className={`text-[11px] font-bold uppercase tracking-wider relative py-1.5 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[var(--color-primary)] after:origin-left after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300 ${
+                                            location.pathname === getLink('/') || location.pathname === getLink('/') + '/'
+                                                ? 'text-zinc-950 after:scale-x-100' 
+                                                : 'text-zinc-500 hover:text-zinc-950'
+                                        }`}
+                                    >
+                                        Home
+                                    </Link>
+                                    <Link 
+                                        to={getLink('/catalog')} 
+                                        className={`text-[11px] font-bold uppercase tracking-wider relative py-1.5 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[var(--color-primary)] after:origin-left after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300 ${
+                                            location.pathname.includes('/catalog') 
+                                                ? 'text-zinc-950 after:scale-x-100' 
+                                                : 'text-zinc-550 hover:text-zinc-950'
+                                        }`}
+                                    >
+                                        Catalog
+                                    </Link>
+                                </>
+                            )}
                         </nav>
 
                         {/* Actions */}
@@ -419,131 +475,185 @@ const StorefrontLayout = ({ children, cartCount, customer, onLogout, storeInfo }
                 <main className="flex-grow animate-fade-in">
                     {children}
                 </main>
-
                 {/* Footer */}
-                <footer className="bg-zinc-950 text-white mt-24 relative overflow-hidden border-t border-zinc-800">
+                <footer 
+                    className="mt-24 relative overflow-hidden border-t"
+                    style={{
+                        backgroundColor: footerBg,
+                        color: footerText,
+                        borderColor: footerBorder
+                    }}
+                >
                     {/* Background glows */}
                     <div className="absolute top-0 left-1/4 w-[350px] h-[350px] rounded-full bg-[var(--color-primary-semi)] blur-[100px] pointer-events-none opacity-20"></div>
 
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 grid grid-cols-1 md:grid-cols-12 gap-10 relative z-10">
-                        {/* Store Info & Socials */}
-                        <div className="md:col-span-5 space-y-6">
-                            <span className="font-extrabold text-xl tracking-tight uppercase bg-gradient-to-r from-white via-zinc-200 to-zinc-400 bg-clip-text text-transparent">
-                                {storeInfo?.storeName || 'My Store'}
-                            </span>
-                            <p className="text-xs text-zinc-400 font-medium leading-relaxed max-w-sm">
-                                {storeInfo?.storeDescription || 'Welcome to our premium online shop. Explore our collection of premium quality products curated just for you.'}
-                            </p>
-                            {/* Social Links */}
-                            {storeInfo?.socialLinks && Object.values(storeInfo.socialLinks).some(Boolean) && (
-                                <div className="flex items-center gap-3 pt-2">
-                                    {storeInfo.socialLinks.instagram && (
-                                        <a 
-                                            href={storeInfo.socialLinks.instagram} 
-                                            target="_blank" 
-                                            rel="noreferrer" 
-                                            className="w-9 h-9 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 flex items-center justify-center text-zinc-400 hover:text-white hover:scale-105 active:scale-95 transition-premium shadow-sm"
-                                            title="Instagram"
-                                        >
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                                                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                                                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-                                            </svg>
-                                        </a>
-                                    )}
-                                    {storeInfo.socialLinks.facebook && (
-                                        <a 
-                                            href={storeInfo.socialLinks.facebook} 
-                                            target="_blank" 
-                                            rel="noreferrer" 
-                                            className="w-9 h-9 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 flex items-center justify-center text-zinc-400 hover:text-white hover:scale-105 active:scale-95 transition-premium shadow-sm"
-                                            title="Facebook"
-                                        >
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
-                                            </svg>
-                                        </a>
-                                    )}
-                                    {storeInfo.socialLinks.twitter && (
-                                        <a 
-                                            href={storeInfo.socialLinks.twitter} 
-                                            target="_blank" 
-                                            rel="noreferrer" 
-                                            className="w-9 h-9 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 flex items-center justify-center text-zinc-400 hover:text-white hover:scale-105 active:scale-95 transition-premium shadow-sm"
-                                            title="Twitter"
-                                        >
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                                <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path>
-                                            </svg>
-                                        </a>
+                        {storeInfo?.themeSettings?.footerConfig?.columns ? (
+                            // Dynamic columns
+                            storeInfo.themeSettings.footerConfig.columns.map((col, idx) => (
+                                <div key={idx} className="md:col-span-4 space-y-4">
+                                    <h3 className="text-[10px] font-black uppercase tracking-widest border-l border-[var(--color-primary)] pl-2" style={{ color: footerText }}>
+                                        {col.title}
+                                    </h3>
+                                    {col.type === 'links' ? (
+                                        <ul className="space-y-2.5 text-xs font-bold">
+                                            {(col.links || []).map((link, lIdx) => (
+                                                <li key={lIdx}>
+                                                    <Link 
+                                                        to={link.link.startsWith('/') ? getLink(link.link === '/' ? '' : link.link) : link.link} 
+                                                        className="transition-colors relative py-1 hover:pl-1 transition-all hover:opacity-80"
+                                                        style={{ color: footerTextMuted }}
+                                                    >
+                                                        {link.label}
+                                                    </Link>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <div className="space-y-3">
+                                            <p className="text-xs font-medium leading-relaxed max-w-sm" style={{ color: footerTextMuted }}>{col.text}</p>
+                                            <div className="flex gap-2">
+                                                <input 
+                                                    type="email" 
+                                                    placeholder="Your email address" 
+                                                    className="border text-xs px-3.5 py-2 rounded-xl focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)] w-full" 
+                                                    style={{
+                                                        backgroundColor: footerCardBg,
+                                                        borderColor: footerBorder,
+                                                        color: footerText
+                                                    }}
+                                                />
+                                                <button className="bg-[var(--color-primary)] text-white text-[10px] px-4 py-2 rounded-xl font-black uppercase tracking-widest">
+                                                    Join
+                                                </button>
+                                            </div>
+                                        </div>
                                     )}
                                 </div>
-                            )}
-                        </div>
+                            ))
+                        ) : (
+                            // Fallback static columns
+                            <>
+                                {/* Store Info & Socials */}
+                                <div className="md:col-span-5 space-y-6">
+                                    <span className="font-extrabold text-xl tracking-tight uppercase" style={{ color: footerText }}>
+                                        {storeInfo?.storeName || 'My Store'}
+                                    </span>
+                                    <p className="text-xs font-medium leading-relaxed max-w-sm" style={{ color: footerTextMuted }}>
+                                        {storeInfo?.storeDescription || 'Welcome to our premium online shop. Explore our collection of premium quality products curated just for you.'}
+                                    </p>
+                                    {/* Social Links */}
+                                    {storeInfo?.socialLinks && Object.values(storeInfo.socialLinks).some(Boolean) && (
+                                        <div className="flex items-center gap-3 pt-2">
+                                            {storeInfo.socialLinks.instagram && (
+                                                <a 
+                                                    href={storeInfo.socialLinks.instagram} 
+                                                    target="_blank" 
+                                                    rel="noreferrer" 
+                                                    className="w-9 h-9 rounded-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-premium shadow-sm border hover:opacity-80"
+                                                    style={{
+                                                        backgroundColor: footerCardBg,
+                                                        borderColor: footerBorder,
+                                                        color: footerTextMuted
+                                                    }}
+                                                    title="Instagram"
+                                                >
+                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                                                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                                                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                                                    </svg>
+                                                </a>
+                                            )}
+                                            {storeInfo.socialLinks.facebook && (
+                                                <a 
+                                                    href={storeInfo.socialLinks.facebook} 
+                                                    target="_blank" 
+                                                    rel="noreferrer" 
+                                                    className="w-9 h-9 rounded-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-premium shadow-sm border hover:opacity-80"
+                                                    style={{
+                                                        backgroundColor: footerCardBg,
+                                                        borderColor: footerBorder,
+                                                        color: footerTextMuted
+                                                    }}
+                                                    title="Facebook"
+                                                >
+                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                                        <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+                                                    </svg>
+                                                </a>
+                                            )}
+                                            {storeInfo.socialLinks.twitter && (
+                                                <a 
+                                                    href={storeInfo.socialLinks.twitter} 
+                                                    target="_blank" 
+                                                    rel="noreferrer" 
+                                                    className="w-9 h-9 rounded-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-premium shadow-sm border hover:opacity-80"
+                                                    style={{
+                                                        backgroundColor: footerCardBg,
+                                                        borderColor: footerBorder,
+                                                        color: footerTextMuted
+                                                    }}
+                                                    title="Twitter"
+                                                >
+                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                                        <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path>
+                                                    </svg>
+                                                </a>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
 
-                        {/* Quick Links */}
-                        <div className="md:col-span-3 space-y-4">
-                            <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-400 border-l border-[var(--color-primary)] pl-2">Quick Links</h3>
-                            <ul className="space-y-2.5 text-xs font-bold">
-                                <li>
-                                    <Link to={getLink('/catalog')} className="text-zinc-400 hover:text-white transition-colors relative py-1 hover:pl-1 transition-all">Catalog</Link>
-                                </li>
-                                {pages.map(page => (
-                                    <li key={page.slug}>
-                                        <Link to={getLink(`/pages/${page.slug}`)} className="text-zinc-400 hover:text-white transition-colors relative py-1 hover:pl-1 transition-all">{page.title}</Link>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
+                                {/* Quick Links */}
+                                <div className="md:col-span-3 space-y-4">
+                                    <h3 className="text-[10px] font-black uppercase tracking-widest border-l border-[var(--color-primary)] pl-2" style={{ color: footerText }}>Quick Links</h3>
+                                    <ul className="space-y-2.5 text-xs font-bold">
+                                        <li>
+                                            <Link to={getLink('/catalog')} className="transition-colors relative py-1 hover:pl-1 transition-all hover:opacity-80" style={{ color: footerTextMuted }}>Catalog</Link>
+                                        </li>
+                                        {pages.map(page => (
+                                            <li key={page.slug}>
+                                                <Link to={getLink(`/pages/${page.slug}`)} className="transition-colors relative py-1 hover:pl-1 transition-all hover:opacity-80" style={{ color: footerTextMuted }}>{page.title}</Link>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
 
-                        {/* Contact Details */}
-                        <div className="md:col-span-4 space-y-4">
-                            <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-400 border-l border-[var(--color-primary)] pl-2">Contact Us</h3>
-                            <ul className="space-y-3 text-xs text-zinc-400 font-semibold">
-                                {storeInfo?.contactEmail && (
-                                    <li className="flex items-center gap-3">
-                                        <div className="w-7 h-7 rounded-lg bg-zinc-900 flex items-center justify-center text-amber-500 border border-zinc-800 flex-shrink-0">
-                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                                                <polyline points="22,6 12,13 2,6"></polyline>
-                                            </svg>
-                                        </div>
-                                        <span className="truncate hover:text-white transition-colors">{storeInfo.contactEmail}</span>
-                                    </li>
-                                )}
-                                {storeInfo?.contactPhone && (
-                                    <li className="flex items-center gap-3">
-                                        <div className="w-7 h-7 rounded-lg bg-zinc-900 flex items-center justify-center text-emerald-500 border border-zinc-800 flex-shrink-0">
-                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-                                            </svg>
-                                        </div>
-                                        <span className="hover:text-white transition-colors">{storeInfo.contactPhone}</span>
-                                    </li>
-                                )}
-                                {(storeInfo?.address || storeInfo?.city) && (
-                                    <li className="flex gap-3 items-start">
-                                        <div className="w-7 h-7 rounded-lg bg-zinc-900 flex items-center justify-center text-rose-500 border border-zinc-800 mt-0.5 flex-shrink-0">
-                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                                                <circle cx="12" cy="10" r="3"></circle>
-                                            </svg>
-                                        </div>
-                                        <span className="leading-relaxed hover:text-white transition-colors">
-                                            {storeInfo.address}{storeInfo.city ? `, ${storeInfo.city}` : ''}
-                                            {storeInfo.state ? `, ${storeInfo.state}` : ''}
-                                            {storeInfo.pincode ? ` - ${storeInfo.pincode}` : ''}
-                                        </span>
-                                    </li>
-                                )}
-                            </ul>
-                        </div>
+                                {/* Contact Details */}
+                                <div className="md:col-span-4 space-y-4">
+                                    <h3 className="text-[10px] font-black uppercase tracking-widest border-l border-[var(--color-primary)] pl-2" style={{ color: footerText }}>Contact Us</h3>
+                                    <ul className="space-y-3 text-xs font-semibold">
+                                        {storeInfo?.contactEmail && (
+                                            <li className="flex items-center gap-3">
+                                                <div className="w-7 h-7 rounded-lg flex items-center justify-center border flex-shrink-0" style={{ backgroundColor: footerCardBg, borderColor: footerBorder, color: 'var(--color-primary)' }}>
+                                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                                        <polyline points="22,6 12,13 2,6"></polyline>
+                                                    </svg>
+                                                </div>
+                                                <span className="truncate hover:opacity-80 transition-colors" style={{ color: footerTextMuted }}>{storeInfo.contactEmail}</span>
+                                            </li>
+                                        )}
+                                        {storeInfo?.contactPhone && (
+                                            <li className="flex items-center gap-3">
+                                                <div className="w-7 h-7 rounded-lg flex items-center justify-center border flex-shrink-0" style={{ backgroundColor: footerCardBg, borderColor: footerBorder, color: 'var(--color-primary)' }}>
+                                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                                                    </svg>
+                                                </div>
+                                                <span className="hover:opacity-80 transition-colors" style={{ color: footerTextMuted }}>{storeInfo.contactPhone}</span>
+                                            </li>
+                                        )}
+                                    </ul>
+                                </div>
+                            </>
+                        )}
                     </div>
 
                     {/* Bottom copyright */}
-                    <div className="border-t border-zinc-900 py-8 text-center text-[10px] text-zinc-500 font-bold tracking-widest relative z-10 uppercase">
-                        © {new Date().getFullYear()} {storeInfo?.storeName || 'Storify'}. All rights reserved. Powered by Storify.
+                    <div className="border-t py-8 text-center text-[10px] font-bold tracking-widest relative z-10 uppercase" style={{ color: footerTextMuted, borderColor: footerBorder }}>
+                        {storeInfo?.themeSettings?.footerConfig?.copyrightText || `© ${new Date().getFullYear()} ${storeInfo?.storeName || 'Storify'}. All rights reserved. Powered by Storify.`}
                     </div>
                 </footer>
             </div>

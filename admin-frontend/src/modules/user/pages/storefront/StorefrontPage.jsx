@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import StorefrontLayout from '../../components/storefront/StorefrontLayout';
+import SectionRenderer from '../../components/storefront/SectionRenderer';
 import { getStorePath } from '../../components/storefront/storeUrlHelper';
 
 const GATEWAY_URL = import.meta.env.VITE_API_BASE_URL;
@@ -101,19 +102,31 @@ const StorefrontPage = ({ cartCount, customer, onLogout, storeInfo }) => {
             .replace(/123\s+Fashion\s+Street,\s+Sector\s+5,\s+New\s+Delhi,\s+Pin:\s*110001,\s*India/gi, formattedAddress);
     }
 
+    const hasSections = page.sections && page.sections.length > 0;
+
     return (
         <StorefrontLayout cartCount={cartCount} customer={customer} onLogout={onLogout} storeInfo={storeInfo}>
-            <div className="max-w-4xl mx-auto px-6 sm:px-8 py-10 bg-white border border-zinc-200/60 rounded-3xl mt-8 shadow-sm animate-fade-in-up" style={{ borderRadius: 'var(--border-radius)' }}>
-                <div className="space-y-1">
-                    <h1 className="text-xl font-black text-zinc-900 leading-tight uppercase tracking-wide">{page.title}</h1>
-                    <div className="w-8 h-0.5 rounded-full mt-2" style={{ backgroundColor: 'var(--color-primary)' }}></div>
+            {hasSections ? (
+                <div className="space-y-0 animate-fade-in">
+                    {page.sections.map((section, idx) => (
+                        <div key={section.sectionId || section._id || idx} className="animate-fade-in-up" style={{ animationDelay: `${idx * 100}ms` }}>
+                            <SectionRenderer section={section} />
+                        </div>
+                    ))}
                 </div>
+            ) : (
+                <div className="max-w-4xl mx-auto px-6 sm:px-8 py-10 bg-white border border-zinc-200/60 rounded-3xl mt-8 shadow-sm animate-fade-in-up" style={{ borderRadius: 'var(--border-radius)' }}>
+                    <div className="space-y-1">
+                        <h1 className="text-xl font-black text-zinc-900 leading-tight uppercase tracking-wide">{page.title}</h1>
+                        <div className="w-8 h-0.5 rounded-full mt-2" style={{ backgroundColor: 'var(--color-primary)' }}></div>
+                    </div>
 
-                <div 
-                    className="prose prose-slate max-w-none text-xs text-zinc-650 font-semibold leading-relaxed whitespace-pre-line mt-6"
-                    dangerouslySetInnerHTML={{ __html: renderedContent }}
-                />
-            </div>
+                    <div 
+                        className="prose prose-slate max-w-none text-xs text-zinc-650 font-semibold leading-relaxed whitespace-pre-line mt-6"
+                        dangerouslySetInnerHTML={{ __html: renderedContent }}
+                    />
+                </div>
+            )}
         </StorefrontLayout>
     );
 };

@@ -27,6 +27,25 @@ const storePageSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    seo: {
+        metaTitle: { type: String, default: '' },
+        metaDescription: { type: String, default: '' },
+        ogImage: { type: String, default: '' },
+        canonical: { type: String, default: '' }
+    },
+    visibility: {
+        type: String,
+        enum: ['published', 'draft', 'scheduled'],
+        default: 'published'
+    },
+    publishDate: {
+        type: Date,
+        default: Date.now
+    },
+    password: {
+        type: String,
+        default: ''
+    },
     sections: [{
         sectionId: {
             type: mongoose.Schema.Types.ObjectId,
@@ -43,6 +62,10 @@ const storePageSchema = new mongoose.Schema({
         enabled: {
             type: Boolean,
             default: true
+        },
+        locked: {
+            type: Boolean,
+            default: false
         },
         settings: {
             type: mongoose.Schema.Types.Mixed,

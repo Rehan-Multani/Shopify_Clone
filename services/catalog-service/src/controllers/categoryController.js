@@ -18,8 +18,18 @@ export const getCategories = async (req, res) => {
         if (req.merchant) {
             filter = { merchant: req.merchant._id, store: storeId };
         } else if (req.vendor) {
-            // Vendor should strictly see categories created by themselves, and not the admin's categories
-            filter = { store: storeId, vendor: req.vendor._id };
+            if (req.query.all === 'true') {
+                filter = { 
+                    store: storeId, 
+                    $or: [
+                        { vendor: req.vendor._id },
+                        { vendor: null, isActive: true, isApproved: true }
+                    ]
+                };
+            } else {
+                // Vendor should strictly see categories created by themselves, and not the admin's categories
+                filter = { store: storeId, vendor: req.vendor._id };
+            }
         } else {
             filter = { store: storeId, isActive: true, isApproved: true };
         }

@@ -104,7 +104,7 @@ export const getPageBySlug = async (req, res) => {
 export const updatePage = async (req, res) => {
     try {
         const { slug } = req.params;
-        const { content, title, sections, isHomePage } = req.body;
+        const { content, title, sections, isHomePage, seo, visibility, publishDate, password } = req.body;
         const merchantId = req.merchant._id;
         const storeId = req.headers['x-store-id'];
         if (!storeId) {
@@ -118,6 +118,10 @@ export const updatePage = async (req, res) => {
             page.title = title !== undefined ? title : page.title;
             if (sections !== undefined) page.sections = sections;
             if (isHomePage !== undefined) page.isHomePage = isHomePage;
+            if (seo !== undefined) page.seo = seo;
+            if (visibility !== undefined) page.visibility = visibility;
+            if (publishDate !== undefined) page.publishDate = publishDate;
+            if (password !== undefined) page.password = password;
             await page.save();
         } else {
             const defaultPage = DEFAULT_PAGES.find(p => p.slug === slug);
@@ -128,7 +132,11 @@ export const updatePage = async (req, res) => {
                 title: title || (defaultPage ? defaultPage.title : slug),
                 content: content || '',
                 isHomePage: isHomePage !== undefined ? isHomePage : (defaultPage ? !!defaultPage.isHomePage : false),
-                sections: sections !== undefined ? sections : (slug === 'home' ? DEFAULT_HOME_SECTIONS : [])
+                sections: sections !== undefined ? sections : (slug === 'home' ? DEFAULT_HOME_SECTIONS : []),
+                seo: seo || {},
+                visibility: visibility || 'published',
+                publishDate: publishDate || Date.now(),
+                password: password || ''
             });
         }
 
@@ -254,6 +262,53 @@ export const updateSectionSettings = async (req, res) => {
         });
     } catch (error) {
         console.error('Error updating section settings:', error);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
+// @desc    Create a new custom store page
+// @route   POST /api/store-pages
+// @access  Private (Merchant)
+export const createPage = async (req, res) => {
+    try {
+        const { slug, title, content, isHomePage, seo, visibility, publishDate, password, sections } = req.body;
+        const merchantId = req.merchant._id;
+        const storeId = req.headers['x-store-id'];
+        if (!storeId) {
+            return res.status(400).json({ success: false, message: 'Store ID (x-store-id) is required' });
+        }
+
+        if (!slug || !title) {
+            return res.status(400).json({ success: false, message: 'Slug and title are required' });
+        }
+
+        // Check if slug already exists for this store
+        const existingPage = await StorePage.findOne({ storeId, slug });
+        if (existingPage) {
+            return res.status(400).json({ success: false, message: 'A page with this slug already exists' });
+        }
+
+        const page = await StorePage.create({
+            merchantId,
+            storeId,
+            slug,
+            title,
+            content: content || '',
+            isHomePage: !!isHomePage,
+            sections: sections || [],
+            seo: seo || {},
+            visibility: visibility || 'published',
+            publishDate: publishDate || Date.now(),
+            password: password || ''
+        });
+
+        res.status(201).json({
+            success: true,
+            message: 'Page created successfully',
+            page
+        });
+    } catch (error) {
+        console.error('Error creating store page:', error);
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };

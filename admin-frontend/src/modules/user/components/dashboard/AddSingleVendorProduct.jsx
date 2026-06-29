@@ -37,7 +37,7 @@ const AddSingleVendorProduct = () => {
         const fetchCategories = async () => {
             try {
                 const storeId = localStorage.getItem('activeStoreId') || '';
-                const res = await fetch(`${API_URL}/categories`, {
+                const res = await fetch(`${API_URL}/categories?all=true`, {
                     headers: { 'Authorization': `Bearer ${token}`, 'x-store-id': storeId }
                 });
                 const data = await res.json();
@@ -288,18 +288,20 @@ const AddSingleVendorProduct = () => {
                     
                     <div className="md:w-72 space-y-6 flex-shrink-0">
                         {/* Status */}
-                        <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                            <label className="block text-sm font-bold text-[#202223] mb-3">Status</label>
-                            <div className="flex items-center justify-between">
-                                <span className="text-sm text-[#5c5f62]">{form.isActive ? 'Active' : 'Inactive'}</span>
-                                <button
-                                    onClick={() => setForm(p => ({ ...p, isActive: !p.isActive }))}
-                                    className={`relative w-11 h-6 rounded-full transition-colors ${form.isActive ? 'bg-emerald-500' : 'bg-gray-300'}`}
-                                >
-                                    <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${form.isActive ? 'translate-x-5' : ''}`}></span>
-                                </button>
+                        {!isVendor && (
+                            <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                <label className="block text-sm font-bold text-[#202223] mb-3">Status</label>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm text-[#5c5f62]">{form.isActive ? 'Active' : 'Inactive'}</span>
+                                    <button
+                                        onClick={() => setForm(p => ({ ...p, isActive: !p.isActive }))}
+                                        className={`relative w-11 h-6 rounded-full transition-colors ${form.isActive ? 'bg-emerald-500' : 'bg-gray-300'}`}
+                                    >
+                                        <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${form.isActive ? 'translate-x-5' : ''}`}></span>
+                                    </button>
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         {/* Category */}
                         <div>
@@ -315,7 +317,7 @@ const AddSingleVendorProduct = () => {
                                 ))}
                             </select>
                             {categories.length === 0 && (
-                                <p className="text-xs text-gray-400 mt-2">No categories yet. <button onClick={() => navigate('/dashboard/category/new')} className="text-blue-600 hover:underline">Create one</button></p>
+                                <p className="text-xs text-gray-400 mt-2">No categories yet. <button onClick={() => navigate(`${dashboardPrefix}/category/new`)} className="text-blue-600 hover:underline">Create one</button></p>
                             )}
                         </div>
 

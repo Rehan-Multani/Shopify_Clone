@@ -15,6 +15,12 @@ const OrderDetail = ({ orderId }) => {
     const [paymentStatus, setPaymentStatus] = useState('');
     const [trackingDescription, setTrackingDescription] = useState('');
 
+    const isVendor = window.location.pathname.startsWith('/vendor');
+    const dashboardPrefix = isVendor ? '/vendor/dashboard' : '/dashboard';
+    const token = isVendor 
+        ? (localStorage.getItem('vendorToken') || localStorage.getItem('merchantToken'))
+        : (localStorage.getItem('merchantToken') || localStorage.getItem('vendorToken'));
+
     useEffect(() => {
         fetchOrder();
     }, [orderId]);
@@ -27,7 +33,6 @@ const OrderDetail = ({ orderId }) => {
     const fetchOrder = async () => {
         try {
             setLoading(true);
-            const token = localStorage.getItem('merchantToken');
             const res = await fetch(`${GATEWAY_URL}/orders/${orderId}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -53,7 +58,6 @@ const OrderDetail = ({ orderId }) => {
         e.preventDefault();
         try {
             setUpdating(true);
-            const token = localStorage.getItem('merchantToken');
             const res = await fetch(`${GATEWAY_URL}/orders/${orderId}`, {
                 method: 'PUT',
                 headers: {
@@ -99,7 +103,7 @@ const OrderDetail = ({ orderId }) => {
             <div className="text-center py-16 bg-white border border-gray-200 rounded-2xl space-y-4 shadow-sm">
                 <p className="text-sm font-bold text-gray-500">Order not found or access denied.</p>
                 <button 
-                    onClick={() => navigate('/dashboard/orders')} 
+                    onClick={() => navigate(`${dashboardPrefix}/orders`)} 
                     className="px-5 py-2 bg-zinc-900 text-white font-bold rounded-lg text-xs hover:bg-black transition-all"
                 >
                     Back to Orders
@@ -124,7 +128,7 @@ const OrderDetail = ({ orderId }) => {
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <button 
-                        onClick={() => navigate('/dashboard/orders')}
+                        onClick={() => navigate(`${dashboardPrefix}/orders`)}
                         className="p-2 hover:bg-gray-100 rounded-xl transition-all mr-1 text-gray-500 hover:text-black"
                     >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">

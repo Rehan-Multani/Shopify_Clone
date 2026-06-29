@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 const CATALOG_API_URL = import.meta.env.VITE_CATALOG_API_URL;
 const API_URL = CATALOG_API_URL;
 
-const SingleVendorProductsTab = () => {
+const SingleVendorProductsTab = ({ vendorId }) => {
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -36,7 +36,13 @@ const SingleVendorProductsTab = () => {
             ]);
             const productsData = await productsRes.json();
             const categoriesData = await categoriesRes.json();
-            if (productsRes.ok) setProducts(productsData);
+            if (productsRes.ok) {
+                if (vendorId) {
+                    setProducts(productsData.filter(p => p.vendor === vendorId || p.vendor?._id === vendorId));
+                } else {
+                    setProducts(productsData);
+                }
+            }
             if (categoriesRes.ok) setCategories(categoriesData);
         } catch (err) {
             console.error('Failed to fetch data:', err);
@@ -225,15 +231,17 @@ const SingleVendorProductsTab = () => {
                     <h1 className="text-xl lg:text-2xl font-bold text-[#202223] tracking-tight">Products</h1>
                     <p className="text-sm text-[#5c5f62] mt-1">{products.length} products total</p>
                 </div>
-                <Link
-                    to={`${dashboardPrefix}/products/new`}
-                    className="inline-flex items-center gap-2 bg-[#1a1c23] text-white px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-black transition-all shadow-md active:scale-95"
-                >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-                    </svg>
-                    Add Product
-                </Link>
+                {!vendorId && (
+                    <Link
+                        to={`${dashboardPrefix}/products/new`}
+                        className="inline-flex items-center gap-2 bg-[#1a1c23] text-white px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-black transition-all shadow-md active:scale-95"
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+                        </svg>
+                        Add Product
+                    </Link>
+                )}
             </div>
 
             {/* Filters */}
@@ -311,13 +319,20 @@ const SingleVendorProductsTab = () => {
                         </svg>
                     </div>
                     <h3 className="font-bold text-[#202223] mb-1">No products found</h3>
-                    <p className="text-sm text-[#5c5f62] mb-4">Add your first product to start selling</p>
-                    <Link to={`${dashboardPrefix}/products/new`} className="inline-flex items-center gap-2 bg-[#1a1c23] text-white px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-black transition-all">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-                        </svg>
-                        Add Product
-                    </Link>
+                    <p className="text-sm text-[#5c5f62] mb-4">
+                        {vendorId 
+                            ? "No products registered for this vendor yet."
+                            : "Add your first product to start selling"
+                        }
+                    </p>
+                    {!vendorId && (
+                        <Link to={`${dashboardPrefix}/products/new`} className="inline-flex items-center gap-2 bg-[#1a1c23] text-white px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-black transition-all">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+                            </svg>
+                            Add Product
+                        </Link>
+                    )}
                 </div>
             ) : (
                 <div className="space-y-6">

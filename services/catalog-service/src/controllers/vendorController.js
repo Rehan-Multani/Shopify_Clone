@@ -124,14 +124,25 @@ export const updateVendor = async (req, res) => {
         if (!storeId) {
             return res.status(400).json({ message: 'Store ID header (x-store-id) is required' });
         }
-        const vendor = await Vendor.findOne({ _id: req.params.id, merchant: req.merchant._id, store: storeId });
+        
+        let query = { _id: req.params.id, store: storeId };
+        if (req.vendor) {
+            query._id = req.vendor._id;
+        } else if (req.merchant) {
+            query.merchant = req.merchant._id;
+        } else {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+
+        const vendor = await Vendor.findOne(query);
         if (!vendor) {
             return res.status(404).json({ message: 'Vendor not found' });
         }
 
         const { 
             name, businessName, businessProfile, logo, profileImage, email, mobile, password, commission, 
-            gstNumber, panNumber, bankDetails, address, city, state, pincode, isActive 
+            gstNumber, panNumber, bankDetails, address, city, state, pincode, isActive,
+            paymentSettings, gstPercentage
         } = req.body;
 
         // If email is changing, check for duplicates
@@ -171,6 +182,13 @@ export const updateVendor = async (req, res) => {
         vendor.state = state !== undefined ? state : vendor.state;
         vendor.pincode = pincode !== undefined ? pincode : vendor.pincode;
         vendor.isActive = isActive !== undefined ? isActive : vendor.isActive;
+
+        if (paymentSettings !== undefined) {
+            vendor.paymentSettings = paymentSettings;
+        }
+        if (gstPercentage !== undefined) {
+            vendor.gstPercentage = Number(gstPercentage);
+        }
 
         if (password && password.trim().length >= 6) {
             vendor.password = password;

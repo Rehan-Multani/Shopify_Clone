@@ -44,7 +44,7 @@ const adjustBrightness = (hex, percent) => {
 const ThemeRenderer = ({ themeSettings = {}, children }) => {
     const {
         primaryColor = '#2563eb',
-        secondaryColor = '#0f172a',
+        secondaryColor = '#ffffff',
         accentColor = '#14B8A6',
         fontFamily = 'Inter',
         borderRadius = '8px',
@@ -219,6 +219,31 @@ const ThemeRenderer = ({ themeSettings = {}, children }) => {
         `;
     }, [fontFamily, primaryColor]);
 
+    // Helper to determine if a color is dark
+    const isDarkColor = (hex) => {
+        try {
+            const cleanHex = hex.replace('#', '');
+            let r, g, b;
+            if (cleanHex.length === 3) {
+                r = parseInt(cleanHex[0] + cleanHex[0], 16);
+                g = parseInt(cleanHex[1] + cleanHex[1], 16);
+                b = parseInt(cleanHex[2] + cleanHex[2], 16);
+            } else {
+                r = parseInt(cleanHex.substring(0, 2), 16);
+                g = parseInt(cleanHex.substring(2, 4), 16);
+                b = parseInt(cleanHex.substring(4, 6), 16);
+            }
+            const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+            return brightness < 128;
+        } catch (e) {
+            return false;
+        }
+    };
+
+    const isSecondaryDark = isDarkColor(secondaryColor);
+    const textColor = isSecondaryDark ? '#f4f4f5' : '#09090b';
+    const textColorMuted = isSecondaryDark ? '#a1a1aa' : '#52525b';
+
     // Create variables to make custom styling extremely dynamic and unified
     const themeStyles = {
         '--color-primary': primaryColor,
@@ -227,6 +252,8 @@ const ThemeRenderer = ({ themeSettings = {}, children }) => {
         '--color-primary-dark': adjustBrightness(primaryColor, -20),
         '--color-secondary': secondaryColor,
         '--color-accent': accentColor,
+        '--color-text': textColor,
+        '--color-text-muted': textColorMuted,
         '--border-radius': borderRadius,
         '--shadow-premium-sm': '0 2px 8px rgba(0, 0, 0, 0.02)',
         '--shadow-premium-md': '0 8px 24px rgba(0, 0, 0, 0.05)',
@@ -237,7 +264,7 @@ const ThemeRenderer = ({ themeSettings = {}, children }) => {
     };
 
     return (
-        <div style={themeStyles} className={`theme-container theme-${themeName.toLowerCase()} min-h-screen bg-[#fafafa] text-zinc-950`}>
+        <div style={themeStyles} className={`theme-container theme-${themeName.toLowerCase()} min-h-screen bg-[var(--color-secondary)] text-[var(--color-text)]`}>
             {children}
         </div>
     );
