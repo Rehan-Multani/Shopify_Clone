@@ -16,6 +16,16 @@ import {
     PricingTableSection
 } from './sections/NewSections';
 
+const formatText = (text) => {
+    if (!text || typeof text !== 'string') return text;
+    return text.split(/<br\s*\/?>/gi).map((part, index, array) => (
+        <React.Fragment key={index}>
+            {part}
+            {index < array.length - 1 && <br />}
+        </React.Fragment>
+    ));
+};
+
 // A dynamic newsletter block/section
 const NewsletterSection = ({ settings = {} }) => {
     const { title = 'Subscribe to our newsletter', subtitle = 'Get promotions and announcements' } = settings;
@@ -48,95 +58,190 @@ const SectionRenderer = ({ section }) => {
     const { type, settings = {}, blocks = [] } = section;
 
     switch (type) {
-        case 'hero':
+        case 'hero': {
+            const isSplit = settings.layout === 'split';
+            const bgType = settings.backgroundType || 'image';
+            
+            let heroBg = '';
+            if (bgType === 'solid') {
+                heroBg = settings.backgroundColor || '#008060';
+            } else if (bgType === 'gradient') {
+                heroBg = settings.backgroundGradient || 'linear-gradient(to right, #008060, #047857, #064e3b)';
+            } else {
+                heroBg = settings.backgroundImage && !isSplit
+                    ? `url(${settings.backgroundImage})` 
+                    : 'linear-gradient(to right, #008060, #047857, #064e3b)';
+            }
+
+            let splitBgStyle = {};
+            if (bgType === 'solid') {
+                splitBgStyle = { background: settings.backgroundColor || '#f0fdfa' };
+            } else if (bgType === 'gradient') {
+                splitBgStyle = { background: settings.backgroundGradient || 'linear-gradient(135deg, #f0fdfa 0%, #f8fafc 100%)' };
+            } else {
+                splitBgStyle = { background: 'linear-gradient(135deg, #f0fdfa 0%, #f8fafc 100%)' };
+            }
+            
+            const contentBody = (
+                <div className={`relative z-10 w-full flex flex-col space-y-6.5 ${isSplit ? 'items-start text-left' : 'items-center text-center'}`}>
+                    {(blocks || []).map((block, index) => {
+                        if (block.type === 'heading') {
+                            const style = block.settings?.style || {};
+                            const HeadingTag = style.tag || (isSplit ? 'h2' : 'h1');
+                            return (
+                                <HeadingTag 
+                                    key={block.blockId || index} 
+                                    className="leading-tight tracking-tight drop-shadow-sm animate-fade-in-up font-black"
+                                    style={{ 
+                                        animationDelay: '0ms',
+                                        fontSize: style.fontSize ? `${style.fontSize}px` : (isSplit ? '42px' : '48px'),
+                                        color: isSplit ? 'var(--color-primary)' : (style.color || '#ffffff'),
+                                        fontWeight: style.fontWeight || '900',
+                                        lineHeight: style.lineHeight || undefined,
+                                        letterSpacing: style.letterSpacing || undefined,
+                                        textTransform: style.textTransform || 'none',
+                                        textAlign: isSplit ? 'left' : (style.textAlign || 'center'),
+                                        marginTop: style.marginTop !== undefined ? `${style.marginTop}px` : undefined,
+                                        marginBottom: style.marginBottom !== undefined ? `${style.marginBottom}px` : undefined
+                                    }}
+                                >
+                                    {formatText(block.settings?.text || 'Welcome to Our Store')}
+                                </HeadingTag>
+                            );
+                        }
+                        if (block.type === 'subheading') {
+                            const style = block.settings?.style || {};
+                            return (
+                                <p 
+                                    key={block.blockId || index} 
+                                    className="leading-relaxed drop-shadow animate-fade-in-up font-semibold"
+                                    style={{ 
+                                        animationDelay: '100ms',
+                                        fontSize: style.fontSize ? `${style.fontSize}px` : '15px',
+                                        color: isSplit ? '#4b5563' : (style.color || '#ffffff'),
+                                        fontWeight: style.fontWeight || '500',
+                                        lineHeight: style.lineHeight || undefined,
+                                        letterSpacing: style.letterSpacing || undefined,
+                                        textTransform: style.textTransform || 'none',
+                                        textAlign: isSplit ? 'left' : (style.textAlign || 'center'),
+                                        marginTop: style.marginTop !== undefined ? `${style.marginTop}px` : undefined,
+                                        marginBottom: style.marginBottom !== undefined ? `${style.marginBottom}px` : undefined
+                                    }}
+                                >
+                                    {formatText(block.settings?.text || 'Discover premium catalog.')}
+                                </p>
+                            );
+                        }
+                        return null;
+                    })}
+
+                    {/* Render Buttons side-by-side */}
+                    {(blocks || []).some(b => b.type === 'button') && (
+                        <div className={`flex flex-wrap gap-4 pt-2 ${isSplit ? 'justify-start' : 'justify-center'}`}>
+                            {(blocks || []).filter(b => b.type === 'button').map((block, idx) => {
+                                const style = block.settings?.style || {};
+                                return (
+                                    <React.Fragment key={block.blockId || idx}>
+                                        {block.settings?.startNewRow && <div className="w-full h-0"></div>}
+                                        <a
+                                            href={block.settings?.link || '/catalog'}
+                                            className="transition-all hover:scale-105 active:scale-95 transition-all duration-300 animate-fade-in-up cursor-pointer flex items-center justify-center font-bold"
+                                            style={{ 
+                                                backgroundColor: style.backgroundColor || (idx === 0 ? 'var(--color-primary)' : 'rgba(255, 255, 255, 0.15)'), 
+                                                color: style.textColor || '#ffffff',
+                                                borderColor: style.borderColor || (style.borderWidth && style.borderWidth !== '0px' ? '#18181b' : 'transparent'),
+                                                borderStyle: (style.borderWidth && style.borderWidth !== '0px') ? 'solid' : 'none',
+                                                borderWidth: style.borderWidth || '0px',
+                                                borderRadius: style.borderRadius || 'var(--border-radius)',
+                                                padding: `${style.paddingY !== undefined ? style.paddingY : 12}px ${style.paddingX !== undefined ? style.paddingX : 28}px`,
+                                                fontSize: style.fontSize ? `${style.fontSize}px` : '10px',
+                                                boxShadow: style.shadow === 'lg' ? '0 10px 15px -3px rgba(0,0,0,0.1)' : style.shadow === 'md' ? '0 4px 6px -1px rgba(0,0,0,0.1)' : style.shadow === 'sm' ? '0 1px 2px 0 rgba(0,0,0,0.05)' : 'none',
+                                                animationDelay: `${200 + idx * 50}ms`
+                                            }}
+                                        >
+                                            {block.settings?.label || 'Shop Now'}
+                                        </a>
+                                    </React.Fragment>
+                                );
+                            })}
+                        </div>
+                    )}
+
+                    {/* Fallback if no blocks */}
+                    {blocks.length === 0 && (
+                        <div className={`${isSplit ? 'text-zinc-800' : 'text-white'} space-y-4`}>
+                            <h1 className="text-3xl sm:text-4xl font-black leading-tight tracking-tight">{formatText(settings.title || 'Welcome to Our Store')}</h1>
+                            <p className="text-xs sm:text-sm text-zinc-550 font-semibold max-w-sm">{formatText(settings.subtitle)}</p>
+                        </div>
+                    )}
+
+                    {/* QubanHC Style Trust Badges */}
+                    {settings.showTrustBadges !== false && (
+                        <div className={`flex flex-wrap items-center gap-6 pt-6.5 mt-2.5 border-t w-full text-[9px] font-black uppercase tracking-widest animate-fade-in-up ${isSplit ? 'border-zinc-200 justify-start text-zinc-650' : 'border-white/10 justify-center text-white/95'}`} style={{ animationDelay: '350ms' }}>
+                            <div className={`flex items-center gap-2 px-3.5 py-2 rounded-full border ${isSplit ? 'bg-zinc-50 border-zinc-200/60' : 'bg-black/25 border-white/5'}`}>
+                                <span className="text-xs">🚚</span>
+                                <span>{settings.badge1Text || 'Free Shipping'}</span>
+                            </div>
+                            <div className={`flex items-center gap-2 px-3.5 py-2 rounded-full border ${isSplit ? 'bg-zinc-50 border-zinc-200/60' : 'bg-black/25 border-white/5'}`}>
+                                <span className="text-xs">🛡️</span>
+                                <span>{settings.badge2Text || 'Secure Payments'}</span>
+                            </div>
+                            <div className={`flex items-center gap-2 px-3.5 py-2 rounded-full border ${isSplit ? 'bg-zinc-50 border-zinc-200/60' : 'bg-black/25 border-white/5'}`}>
+                                <span className="text-xs">🔄</span>
+                                <span>{settings.badge3Text || 'Easy Returns'}</span>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+
+            if (isSplit) {
+                return (
+                    <section 
+                        className="relative flex items-center justify-center py-16 px-6 md:px-12 rounded-3xl"
+                        style={{ minHeight: settings.height || '500px', ...splitBgStyle }}
+                    >
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center w-full max-w-6xl mx-auto">
+                            {contentBody}
+                            <div className="flex justify-center items-center w-full">
+                                <div 
+                                    className="relative w-full aspect-[4/3] rounded-[32px] overflow-hidden shadow-2xl border border-teal-100/50 bg-white p-2.5"
+                                    style={{ animationDelay: '200ms' }}
+                                >
+                                    <div className="w-full h-full rounded-[22px] overflow-hidden bg-zinc-50 relative group">
+                                        {settings.backgroundImage ? (
+                                            <img src={settings.backgroundImage} alt="Hero illustration" className="w-full h-full object-cover transition-transform duration-700 hover:scale-105" />
+                                        ) : (
+                                            <div className="w-full h-full flex flex-col items-center justify-center text-zinc-400 bg-zinc-50 font-bold text-sm">
+                                                <span>No image selected</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                );
+            }
+
             return (
                 <section 
-                    className="relative flex items-center justify-center bg-zinc-950 overflow-hidden py-24 px-4 text-center rounded-3xl"
+                    className="relative flex items-center justify-center overflow-hidden py-24 px-4 text-center rounded-3xl"
                     style={{
-                        backgroundImage: settings.backgroundImage ? `url(${settings.backgroundImage})` : 'none',
+                        background: heroBg,
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',   
                         minHeight: settings.height || '480px'
                     }}
                 >
                     {/* Dark Overlay */}
-                    <div className="absolute inset-0 bg-black/45"></div>
-
+                    {bgType === 'image' && <div className="absolute inset-0 bg-black/45"></div>}
                     <div className="relative z-10 max-w-2xl w-full flex flex-col items-center space-y-6.5">
-                        {blocks.map((block, index) => {
-                            if (block.type === 'heading') {
-                                return (
-                                    <h1 
-                                        key={block.blockId || index} 
-                                        className="text-3xl sm:text-4xl md:text-5xl font-black text-white leading-tight tracking-tight drop-shadow-md animate-fade-in-up"
-                                        style={{ animationDelay: '0ms' }}
-                                    >
-                                        {block.settings?.text || 'Welcome to Our Store'}
-                                    </h1>
-                                );
-                            }
-                            if (block.type === 'subheading') {
-                                return (
-                                    <p 
-                                        key={block.blockId || index} 
-                                        className="text-xs sm:text-sm text-white/90 font-semibold max-w-lg leading-relaxed drop-shadow animate-fade-in-up"
-                                        style={{ animationDelay: '100ms' }}
-                                    >
-                                        {block.settings?.text || 'Discover premium catalog.'}
-                                    </p>
-                                );
-                            }
-                            return null;
-                        })}
-
-                        {/* Render Buttons side-by-side */}
-                        {blocks.some(b => b.type === 'button') && (
-                            <div className="flex flex-wrap justify-center gap-4 pt-2">
-                                {blocks.filter(b => b.type === 'button').map((block, idx) => (
-                                    <a
-                                        key={block.blockId || idx}
-                                        href={block.settings?.link || '/catalog'}
-                                        className="px-7 py-3 text-white font-black text-[10px] uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 animate-fade-in-up cursor-pointer btn-premium"
-                                        style={{ 
-                                            backgroundColor: idx === 0 ? 'var(--color-primary)' : 'rgba(255, 255, 255, 0.15)', 
-                                            backdropFilter: idx === 0 ? 'none' : 'blur(4px)',
-                                            border: idx === 0 ? 'none' : '1px solid rgba(255, 255, 255, 0.3)',
-                                            borderRadius: 'var(--border-radius)',
-                                            animationDelay: `${200 + idx * 50}ms`
-                                        }}
-                                    >
-                                        {block.settings?.label || 'Shop Now'}
-                                    </a>
-                                ))}
-                            </div>
-                        )}
-
-                        {/* Fallback if no blocks */}
-                        {blocks.length === 0 && (
-                            <div className="text-white space-y-4">
-                                <h1 className="text-3xl sm:text-4xl font-black leading-tight tracking-tight">{settings.title || 'Welcome to Our Store'}</h1>
-                                <p className="text-xs sm:text-sm text-white/80 font-semibold max-w-sm mx-auto">{settings.subtitle}</p>
-                            </div>
-                        )}
-
-                        {/* QubanHC Style Trust Badges */}
-                        <div className="flex flex-wrap items-center justify-center gap-6 pt-6.5 mt-2.5 border-t border-white/10 w-full text-[9px] font-black uppercase tracking-widest text-white/95 animate-fade-in-up" style={{ animationDelay: '350ms' }}>
-                            <div className="flex items-center gap-2 bg-black/25 backdrop-blur-sm px-3.5 py-2 rounded-full border border-white/5">
-                                <span className="text-xs">🚚</span>
-                                <span>Free Shipping</span>
-                            </div>
-                            <div className="flex items-center gap-2 bg-black/25 backdrop-blur-sm px-3.5 py-2 rounded-full border border-white/5">
-                                <span className="text-xs">🛡️</span>
-                                <span>Secure Payments</span>
-                            </div>
-                            <div className="flex items-center gap-2 bg-black/25 backdrop-blur-sm px-3.5 py-2 rounded-full border border-white/5">
-                                <span className="text-xs">🔄</span>
-                                <span>Easy Returns</span>
-                            </div>
-                        </div>
+                        {contentBody}
                     </div>
                 </section>
             );
+        }
 
         case 'categories':
         case 'category-grid':
@@ -312,6 +417,104 @@ const SectionRenderer = ({ section }) => {
                     </div>
                 </section>
             );
+
+        case 'heading': {
+            const style = settings.style || {};
+            const HeadingTag = style.tag || 'h2';
+            return (
+                <div className="py-2.5 px-4 max-w-7xl mx-auto w-full">
+                    <HeadingTag
+                        className="leading-tight tracking-tight uppercase"
+                        style={{
+                            fontSize: style.fontSize ? `${style.fontSize}px` : '28px',
+                            color: style.color || '#18181b',
+                            fontWeight: style.fontWeight || '700',
+                            textAlign: style.textAlign || 'center',
+                            marginTop: style.marginTop !== undefined ? `${style.marginTop}px` : '10px',
+                            marginBottom: style.marginBottom !== undefined ? `${style.marginBottom}px` : '15px',
+                            lineHeight: style.lineHeight || '1.3',
+                            letterSpacing: style.letterSpacing || 'normal',
+                            textTransform: style.textTransform || 'none'
+                        }}
+                    >
+                        {formatText(settings.text || 'New Heading Element')}
+                    </HeadingTag>
+                </div>
+            );
+        }
+
+        case 'paragraph': {
+            const style = settings.style || {};
+            return (
+                <div className="py-2 px-4 max-w-7xl mx-auto w-full">
+                    <p
+                        className="leading-relaxed"
+                        style={{
+                            fontSize: style.fontSize ? `${style.fontSize}px` : '14px',
+                            color: style.color || '#3f3f46',
+                            fontWeight: style.fontWeight || '400',
+                            textAlign: style.textAlign || 'left',
+                            marginTop: style.marginTop !== undefined ? `${style.marginTop}px` : '5px',
+                            marginBottom: style.marginBottom !== undefined ? `${style.marginBottom}px` : '10px',
+                            lineHeight: style.lineHeight || '1.6',
+                            letterSpacing: style.letterSpacing || 'normal',
+                            textTransform: style.textTransform || 'none'
+                        }}
+                    >
+                        {formatText(settings.text || 'Write your text details here. This paragraph block is fully customizable.')}
+                    </p>
+                </div>
+            );
+        }
+
+        case 'button': {
+            const style = settings.style || {};
+            const alignStyles = {
+                left: 'justify-start',
+                center: 'justify-center',
+                right: 'justify-end'
+            };
+            return (
+                <div className={`py-3 px-4 max-w-7xl mx-auto w-full flex ${alignStyles[style.textAlign || 'center']}`}>
+                    <a
+                        href={settings.link || '#'}
+                        className="transition-all hover:opacity-90 font-semibold inline-block text-center"
+                        style={{
+                            backgroundColor: style.backgroundColor || '#008060',
+                            color: style.textColor || '#ffffff',
+                            borderColor: style.borderColor || 'transparent',
+                            borderWidth: style.borderWidth || '0px',
+                            borderStyle: style.borderWidth ? 'solid' : 'none',
+                            borderRadius: style.borderRadius || '8px',
+                            padding: `${style.paddingY !== undefined ? style.paddingY : 10}px ${style.paddingX !== undefined ? style.paddingX : 20}px`,
+                            fontSize: style.fontSize ? `${style.fontSize}px` : '13px',
+                            boxShadow: style.shadow === 'lg' ? '0 10px 15px -3px rgba(0,0,0,0.1)' : style.shadow === 'md' ? '0 4px 6px -1px rgba(0,0,0,0.1)' : style.shadow === 'sm' ? '0 1px 2px 0 rgba(0,0,0,0.05)' : 'none'
+                        }}
+                    >
+                        {settings.label || 'Click Me'}
+                    </a>
+                </div>
+            );
+        }
+
+        case 'image': {
+            const style = settings.style || {};
+            return (
+                <div className="py-3 px-4 max-w-7xl mx-auto w-full flex justify-center">
+                    <img
+                        src={settings.imageUrl || 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=600'}
+                        alt="Customizable"
+                        className="max-w-full"
+                        style={{
+                            width: style.width || '100%',
+                            height: style.height || 'auto',
+                            objectFit: style.objectFit || 'cover',
+                            borderRadius: style.borderRadius || '8px'
+                        }}
+                    />
+                </div>
+            );
+        }
 
         case 'newsletter':
             return <NewsletterSection settings={settings} />;

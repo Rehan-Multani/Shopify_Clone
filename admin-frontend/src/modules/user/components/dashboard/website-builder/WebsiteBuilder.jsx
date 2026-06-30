@@ -11,6 +11,16 @@ import useBuilderHistory from './useBuilderHistory';
 
 const STORE_API_URL = import.meta.env.VITE_STORE_API_URL;
 
+const formatText = (text) => {
+    if (!text || typeof text !== 'string') return text;
+    return text.split(/<br\s*\/?>/gi).map((part, index, array) => (
+        <React.Fragment key={index}>
+            {part}
+            {index < array.length - 1 && <br />}
+        </React.Fragment>
+    ));
+};
+
 export default function WebsiteBuilder() {
     const navigate = useNavigate();
     const token = localStorage.getItem('merchantToken');
@@ -166,6 +176,10 @@ export default function WebsiteBuilder() {
                               : type === 'countdown' ? { title: 'Season Finale Ends Soon!', targetDate: new Date(Date.now() + 86400000 * 2).toISOString().slice(0, 16) }
                               : type === 'newsletter' ? { title: 'Subscribe to newsletter', subtitle: 'Get promotions and announcements', buttonLabel: 'Subscribe' }
                               : type === 'features-grid' ? { title: 'Why Choose Us', subtitle: 'We are committed to delivering premium care and comfort.' }
+                              : type === 'heading' ? { text: 'New Heading Element', style: { tag: 'h2', fontSize: 28, color: '#18181b', fontWeight: '700', textAlign: 'center', marginTop: 10, marginBottom: 15 } }
+                              : type === 'paragraph' ? { text: 'Write your text details here. This paragraph block is fully customizable with spacing, weight and color systems.', style: { fontSize: 14, color: '#3f3f46', fontWeight: '400', textAlign: 'left', lineHeight: '1.6', marginTop: 5, marginBottom: 10 } }
+                              : type === 'button' ? { label: 'Click Me', link: '#', style: { backgroundColor: '#008060', textColor: '#ffffff', hoverBgColor: '#006e52', hoverTextColor: '#ffffff', borderRadius: '8px', paddingX: 20, paddingY: 10, fontSize: 13, shadow: 'sm', textAlign: 'center' } }
+                              : type === 'image' ? { imageUrl: 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=600', style: { width: '100%', height: 'auto', objectFit: 'cover', borderRadius: '8px' } }
                               : { title: label };
 
         const defaultBlocks = type === 'hero' ? [
@@ -200,14 +214,20 @@ export default function WebsiteBuilder() {
     };
 
     const handleRemoveSection = (id) => {
-        const filtered = activePage.sections.filter(s => s.sectionId !== id && s._id !== id);
+        const filtered = activePage.sections.filter((s, idx) => {
+            const sId = s.sectionId || s._id || `sec-${idx}`;
+            return sId !== id;
+        });
         updateActivePageSections(filtered);
         if (selectedSectionId === id) setSelectedSectionId(null);
         showToast('Section removed');
     };
 
     const handleDuplicateSection = (id) => {
-        const target = activePage.sections.find(s => s.sectionId === id || s._id === id);
+        const target = activePage.sections.find((s, idx) => {
+            const sId = s.sectionId || s._id || `sec-${idx}`;
+            return sId === id;
+        });
         if (!target) return;
 
         const duplicated = {
@@ -222,8 +242,9 @@ export default function WebsiteBuilder() {
     };
 
     const handleToggleVisibility = (id) => {
-        const updated = activePage.sections.map(s => {
-            if (s.sectionId === id || s._id === id) {
+        const updated = activePage.sections.map((s, idx) => {
+            const sId = s.sectionId || s._id || `sec-${idx}`;
+            if (sId === id) {
                 return { ...s, enabled: !s.enabled };
             }
             return s;
@@ -232,8 +253,9 @@ export default function WebsiteBuilder() {
     };
 
     const handleToggleLock = (id) => {
-        const updated = activePage.sections.map(s => {
-            if (s.sectionId === id || s._id === id) {
+        const updated = activePage.sections.map((s, idx) => {
+            const sId = s.sectionId || s._id || `sec-${idx}`;
+            if (sId === id) {
                 return { ...s, locked: !s.locked };
             }
             return s;
@@ -243,8 +265,9 @@ export default function WebsiteBuilder() {
 
     // 4. Element Specific Setting Updates
     const handleUpdateSectionSettings = (key, value) => {
-        const updated = activePage.sections.map(s => {
-            if (s.sectionId === selectedSectionId || s._id === selectedSectionId) {
+        const updated = activePage.sections.map((s, idx) => {
+            const sId = s.sectionId || s._id || `sec-${idx}`;
+            if (sId === selectedSectionId) {
                 if (s.locked) {
                     showToast('Section is locked. Unlock it to edit settings.', 'error');
                     return s;
@@ -264,7 +287,10 @@ export default function WebsiteBuilder() {
 
     // Block-level updates (inside sections like hero)
     const handleAddBlock = (secId, blockType) => {
-        const target = activePage.sections.find(s => s.sectionId === secId || s._id === secId);
+        const target = activePage.sections.find((s, idx) => {
+            const sId = s.sectionId || s._id || `sec-${idx}`;
+            return sId === secId;
+        });
         if (!target || target.locked) return;
 
         const newBlock = {
@@ -275,8 +301,9 @@ export default function WebsiteBuilder() {
                     : { text: 'New block item' }
         };
 
-        const updated = activePage.sections.map(s => {
-            if (s.sectionId === secId || s._id === secId) {
+        const updated = activePage.sections.map((s, idx) => {
+            const sId = s.sectionId || s._id || `sec-${idx}`;
+            if (sId === secId) {
                 return {
                     ...s,
                     blocks: [...(s.blocks || []), newBlock]
@@ -288,8 +315,9 @@ export default function WebsiteBuilder() {
     };
 
     const handleUpdateBlockSetting = (secId, blockId, key, value) => {
-        const updated = activePage.sections.map(s => {
-            if (s.sectionId === secId || s._id === secId) {
+        const updated = activePage.sections.map((s, idx) => {
+            const sId = s.sectionId || s._id || `sec-${idx}`;
+            if (sId === secId) {
                 if (s.locked) return s;
                 return {
                     ...s,
@@ -313,8 +341,9 @@ export default function WebsiteBuilder() {
     };
 
     const handleRemoveBlock = (secId, blockId) => {
-        const updated = activePage.sections.map(s => {
-            if (s.sectionId === secId || s._id === secId) {
+        const updated = activePage.sections.map((s, idx) => {
+            const sId = s.sectionId || s._id || `sec-${idx}`;
+            if (sId === secId) {
                 if (s.locked) return s;
                 return {
                     ...s,
@@ -443,13 +472,124 @@ export default function WebsiteBuilder() {
             right: 'text-right items-end'
         };
 
-        const align = sec.settings?.textAlignment || sec.settings?.alignment || 'center';
+        const align = sec.settings?.textAlignment || sec.settings?.alignment || 'center';        switch (sec.type) {
+            case 'heading': {
+                const style = sec.settings?.style || {};
+                const HeadingTag = style.tag || 'h2';
+                return (
+                    <div className="py-2.5 px-4 w-full">
+                        <HeadingTag
+                            className="leading-tight tracking-tight uppercase"
+                            style={{
+                                fontSize: style.fontSize ? `${style.fontSize}px` : '28px',
+                                color: style.color || '#18181b',
+                                fontWeight: style.fontWeight || '700',
+                                textAlign: style.textAlign || 'center',
+                                marginTop: style.marginTop !== undefined ? `${style.marginTop}px` : '10px',
+                                marginBottom: style.marginBottom !== undefined ? `${style.marginBottom}px` : '15px',
+                                lineHeight: style.lineHeight || '1.3',
+                                letterSpacing: style.letterSpacing || 'normal',
+                                textTransform: style.textTransform || 'none'
+                            }}
+                        >
+                            {formatText(sec.settings?.text || 'New Heading Element')}
+                        </HeadingTag>
+                    </div>
+                );
+            }
+            case 'paragraph': {
+                const style = sec.settings?.style || {};
+                return (
+                    <div className="py-2 px-4 w-full">
+                        <p
+                            className="leading-relaxed"
+                            style={{
+                                fontSize: style.fontSize ? `${style.fontSize}px` : '14px',
+                                color: style.color || '#3f3f46',
+                                fontWeight: style.fontWeight || '400',
+                                textAlign: style.textAlign || 'left',
+                                marginTop: style.marginTop !== undefined ? `${style.marginTop}px` : '5px',
+                                marginBottom: style.marginBottom !== undefined ? `${style.marginBottom}px` : '10px',
+                                lineHeight: style.lineHeight || '1.6',
+                                letterSpacing: style.letterSpacing || 'normal',
+                                textTransform: style.textTransform || 'none'
+                            }}
+                        >
+                            {formatText(sec.settings?.text || 'Write your text details here. This paragraph block is fully customizable.')}
+                        </p>
+                    </div>
+                );
+            }
+            case 'button': {
+                const style = sec.settings?.style || {};
+                const alignStyles = {
+                    left: 'justify-start',
+                    center: 'justify-center',
+                    right: 'justify-end'
+                };
+                return (
+                    <div className={`py-3 px-4 w-full flex ${alignStyles[style.textAlign || 'center']}`}>
+                        <button
+                            type="button"
+                            className="transition-all hover:opacity-90 font-semibold cursor-default"
+                            style={{
+                                backgroundColor: style.backgroundColor || '#008060',
+                                color: style.textColor || '#ffffff',
+                                borderColor: style.borderColor || 'transparent',
+                                borderWidth: style.borderWidth || '0px',
+                                borderStyle: style.borderWidth ? 'solid' : 'none',
+                                borderRadius: style.borderRadius || '8px',
+                                padding: `${style.paddingY !== undefined ? style.paddingY : 10}px ${style.paddingX !== undefined ? style.paddingX : 20}px`,
+                                fontSize: style.fontSize ? `${style.fontSize}px` : '13px',
+                                boxShadow: style.shadow === 'lg' ? '0 10px 15px -3px rgba(0,0,0,0.1)' : style.shadow === 'md' ? '0 4px 6px -1px rgba(0,0,0,0.1)' : style.shadow === 'sm' ? '0 1px 2px 0 rgba(0,0,0,0.05)' : 'none'
+                            }}
+                        >
+                            {sec.settings?.label || 'Click Me'}
+                        </button>
+                    </div>
+                );
+            }
+            case 'image': {
+                const style = sec.settings?.style || {};
+                return (
+                    <div className="py-3 px-4 w-full flex justify-center">
+                        <img
+                            src={sec.settings?.imageUrl || 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=600'}
+                            alt="Customizable"
+                            className="max-w-full"
+                            style={{
+                                width: style.width || '100%',
+                                height: style.height || 'auto',
+                                objectFit: style.objectFit || 'cover',
+                                borderRadius: style.borderRadius || '8px'
+                            }}
+                        />
+                    </div>
+                );
+            }
+            case 'hero': {
+                const isSplit = sec.settings?.layout === 'split';
+                const bgType = sec.settings?.backgroundType || 'image';
+                
+                let heroBg = '';
+                if (bgType === 'solid') {
+                    heroBg = sec.settings?.backgroundColor || '#008060';
+                } else if (bgType === 'gradient') {
+                    heroBg = sec.settings?.backgroundGradient || 'linear-gradient(to right, #008060, #047857, #064e3b)';
+                } else {
+                    heroBg = sec.settings?.backgroundImage && !isSplit
+                        ? `url(${sec.settings.backgroundImage})` 
+                        : 'linear-gradient(to right, #008060, #047857, #064e3b)';
+                }
 
-        switch (sec.type) {
-            case 'hero':
-                const heroBg = sec.settings?.backgroundImage 
-                    ? `url(${sec.settings.backgroundImage})` 
-                    : 'linear-gradient(to right, #008060, #047857, #064e3b)';
+                let splitBgStyle = {};
+                if (bgType === 'solid') {
+                    splitBgStyle = { background: sec.settings?.backgroundColor || '#f0fdfa' };
+                } else if (bgType === 'gradient') {
+                    splitBgStyle = { background: sec.settings?.backgroundGradient || 'linear-gradient(135deg, #f0fdfa 0%, #f8fafc 100%)' };
+                } else {
+                    splitBgStyle = { background: 'linear-gradient(135deg, #f0fdfa 0%, #f8fafc 100%)' };
+                }
                 
                 // Slightly scale down height for editor preview area
                 const builderHeight = sec.settings?.height 
@@ -457,6 +597,124 @@ export default function WebsiteBuilder() {
                         ? `${parseInt(sec.settings.height) * 0.7}px` 
                         : sec.settings.height)
                     : '280px';
+
+                const contentBody = (
+                    <div className={`relative z-10 flex flex-col space-y-4 max-w-xl ${isSplit ? 'text-left items-start' : 'text-center items-center'} ${alignmentStyles[align]}`}>
+                        {(sec.blocks || []).map((block, bIdx) => {
+                            if (block.type === 'heading') {
+                                const hStyle = block.settings?.style || {};
+                                const Htag = hStyle.tag || 'h2';
+                                return (
+                                    <Htag 
+                                        key={block.blockId || bIdx} 
+                                        className="leading-tight tracking-tight font-black"
+                                        style={{
+                                            fontSize: hStyle.fontSize ? `${hStyle.fontSize}px` : '24px',
+                                            color: isSplit ? (themeSettings.primaryColor || '#008060') : (hStyle.color || '#ffffff'),
+                                            fontWeight: hStyle.fontWeight || '900',
+                                            lineHeight: hStyle.lineHeight || '1.3',
+                                            letterSpacing: hStyle.letterSpacing || 'normal',
+                                            textTransform: hStyle.textTransform || 'none',
+                                            textAlign: isSplit ? 'left' : (hStyle.textAlign || 'center'),
+                                            marginTop: hStyle.marginTop !== undefined ? `${hStyle.marginTop}px` : '4px',
+                                            marginBottom: hStyle.marginBottom !== undefined ? `${hStyle.marginBottom}px` : '12px'
+                                        }}
+                                    >
+                                        {formatText(block.settings?.text || 'Comfort & Care for <br/>Every Step')}
+                                    </Htag>
+                                );
+                            }
+                            if (block.type === 'subheading') {
+                                const pStyle = block.settings?.style || {};
+                                return (
+                                    <p 
+                                        key={block.blockId || bIdx} 
+                                        className="opacity-90 leading-relaxed max-w-md"
+                                        style={{
+                                            fontSize: pStyle.fontSize ? `${pStyle.fontSize}px` : '10px',
+                                            color: isSplit ? '#4b5563' : (pStyle.color || '#ffffff'),
+                                            fontWeight: pStyle.fontWeight || '500',
+                                            lineHeight: pStyle.lineHeight || '1.6',
+                                            letterSpacing: pStyle.letterSpacing || 'normal',
+                                            textTransform: pStyle.textTransform || 'none',
+                                            textAlign: isSplit ? 'left' : (pStyle.textAlign || 'center'),
+                                            marginTop: pStyle.marginTop !== undefined ? `${pStyle.marginTop}px` : '4px',
+                                            marginBottom: pStyle.marginBottom !== undefined ? `${pStyle.marginBottom}px` : '12px'
+                                        }}
+                                    >
+                                        {formatText(block.settings?.text || 'Premium adult diapers, baby care, and hygiene essentials.')}
+                                    </p>
+                                );
+                            }
+                            return null;
+                        })}
+
+                        {/* Render Buttons side-by-side preview */}
+                        {(sec.blocks || []).some(b => b.type === 'button') && (
+                            <div className={`flex gap-2.5 pt-1 justify-center flex-wrap ${isSplit ? 'justify-start' : 'justify-center'}`}>
+                                {(sec.blocks || []).filter(b => b.type === 'button').map((block, idx) => {
+                                    const bStyle = block.settings?.style || {};
+                                    return (
+                                        <React.Fragment key={block.blockId || idx}>
+                                            {block.settings?.startNewRow && <div className="w-full h-0"></div>}
+                                            <span 
+                                                className={`cursor-default font-black tracking-widest text-[8px] transition-all`}
+                                                style={{
+                                                    backgroundColor: bStyle.backgroundColor || (isSplit ? (themeSettings.primaryColor || '#008060') : '#ffffff'),
+                                                    color: bStyle.textColor || (isSplit ? '#ffffff' : '#18181b'),
+                                                    borderColor: bStyle.borderColor || (bStyle.borderWidth && bStyle.borderWidth !== '0px' ? '#18181b' : 'transparent'),
+                                                    borderWidth: bStyle.borderWidth || '0px',
+                                                    borderStyle: (bStyle.borderWidth && bStyle.borderWidth !== '0px') ? 'solid' : 'none',
+                                                    borderRadius: bStyle.borderRadius || '8px',
+                                                    padding: `${bStyle.paddingY !== undefined ? bStyle.paddingY : 10}px ${bStyle.paddingX !== undefined ? bStyle.paddingX : 20}px`,
+                                                    fontSize: bStyle.fontSize ? `${bStyle.fontSize}px` : '8px',
+                                                    boxShadow: bStyle.shadow === 'lg' ? '0 10px 15px -3px rgba(0,0,0,0.1)' : bStyle.shadow === 'md' ? '0 4px 6px -1px rgba(0,0,0,0.1)' : bStyle.shadow === 'sm' ? '0 1px 2px 0 rgba(0,0,0,0.05)' : 'none'
+                                                }}
+                                            >
+                                                {block.settings?.label || 'Shop Collection'}
+                                            </span>
+                                        </React.Fragment>
+                                    );
+                                })}
+                            </div>
+                        )}
+
+                        {(sec.blocks || []).length === 0 && (
+                            <span className="text-xs font-bold bg-white/10 px-3 py-1.5 rounded-full">Hero Section (Add blocks on settings panel)</span>
+                        )}
+
+                        {/* Trust Badges row preview */}
+                        {sec.settings?.showTrustBadges !== false && (
+                            <div className={`flex gap-4 pt-4 mt-2 border-t w-full text-[7px] font-black uppercase tracking-widest opacity-95 ${isSplit ? 'border-zinc-200 justify-start' : 'border-white/10 justify-center'}`}>
+                                <span className={`flex items-center gap-1 ${isSplit ? 'text-zinc-700' : 'text-white'}`}>🚚 {sec.settings?.badge1Text || 'Free Shipping'}</span>
+                                <span className={`flex items-center gap-1 ${isSplit ? 'text-zinc-700' : 'text-white'}`}>🛡️ {sec.settings?.badge2Text || 'Secure Payments'}</span>
+                                <span className={`flex items-center gap-1 ${isSplit ? 'text-zinc-700' : 'text-white'}`}>🔄 {sec.settings?.badge3Text || 'Easy Returns'}</span>
+                            </div>
+                        )}
+                    </div>
+                );
+
+                if (isSplit) {
+                    return (
+                        <div 
+                            className="py-12 px-6 flex items-center justify-center relative overflow-hidden"
+                            style={{ minHeight: builderHeight, ...splitBgStyle }}
+                        >
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center w-full max-w-5xl">
+                                {contentBody}
+                                <div className="flex justify-center items-center">
+                                    <div className="relative w-full aspect-[4/3] max-w-sm rounded-3xl overflow-hidden shadow-lg border border-zinc-200 bg-zinc-50 flex items-center justify-center">
+                                        {sec.settings?.backgroundImage ? (
+                                            <img src={sec.settings.backgroundImage} alt="Hero featured" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <span className="text-zinc-400 text-xs font-bold">No Image Selected</span>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                }
 
                 return (
                     <div 
@@ -469,59 +727,32 @@ export default function WebsiteBuilder() {
                         }}
                     >
                         {/* Overlay to darken background image */}
-                        {sec.settings?.backgroundImage && <div className="absolute inset-0 bg-black/40 z-0"></div>}
-                        
-                        <div className={`relative z-10 flex flex-col space-y-4 max-w-xl text-center items-center ${alignmentStyles[align]}`}>
-                            {sec.blocks.map((block, bIdx) => {
-                                if (block.type === 'heading') {
-                                    return (
-                                        <h2 key={block.blockId || bIdx} className="text-xl sm:text-2xl font-black uppercase tracking-tight leading-tight">
-                                            {block.settings?.text || 'Comfort & Care for Every Step'}
-                                        </h2>
-                                    );
-                                }
-                                if (block.type === 'subheading') {
-                                    return (
-                                        <p key={block.blockId || bIdx} className="text-[10px] sm:text-xs opacity-90 font-medium max-w-md leading-relaxed">
-                                            {block.settings?.text || 'Premium adult diapers, baby care, and hygiene essentials.'}
-                                        </p>
-                                    );
-                                }
-                                return null;
-                            })}
-
-                            {/* Render Buttons side-by-side preview */}
-                            {sec.blocks.some(b => b.type === 'button') && (
-                                <div className="flex gap-2.5 pt-1 justify-center flex-wrap">
-                                    {sec.blocks.filter(b => b.type === 'button').map((block, idx) => (
-                                        <span 
-                                            key={block.blockId || idx} 
-                                            className={`text-[8px] font-black uppercase tracking-widest px-4 py-2 rounded-lg cursor-default shadow-sm ${
-                                                idx === 0 
-                                                    ? 'bg-white text-zinc-900' 
-                                                    : 'bg-white/20 text-white border border-white/30 backdrop-blur-sm'
-                                            }`}
-                                        >
-                                            {block.settings?.label || 'Shop Collection'}
-                                        </span>
-                                    ))}
-                                </div>
-                            )}
-
-                            {sec.blocks.length === 0 && (
-                                <span className="text-xs font-bold bg-white/10 px-3 py-1.5 rounded-full">Hero Section (Add blocks on settings panel)</span>
-                            )}
-
-                            {/* Trust Badges row preview */}
-                            <div className="flex gap-4 pt-4 mt-2 border-t border-white/10 w-full justify-center text-[7px] font-black uppercase tracking-widest opacity-95">
-                                <span className="flex items-center gap-1">🚚 Free Shipping</span>
-                                <span className="flex items-center gap-1">🛡️ Secure Payments</span>
-                                <span className="flex items-center gap-1">🔄 Easy Returns</span>
-                            </div>
-                        </div>
+                        {bgType === 'image' && sec.settings?.backgroundImage && <div className="absolute inset-0 bg-black/45 z-0"></div>}
+                        {contentBody}
                     </div>
                 );
-            case 'image-banner':
+            }
+            case 'image-banner': {
+                const isOverlay = sec.settings?.layout === 'overlay';
+                if (isOverlay) {
+                    return (
+                        <div 
+                            className="relative flex items-center justify-center p-6 text-center text-white overflow-hidden rounded-2xl min-h-[160px] bg-zinc-900"
+                            style={{
+                                backgroundImage: sec.settings?.imageUrl ? `url(${sec.settings.imageUrl})` : 'none',
+                                backgroundSize: 'cover',
+                                backgroundPosition: 'center'
+                            }}
+                        >
+                            <div className="absolute inset-0 bg-black/40 z-0"></div>
+                            <div className="relative z-10 space-y-1.5">
+                                <span className="text-[8px] bg-white/20 text-white font-black px-2 py-0.5 rounded uppercase">Image Banner (Overlay)</span>
+                                <h4 className="text-sm font-black drop-shadow">{sec.settings?.title}</h4>
+                                <p className="text-[10px] text-zinc-200 font-semibold drop-shadow">{sec.settings?.subtitle}</p>
+                            </div>
+                        </div>
+                    );
+                }
                 return (
                     <div className="flex bg-zinc-100 items-center justify-between p-6 gap-4 min-h-[140px]">
                         <div className="space-y-1.5 flex-1">
@@ -534,6 +765,7 @@ export default function WebsiteBuilder() {
                         )}
                     </div>
                 );
+            }
             case 'spacer':
                 return (
                     <div style={{ height: `${sec.settings?.height || 40}px` }} className="bg-zinc-200/20 border border-dashed border-zinc-300/30 flex items-center justify-center text-[9px] font-bold text-zinc-400">
@@ -548,13 +780,17 @@ export default function WebsiteBuilder() {
                 );
             case 'featured-products':
             case 'product-slider':
-            case 'best-sellers':
+            case 'best-sellers': {
                 const sampleProducts = [
                     { name: 'Adult Pull-Up Diapers (M-L)', price: '₹499.00', original: '₹699.00', image: 'https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?w=300' },
                     { name: 'Baby Ultra-Soft Diapers', price: '₹349.00', original: '₹449.00', image: 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=300' },
                     { name: 'Premium Hygiene Wipes (80s)', price: '₹149.00', original: '₹199.00', image: 'https://images.unsplash.com/photo-1563453392212-326f5e854473?w=300' },
                     { name: 'Organic Sanitary Pads', price: '₹229.00', original: '₹299.00', image: 'https://images.unsplash.com/photo-1584036561566-baf8f5f1b144?w=300' }
                 ];
+                const cardShapeClass = sec.settings?.cardShape === 'square' ? 'rounded-none'
+                                     : sec.settings?.cardShape === 'circle' ? 'rounded-full'
+                                     : sec.settings?.cardShape === 'pill' ? 'rounded-3xl'
+                                     : 'rounded-2xl'; // default curved
                 return (
                     <div className="p-5 space-y-4 bg-white border border-zinc-100 rounded-3xl">
                         <div className="flex justify-between items-center border-b border-zinc-100 pb-2">
@@ -565,8 +801,8 @@ export default function WebsiteBuilder() {
                         </div>
                         <div className="grid grid-cols-4 gap-3.5">
                             {sampleProducts.map((p, n) => (
-                                <div key={n} className="bg-white border border-zinc-200/60 p-2.5 rounded-2xl text-left space-y-2 group shadow-sm hover:shadow transition-shadow h-fit">
-                                    <div className="aspect-square bg-zinc-50 rounded-xl overflow-hidden relative">
+                                <div key={n} className={`bg-white border border-zinc-200/60 p-2.5 text-left space-y-2 group shadow-sm hover:shadow transition-all h-fit ${cardShapeClass}`}>
+                                    <div className={`aspect-square bg-zinc-50 overflow-hidden relative ${cardShapeClass}`}>
                                         <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
                                         <span className="absolute top-1.5 left-1.5 bg-[#008060] text-white text-[7px] font-black uppercase px-1.5 py-0.5 rounded-md">Save 20%</span>
                                     </div>
@@ -584,14 +820,20 @@ export default function WebsiteBuilder() {
                         </div>
                     </div>
                 );
+            }
             case 'categories':
-            case 'category-grid':
+            case 'category-grid': {
                 const sampleCategories = [
                     { name: 'Diapers', image: 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=150' },
                     { name: 'Adult Diapers', image: 'https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?w=150' },
                     { name: 'Wipes', image: 'https://images.unsplash.com/photo-1563453392212-326f5e854473?w=150' },
                     { name: 'Sanitary Pads', image: 'https://images.unsplash.com/photo-1584036561566-baf8f5f1b144?w=150' }
                 ];
+                const catCardShape = sec.settings?.cardShape === 'square' ? 'rounded-none'
+                                   : sec.settings?.cardShape === 'circle' ? 'rounded-full'
+                                   : sec.settings?.cardShape === 'pill' ? 'rounded-3xl'
+                                   : sec.settings?.cardShape === 'curved' ? 'rounded-2xl'
+                                   : sec.settings?.designType === 'circle' ? 'rounded-full' : 'rounded-2xl';
                 return (
                     <div className="p-5 space-y-4 bg-white border border-zinc-100 rounded-3xl">
                         <div className="border-b border-zinc-100 pb-2">
@@ -602,7 +844,7 @@ export default function WebsiteBuilder() {
                         <div className="grid grid-cols-4 gap-3.5 pt-1">
                             {sampleCategories.map((c, n) => (
                                 <div key={n} className="flex flex-col items-center gap-2 group cursor-default h-fit">
-                                    <div className={`w-14 h-14 bg-zinc-100 flex items-center justify-center overflow-hidden border border-zinc-200 group-hover:border-[#008060] transition-colors ${sec.settings?.designType === 'circle' ? 'rounded-full' : 'rounded-2xl'}`}>
+                                    <div className={`w-14 h-14 bg-zinc-100 flex items-center justify-center overflow-hidden border border-zinc-200 group-hover:border-[#008060] transition-colors ${catCardShape}`}>
                                         <img src={c.image} alt={c.name} className="w-full h-full object-cover" />
                                     </div>
                                     <span className="text-[9px] font-black text-zinc-800 uppercase tracking-wider group-hover:text-[#008060] transition-colors">{c.name}</span>
@@ -611,6 +853,7 @@ export default function WebsiteBuilder() {
                         </div>
                     </div>
                 );
+            }
             case 'testimonials':
                 return (
                     <div className="p-4 bg-zinc-50/50 rounded-2xl text-center space-y-2.5">
@@ -697,7 +940,10 @@ export default function WebsiteBuilder() {
         );
     }
 
-    const currentSelectedSection = activePage.sections.find(s => s.sectionId === selectedSectionId || s._id === selectedSectionId);
+    const currentSelectedSection = activePage.sections.find((s, idx) => {
+        const sId = s.sectionId || s._id || `sec-${idx}`;
+        return sId === selectedSectionId;
+    });
 
     return (
         <div className="h-screen w-screen flex flex-col bg-[#f6f6f7] overflow-hidden">

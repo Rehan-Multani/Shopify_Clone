@@ -58,40 +58,59 @@ export default function BuilderCanvas({
                     color: canvasText
                 }}
             >
-                {/* 1. Announcement Bar */}
-                {announceBar.enabled && (
-                    <div 
-                        className="w-full text-center py-2 text-[10px] font-black uppercase tracking-widest text-white z-10"
-                        style={{
-                            backgroundColor: announceBar.backgroundColor || primaryColor,
-                            color: announceBar.textColor || '#ffffff'
-                        }}
-                    >
-                        {announceBar.text}
-                    </div>
-                )}
+                {/* 1. Announcement Bar & Header */}
+                {themeSettings.headerConfig?.enabled !== false && (
+                    <>
+                        {announceBar.enabled && (
+                            <div 
+                                className="w-full text-center py-2 text-[10px] font-black uppercase tracking-widest text-white z-10"
+                                style={{
+                                    backgroundColor: announceBar.backgroundColor || primaryColor,
+                                    color: announceBar.textColor || '#ffffff',
+                                    whiteSpace: 'pre-wrap'
+                                }}
+                            >
+                                {announceBar.icon && <span className="mr-1.5">{announceBar.icon}</span>}
+                                {announceBar.text}
+                            </div>
+                        )}
 
-                {/* 2. Builder Dynamic Header */}
+                 {/* 2. Builder Dynamic Header */}
                 <header 
                     className="w-full border-b flex items-center justify-between px-6 z-10 sticky top-0 backdrop-blur-md transition-all"
                     style={{ 
                         height: themeSettings.headerConfig?.height || '70px',
-                        backgroundColor: themeSettings.headerConfig?.transparent ? 'transparent' : canvasBg,
+                        backgroundColor: themeSettings.headerConfig?.transparent ? 'transparent' : (themeSettings.headerConfig?.backgroundColor || canvasBg),
                         borderBottomColor: isSecondaryDark ? '#27272a' : '#e4e4e7',
-                        color: canvasText
+                        color: themeSettings.headerConfig?.textColor || canvasText
                     }}
                 >
                     <div className="flex items-center gap-6">
                         {logoUrl ? (
-                            <img src={logoUrl} alt="Logo" className="h-8 w-auto object-contain" />
+                            <img 
+                                src={logoUrl} 
+                                alt="Logo" 
+                                className="object-contain" 
+                                style={{
+                                    width: themeSettings.headerConfig?.logoWidth || 'auto',
+                                    height: themeSettings.headerConfig?.logoHeight || '32px'
+                                }}
+                            />
                         ) : (
-                            <span className="text-lg font-black tracking-tighter" style={{ color: canvasText }}>STORE LOGO</span>
+                            <span className="text-lg font-black tracking-tighter" style={{ color: themeSettings.headerConfig?.textColor || canvasText }}>STORE LOGO</span>
+                        )}
+
+                        {themeSettings.headerConfig?.customText && (
+                            <div className="hidden md:flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-lg" style={{ color: themeSettings.headerConfig?.textColor || (isSecondaryDark ? '#a1a1aa' : '#52525b') }}>
+                                {themeSettings.headerConfig.customIcon && <span className="text-[12px]">{themeSettings.headerConfig.customIcon}</span>}
+                                <span>{themeSettings.headerConfig.customText}</span>
+                            </div>
                         )}
 
                         {viewport !== 'mobile' && (
                             <nav className="flex items-center gap-4.5">
                                 {menuItems.map((item, idx) => (
-                                    <span key={idx} className="text-xs font-bold transition-colors cursor-default" style={{ color: isSecondaryDark ? '#a1a1aa' : '#52525b' }}>
+                                    <span key={idx} className="text-xs font-bold transition-colors cursor-default" style={{ color: themeSettings.headerConfig?.textColor || (isSecondaryDark ? '#a1a1aa' : '#52525b') }}>
                                         {item.label}
                                     </span>
                                 ))}
@@ -99,20 +118,44 @@ export default function BuilderCanvas({
                         )}
                     </div>
 
-                    <div className="flex items-center gap-4">
-                        {themeSettings.headerConfig?.searchEnabled && (
-                            <span className="text-xs" style={{ color: isSecondaryDark ? '#a1a1aa' : '#52525b' }}>🔍 Search</span>
+                    <div className="flex items-center gap-3">
+                        {themeSettings.headerConfig?.searchEnabled !== false && (
+                            <button className="p-2 rounded-full hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50 transition-colors flex items-center justify-center" style={{ color: themeSettings.headerConfig?.textColor || canvasText }}>
+                                <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <path d="m21 21-4.3-4.3"></path>
+                                </svg>
+                            </button>
                         )}
-                        {themeSettings.headerConfig?.cartEnabled && (
-                            <span className="text-xs relative" style={{ color: isSecondaryDark ? '#a1a1aa' : '#52525b' }}>
-                                🛒 Cart
-                                <span className="absolute -top-2 -right-2 bg-[#008060] text-white rounded-full text-[9px] font-black w-4 h-4 flex items-center justify-center">
+                        {themeSettings.headerConfig?.wishlistEnabled !== false && (
+                            <button className="p-2 rounded-full hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50 transition-colors flex items-center justify-center" style={{ color: themeSettings.headerConfig?.textColor || canvasText }}>
+                                <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                </svg>
+                            </button>
+                        )}
+                        {themeSettings.headerConfig?.profileEnabled !== false && (
+                            <button className="p-2 rounded-full hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50 transition-colors flex items-center justify-center" style={{ color: themeSettings.headerConfig?.textColor || canvasText }}>
+                                <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                            </button>
+                        )}
+                        {themeSettings.headerConfig?.cartEnabled !== false && (
+                            <button className="p-2 rounded-full hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50 transition-colors relative flex items-center justify-center" style={{ color: themeSettings.headerConfig?.textColor || canvasText }}>
+                                <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                </svg>
+                                <span className="absolute -top-1.5 -right-1.5 bg-[#008060] text-white rounded-full text-[8px] font-black w-4.5 h-4.5 flex items-center justify-center shadow-sm">
                                     0
                                 </span>
-                            </span>
+                            </button>
                         )}
                     </div>
-                </header>
+                    </header>
+                </>
+            )}
 
                 {/* 3. Sections Content Canvas */}
                 <div className="flex-1 py-4 px-2 space-y-6 min-h-[400px] bg-transparent">
@@ -126,15 +169,16 @@ export default function BuilderCanvas({
                         </div>
                     ) : (
                         sections.map((sec, idx) => {
-                            const isSelected = selectedId === (sec.sectionId || sec._id);
+                            const secId = sec.sectionId || sec._id || `sec-${idx}`;
+                            const isSelected = selectedId === secId;
                             if (!sec.enabled) return null;
 
                             return (
                                 <div
-                                    key={sec.sectionId || sec._id || idx}
+                                    key={secId}
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        onSelectSection(sec.sectionId || sec._id);
+                                        onSelectSection(secId);
                                     }}
                                     className={`relative group cursor-pointer transition-all rounded-3xl ${
                                         isSelected 
@@ -162,14 +206,15 @@ export default function BuilderCanvas({
                 </div>
 
                 {/* 4. Builder Dynamic Footer */}
-                <footer 
-                    className="w-full border-t p-8 space-y-6"
-                    style={{
-                        backgroundColor: canvasBg,
-                        color: canvasText,
-                        borderColor: isSecondaryDark ? '#27272a' : '#e4e4e7'
-                    }}
-                >
+                {themeSettings.footerConfig?.enabled !== false && (
+                    <footer 
+                        className="w-full border-t p-8 space-y-6"
+                        style={{
+                            backgroundColor: canvasBg,
+                            color: canvasText,
+                            borderColor: isSecondaryDark ? '#27272a' : '#e4e4e7'
+                        }}
+                    >
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {(themeSettings.footerConfig?.columns || []).map((col, idx) => (
                             <div key={idx} className="space-y-3">
@@ -218,7 +263,8 @@ export default function BuilderCanvas({
                             </div>
                         )}
                     </div>
-                </footer>
+                    </footer>
+                )}
             </div>
         </div>
     );

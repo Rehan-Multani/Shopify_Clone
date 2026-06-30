@@ -74,6 +74,15 @@ export default function FooterBuilder({ footerConfig = {}, onChange }) {
                     General Footer Settings
                 </h4>
                 <div className="space-y-4">
+                    <div className="flex items-center justify-between border-b border-zinc-100 pb-3 mb-2">
+                        <label className="text-xs font-bold text-zinc-700">Show Footer</label>
+                        <input 
+                            type="checkbox"
+                            checked={footerConfig.enabled !== false}
+                            onChange={(e) => handleFieldChange('enabled', e.target.checked)}
+                            className="w-4 h-4 text-[#008060] rounded focus:ring-0 cursor-pointer"
+                        />
+                    </div>
                     <div>
                         <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Copyright Text</label>
                         <input 

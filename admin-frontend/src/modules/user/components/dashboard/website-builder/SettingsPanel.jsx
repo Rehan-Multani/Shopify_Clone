@@ -1,4 +1,26 @@
 import React from 'react';
+import BlockStyleEditor from './BlockStyleEditor';
+
+const ColorPickerField = ({ value, onChange }) => {
+    return (
+        <div className="flex gap-2 items-center">
+            <input 
+                type="color"
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                className="w-8 h-8 rounded border border-zinc-200 p-0 cursor-pointer"
+            />
+            <input 
+                type="text"
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                placeholder="#ffffff"
+                maxLength={7}
+                className="w-20 px-2 py-1.5 border border-zinc-200 rounded-lg text-[10px] font-bold uppercase focus:outline-none focus:ring-1 focus:ring-[#008060] bg-white shadow-sm"
+            />
+        </div>
+    );
+};
 
 export default function SettingsPanel({
     section = {},
@@ -100,15 +122,82 @@ export default function SettingsPanel({
         return (
             <div className="space-y-4">
                 <div>
-                    <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Background Image URL</label>
-                    <input 
-                        type="text"
-                        placeholder="https://example.com/hero.jpg"
-                        value={settings.backgroundImage || ''}
-                        onChange={(e) => handleSettingChange('backgroundImage', e.target.value)}
-                        className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-[#008060]"
-                    />
+                    <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Layout Style</label>
+                    <select 
+                        value={settings.layout || 'overlay'}
+                        onChange={(e) => handleSettingChange('layout', e.target.value)}
+                        className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-xs font-semibold focus:outline-none bg-white"
+                    >
+                        <option value="overlay">Full-Width Overlay</option>
+                        <option value="split">Split Screen (2 Columns)</option>
+                    </select>
                 </div>
+                <div>
+                    <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Background Type</label>
+                    <select 
+                        value={settings.backgroundType || 'image'}
+                        onChange={(e) => handleSettingChange('backgroundType', e.target.value)}
+                        className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-xs font-semibold focus:outline-none bg-white"
+                    >
+                        <option value="image">Background Image</option>
+                        <option value="solid">Solid Color</option>
+                        <option value="gradient">Gradient Color</option>
+                    </select>
+                </div>
+
+                {settings.backgroundType === 'solid' && (
+                    <div>
+                        <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Background Color</label>
+                        <ColorPickerField 
+                            value={settings.backgroundColor || '#008060'}
+                            onChange={(val) => handleSettingChange('backgroundColor', val)}
+                        />
+                    </div>
+                )}
+
+                {settings.backgroundType === 'gradient' && (
+                    <div>
+                        <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Gradient CSS</label>
+                        <input 
+                            type="text"
+                            placeholder="e.g. linear-gradient(to right, #008060, #047857)"
+                            value={settings.backgroundGradient || ''}
+                            onChange={(e) => handleSettingChange('backgroundGradient', e.target.value)}
+                            className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-[#008060]"
+                        />
+                        <div className="flex gap-1.5 flex-wrap pt-2">
+                            <span 
+                                onClick={() => handleSettingChange('backgroundGradient', 'linear-gradient(to right, #008060, #047857, #064e3b)')}
+                                className="text-[8px] bg-zinc-100 hover:bg-zinc-200 px-1.5 py-0.5 rounded cursor-pointer font-bold border"
+                            >Care & Comfort</span>
+                            <span 
+                                onClick={() => handleSettingChange('backgroundGradient', 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)')}
+                                className="text-[8px] bg-zinc-100 hover:bg-zinc-200 px-1.5 py-0.5 rounded cursor-pointer font-bold border"
+                            >Modern Purple</span>
+                            <span 
+                                onClick={() => handleSettingChange('backgroundGradient', 'linear-gradient(to right, #243B55, #141E30)')}
+                                className="text-[8px] bg-zinc-100 hover:bg-zinc-200 px-1.5 py-0.5 rounded cursor-pointer font-bold border"
+                            >Dark Slate</span>
+                            <span 
+                                onClick={() => handleSettingChange('backgroundGradient', 'linear-gradient(to right, #ff7e5f, #feb47b)')}
+                                className="text-[8px] bg-zinc-100 hover:bg-zinc-200 px-1.5 py-0.5 rounded cursor-pointer font-bold border"
+                            >Sunset</span>
+                        </div>
+                    </div>
+                )}
+
+                {(settings.backgroundType === 'image' || settings.layout === 'split') && (
+                    <div>
+                        <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">{settings.layout === 'split' ? 'Featured Image URL' : 'Background Image URL'}</label>
+                        <input 
+                            type="text"
+                            placeholder="https://example.com/hero.jpg"
+                            value={settings.backgroundImage || ''}
+                            onChange={(e) => handleSettingChange('backgroundImage', e.target.value)}
+                            className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-[#008060]"
+                        />
+                    </div>
+                )}
                 <div>
                     <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Text Alignment</label>
                     <select 
@@ -146,6 +235,164 @@ export default function SettingsPanel({
                         <span className="text-xs font-black text-zinc-500">
                             {Math.round((settings.overlayOpacity !== undefined ? settings.overlayOpacity : 0.45) * 100)}%
                         </span>
+                    </div>
+                </div>
+
+                <div className="border-t border-zinc-200/60 pt-4">
+                    <label className="flex items-center gap-1.5 text-[10px] font-bold text-zinc-500 uppercase mb-2 cursor-pointer select-none">
+                        <input 
+                            type="checkbox"
+                            checked={settings.showTrustBadges !== false}
+                            onChange={(e) => handleSettingChange('showTrustBadges', e.target.checked)}
+                            className="w-3.5 h-3.5 text-[#008060] rounded focus:ring-0"
+                        />
+                        Show Trust Badges
+                    </label>
+
+                    {settings.showTrustBadges !== false && (
+                        <div className="space-y-3 pl-4">
+                            <div>
+                                <label className="block text-[8px] font-bold text-zinc-500 uppercase mb-0.5">Badge 1 Text</label>
+                                <input 
+                                    type="text"
+                                    placeholder="Free Shipping"
+                                    value={settings.badge1Text || ''}
+                                    onChange={(e) => handleSettingChange('badge1Text', e.target.value)}
+                                    className="w-full px-2.5 py-1 border border-zinc-250 rounded text-xs font-semibold"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[8px] font-bold text-zinc-500 uppercase mb-0.5">Badge 2 Text</label>
+                                <input 
+                                    type="text"
+                                    placeholder="Secure Payments"
+                                    value={settings.badge2Text || ''}
+                                    onChange={(e) => handleSettingChange('badge2Text', e.target.value)}
+                                    className="w-full px-2.5 py-1 border border-zinc-250 rounded text-xs font-semibold"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[8px] font-bold text-zinc-500 uppercase mb-0.5">Badge 3 Text</label>
+                                <input 
+                                    type="text"
+                                    placeholder="Easy Returns"
+                                    value={settings.badge3Text || ''}
+                                    onChange={(e) => handleSettingChange('badge3Text', e.target.value)}
+                                    className="w-full px-2.5 py-1 border border-zinc-250 rounded text-xs font-semibold"
+                                />
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                <div className="border-t border-zinc-200/60 pt-4">
+                    <div className="flex justify-between items-center mb-2">
+                        <label className="text-[10px] font-black text-zinc-400 uppercase">Hero Blocks</label>
+                        <div className="flex gap-1.5">
+                            <button
+                                onClick={() => onAddBlock(section.sectionId || section._id, 'button')}
+                                className="text-[8px] bg-[#008060] text-white px-2 py-0.5 rounded font-black uppercase hover:bg-[#006e52]"
+                            >
+                                + Add Button
+                            </button>
+                            <button
+                                onClick={() => onAddBlock(section.sectionId || section._id, 'heading')}
+                                className="text-[8px] bg-zinc-650 text-white px-2 py-0.5 rounded font-black uppercase hover:bg-zinc-800"
+                            >
+                                + Add Heading
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="space-y-3">
+                        {(blocks || []).map((block, idx) => (
+                            <div key={block.blockId || idx} className="p-3 bg-zinc-50 border border-zinc-200 rounded-xl relative space-y-2">
+                                <div className="flex justify-between items-center pr-6">
+                                    <span className="text-[9px] font-black uppercase bg-zinc-200 text-zinc-600 px-1.5 py-0.5 rounded">
+                                        {block.type}
+                                    </span>
+                                    <button
+                                        onClick={() => onRemoveBlock(section.sectionId || section._id, block.blockId)}
+                                        className="absolute top-2.5 right-2 text-xs text-zinc-400 hover:text-red-500"
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+
+                                {block.type === 'heading' && (
+                                    <div>
+                                        <label className="block text-[8px] font-bold text-zinc-500 uppercase mb-0.5">Heading Text</label>
+                                        <input 
+                                            type="text"
+                                            value={block.settings?.text || ''}
+                                            onChange={(e) => onUpdateBlock(section.sectionId || section._id, block.blockId, 'text', e.target.value)}
+                                            className="w-full px-2.5 py-1 border border-zinc-250 rounded text-xs font-semibold"
+                                        />
+                                    </div>
+                                )}
+
+                                {block.type === 'subheading' && (
+                                    <div>
+                                        <label className="block text-[8px] font-bold text-zinc-500 uppercase mb-0.5">Subheading Text</label>
+                                        <textarea 
+                                            value={block.settings?.text || ''}
+                                            onChange={(e) => onUpdateBlock(section.sectionId || section._id, block.blockId, 'text', e.target.value)}
+                                            rows={2}
+                                            className="w-full px-2.5 py-1 border border-zinc-250 rounded text-xs font-semibold"
+                                        />
+                                    </div>
+                                )}
+
+                                {block.type === 'button' && (
+                                    <div className="space-y-2">
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <label className="block text-[8px] font-bold text-zinc-500 uppercase mb-0.5">Label</label>
+                                                <input 
+                                                    type="text"
+                                                    value={block.settings?.label || ''}
+                                                    onChange={(e) => onUpdateBlock(section.sectionId || section._id, block.blockId, 'label', e.target.value)}
+                                                    className="w-full px-2 py-1 border border-zinc-250 rounded text-xs font-semibold"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-[8px] font-bold text-zinc-500 uppercase mb-0.5">Link URL</label>
+                                                <input 
+                                                    type="text"
+                                                    value={block.settings?.link || ''}
+                                                    onChange={(e) => onUpdateBlock(section.sectionId || section._id, block.blockId, 'link', e.target.value)}
+                                                    className="w-full px-2 py-1 border border-zinc-250 rounded text-xs font-semibold"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="flex items-center gap-1.5 text-[8px] font-bold text-zinc-500 uppercase cursor-pointer select-none">
+                                                <input 
+                                                    type="checkbox"
+                                                    checked={block.settings?.startNewRow === true}
+                                                    onChange={(e) => onUpdateBlock(section.sectionId || section._id, block.blockId, 'startNewRow', e.target.checked)}
+                                                    className="w-3.5 h-3.5 text-[#008060] rounded focus:ring-0"
+                                                />
+                                                Start on New Line (Below)
+                                            </label>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Block style controls */}
+                                <BlockStyleEditor 
+                                    blockType={block.type}
+                                    styleSettings={block.settings?.style || {}}
+                                    onChangeStyle={(styleKey, styleVal) => {
+                                        const updatedStyle = {
+                                            ...(block.settings?.style || {}),
+                                            [styleKey]: styleVal
+                                        };
+                                        onUpdateBlock(section.sectionId || section._id, block.blockId, 'style', updatedStyle);
+                                    }}
+                                />
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>
@@ -213,11 +460,22 @@ export default function SettingsPanel({
                         />
                     </div>
                 </div>
+                <div>
+                    <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Layout Style</label>
+                    <select 
+                        value={settings.layout || 'side'}
+                        onChange={(e) => handleSettingChange('layout', e.target.value)}
+                        className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-xs font-semibold bg-white"
+                    >
+                        <option value="side">Side by Side (Split)</option>
+                        <option value="overlay">Overlay Text on Image</option>
+                    </select>
+                </div>
             </div>
         );
     };
 
-    const renderCatalogGridSettings = () => {
+     const renderCatalogGridSettings = () => {
         return (
             <div className="space-y-4">
                 <div>
@@ -254,6 +512,19 @@ export default function SettingsPanel({
                             <option value={6}>6 Columns</option>
                         </select>
                     </div>
+                </div>
+                <div>
+                    <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Card Corners (Border Radius)</label>
+                    <select 
+                        value={settings.cardShape || 'curved'}
+                        onChange={(e) => handleSettingChange('cardShape', e.target.value)}
+                        className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-xs font-semibold bg-white"
+                    >
+                        <option value="square">Square (Sharp 0px)</option>
+                        <option value="curved">Curved (Standard 12px)</option>
+                        <option value="circle">Circular Round (Category icons)</option>
+                        <option value="pill">Pill Shape (Rounded 24px)</option>
+                    </select>
                 </div>
                 {type === 'category-grid' && (
                     <div>
@@ -504,7 +775,7 @@ export default function SettingsPanel({
                                     value={block.settings?.text || ''}
                                     onChange={(e) => onUpdateBlock(section.sectionId || section._id, block.blockId, 'text', e.target.value)}
                                     placeholder="Enter content text..."
-                                    className="w-full px-2.5 py-1.5 border border-zinc-200 rounded text-xs"
+                                    className="w-full px-2.5 py-1.5 border border-zinc-200 rounded text-xs animate-none"
                                 />
                             ) : block.type === 'button' ? (
                                 <div className="grid grid-cols-2 gap-2">
@@ -524,6 +795,19 @@ export default function SettingsPanel({
                                     />
                                 </div>
                             ) : null}
+
+                            {/* Block style controls */}
+                            <BlockStyleEditor 
+                                blockType={block.type}
+                                styleSettings={block.settings?.style || {}}
+                                onChangeStyle={(styleKey, styleVal) => {
+                                    const updatedStyle = {
+                                        ...(block.settings?.style || {}),
+                                        [styleKey]: styleVal
+                                    };
+                                    onUpdateBlock(section.sectionId || section._id, block.blockId, 'style', updatedStyle);
+                                }}
+                            />
                         </div>
                     ))}
                 </div>
@@ -533,6 +817,114 @@ export default function SettingsPanel({
 
     const renderDynamicForm = () => {
         switch (type) {
+            case 'heading':
+                return (
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Heading Text</label>
+                            <input 
+                                type="text"
+                                value={settings.text || ''}
+                                onChange={(e) => handleSettingChange('text', e.target.value)}
+                                className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-xs font-semibold focus:outline-none"
+                            />
+                        </div>
+                        <BlockStyleEditor 
+                            blockType="heading"
+                            styleSettings={settings.style || {}}
+                            onChangeStyle={(styleKey, styleVal) => {
+                                handleSettingChange('style', {
+                                    ...(settings.style || {}),
+                                    [styleKey]: styleVal
+                                });
+                            }}
+                        />
+                    </div>
+                );
+            case 'paragraph':
+                return (
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Paragraph text</label>
+                            <textarea 
+                                value={settings.text || ''}
+                                onChange={(e) => handleSettingChange('text', e.target.value)}
+                                rows={4}
+                                className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-xs font-semibold focus:outline-none"
+                            />
+                        </div>
+                        <BlockStyleEditor 
+                            blockType="paragraph"
+                            styleSettings={settings.style || {}}
+                            onChangeStyle={(styleKey, styleVal) => {
+                                handleSettingChange('style', {
+                                    ...(settings.style || {}),
+                                    [styleKey]: styleVal
+                                });
+                            }}
+                        />
+                    </div>
+                );
+            case 'button':
+                return (
+                    <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Label Text</label>
+                                <input 
+                                    type="text"
+                                    value={settings.label || ''}
+                                    onChange={(e) => handleSettingChange('label', e.target.value)}
+                                    className="w-full px-3 py-2 border border-zinc-250 rounded-xl text-xs font-semibold focus:outline-none"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Button Link</label>
+                                <input 
+                                    type="text"
+                                    value={settings.link || ''}
+                                    onChange={(e) => handleSettingChange('link', e.target.value)}
+                                    className="w-full px-3 py-2 border border-zinc-250 rounded-xl text-xs font-semibold focus:outline-none"
+                                />
+                            </div>
+                        </div>
+                        <BlockStyleEditor 
+                            blockType="button"
+                            styleSettings={settings.style || {}}
+                            onChangeStyle={(styleKey, styleVal) => {
+                                handleSettingChange('style', {
+                                    ...(settings.style || {}),
+                                    [styleKey]: styleVal
+                                });
+                            }}
+                        />
+                    </div>
+                );
+            case 'image':
+                return (
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Image URL</label>
+                            <input 
+                                type="text"
+                                placeholder="https://example.com/image.jpg"
+                                value={settings.imageUrl || ''}
+                                onChange={(e) => handleSettingChange('imageUrl', e.target.value)}
+                                className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-xs font-semibold focus:outline-none"
+                            />
+                        </div>
+                        <BlockStyleEditor 
+                            blockType="image"
+                            styleSettings={settings.style || {}}
+                            onChangeStyle={(styleKey, styleVal) => {
+                                handleSettingChange('style', {
+                                    ...(settings.style || {}),
+                                    [styleKey]: styleVal
+                                });
+                            }}
+                        />
+                    </div>
+                );
             case 'hero':
                 return (
                     <>

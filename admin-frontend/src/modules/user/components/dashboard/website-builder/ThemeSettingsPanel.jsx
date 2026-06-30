@@ -1,4 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
+
+const ColorPickerField = ({ value, onChange }) => {
+    return (
+        <div className="flex gap-2 items-center">
+            <input 
+                type="color"
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                className="w-8 h-8 rounded border border-zinc-200 p-0 cursor-pointer"
+            />
+            <input 
+                type="text"
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                placeholder="#ffffff"
+                maxLength={7}
+                className="w-20 px-2 py-1.5 border border-zinc-200 rounded-lg text-[10px] font-bold uppercase focus:outline-none focus:ring-1 focus:ring-[#008060] bg-white shadow-sm"
+            />
+        </div>
+    );
+};
 
 const FONTS = [
     { name: 'Inter', value: 'Inter' },
@@ -50,39 +71,24 @@ export default function ThemeSettingsPanel({ themeSettings = {}, onChange }) {
                 <div className="grid grid-cols-2 gap-4">
                     <div>
                         <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Primary Color</label>
-                        <div className="flex gap-2 items-center">
-                            <input 
-                                type="color"
-                                value={themeSettings.primaryColor || '#2563eb'}
-                                onChange={(e) => handleFieldChange('primaryColor', e.target.value)}
-                                className="w-8 h-8 rounded border border-zinc-200 p-0 cursor-pointer"
-                            />
-                            <span className="text-[10px] font-black uppercase text-zinc-500">{themeSettings.primaryColor || '#2563eb'}</span>
-                        </div>
+                        <ColorPickerField 
+                            value={themeSettings.primaryColor || '#2563eb'}
+                            onChange={(val) => handleFieldChange('primaryColor', val)}
+                        />
                     </div>
                     <div>
                         <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Secondary Color</label>
-                        <div className="flex gap-2 items-center">
-                            <input 
-                                type="color"
-                                value={themeSettings.secondaryColor || '#ffffff'}
-                                onChange={(e) => handleFieldChange('secondaryColor', e.target.value)}
-                                className="w-8 h-8 rounded border border-zinc-200 p-0 cursor-pointer"
-                            />
-                            <span className="text-[10px] font-black uppercase text-zinc-500">{themeSettings.secondaryColor || '#ffffff'}</span>
-                        </div>
+                        <ColorPickerField 
+                            value={themeSettings.secondaryColor || '#ffffff'}
+                            onChange={(val) => handleFieldChange('secondaryColor', val)}
+                        />
                     </div>
                     <div>
-                        <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Accent Accent</label>
-                        <div className="flex gap-2 items-center">
-                            <input 
-                                type="color"
-                                value={themeSettings.accentColor || '#14B8A6'}
-                                onChange={(e) => handleFieldChange('accentColor', e.target.value)}
-                                className="w-8 h-8 rounded border border-zinc-200 p-0 cursor-pointer"
-                            />
-                            <span className="text-[10px] font-black uppercase text-zinc-500">{themeSettings.accentColor || '#14B8A6'}</span>
-                        </div>
+                        <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Accent Color</label>
+                        <ColorPickerField 
+                            value={themeSettings.accentColor || '#14B8A6'}
+                            onChange={(val) => handleFieldChange('accentColor', val)}
+                        />
                     </div>
                 </div>
             </div>

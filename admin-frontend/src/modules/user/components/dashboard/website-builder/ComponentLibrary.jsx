@@ -2,6 +2,16 @@ import React from 'react';
 
 const COMPONENT_CATEGORIES = [
     {
+        id: 'basic-elements',
+        title: 'Basic Elements',
+        items: [
+            { type: 'heading', label: 'Heading Text', description: 'Customizable heading tags H1 to H6' },
+            { type: 'paragraph', label: 'Paragraph text', description: 'Custom paragraph block for text content' },
+            { type: 'button', label: 'Custom Button', description: 'Highly customizable button with border/hover styles' },
+            { type: 'image', label: 'Image Element', description: 'Customizable image with height and width' }
+        ]
+    },
+    {
         id: 'banners',
         title: 'Banners & Hero',
         items: [

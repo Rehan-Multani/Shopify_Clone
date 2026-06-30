@@ -8,7 +8,7 @@ export const DEFAULT_HOME_SECTIONS = [
             alignment: 'center'
         },
         blocks: [
-            { type: 'heading', settings: { text: 'Comfort & Care for Every Step' } },
+            { type: 'heading', settings: { text: 'Comfort & Care for <br/>Every Step' } },
             { type: 'subheading', settings: { text: 'Premium adult diapers, baby care, hygiene essentials, and mobility aids – delivered with love to your doorstep.' } },
             { type: 'button', settings: { label: 'Shop Now →', link: '/catalog' } },
             { type: 'button', settings: { label: 'View Deals', link: '/catalog' } }

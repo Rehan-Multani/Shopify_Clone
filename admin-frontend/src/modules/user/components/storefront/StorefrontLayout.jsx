@@ -115,27 +115,45 @@ const StorefrontLayout = ({ children, cartCount, customer, onLogout, storeInfo }
     return (
         <ThemeRenderer themeSettings={storeInfo?.themeSettings || {}}>
             <div className="flex flex-col min-h-screen bg-[var(--color-secondary)] selection:bg-[var(--color-primary-semi)] selection:text-[var(--color-primary-dark)] text-[var(--color-text)]">
-                {/* Dynamic Announcement Bar */}
-                {storeInfo?.themeSettings?.headerConfig?.announcementBar?.enabled !== false && (
-                    <div 
-                        className="w-full text-center py-2 text-[10px] font-black uppercase tracking-widest text-white flex items-center justify-center gap-1.5 z-50 relative"
-                        style={{ 
-                            backgroundColor: storeInfo?.themeSettings?.headerConfig?.announcementBar?.backgroundColor || 'var(--color-primary)',
-                            color: storeInfo?.themeSettings?.headerConfig?.announcementBar?.textColor || '#ffffff'
-                        }}
-                    >
-                        <span>{storeInfo?.themeSettings?.headerConfig?.announcementBar?.text || '✨ Free Shipping on all orders above ₹499'}</span>
-                    </div>
-                )}
+                {/* Dynamic Announcement Bar & Header */}
+                {storeInfo?.themeSettings?.headerConfig?.enabled !== false && (
+                    <>
+                        {storeInfo?.themeSettings?.headerConfig?.announcementBar?.enabled !== false && (
+                            <div 
+                                className="w-full text-center py-2 text-[10px] font-black uppercase tracking-widest text-white flex items-center justify-center gap-1.5 z-50 relative"
+                                style={{ 
+                                    backgroundColor: storeInfo?.themeSettings?.headerConfig?.announcementBar?.backgroundColor || 'var(--color-primary)',
+                                    color: storeInfo?.themeSettings?.headerConfig?.announcementBar?.textColor || '#ffffff',
+                                    whiteSpace: 'pre-wrap'
+                                }}
+                            >
+                                <span>
+                                    {storeInfo?.themeSettings?.headerConfig?.announcementBar?.icon && (
+                                        <span className="mr-1">{storeInfo.themeSettings.headerConfig.announcementBar.icon}</span>
+                                    )}
+                                    {storeInfo?.themeSettings?.headerConfig?.announcementBar?.text || '✨ Free Shipping on all orders above ₹499'}
+                                </span>
+                            </div>
+                        )}
 
-                {/* Header */}
-                <header 
-                    className={`${storeInfo?.themeSettings?.headerConfig?.sticky !== false ? 'sticky top-0 z-45' : 'relative z-45'} w-full transition-all duration-300 ${
-                        isScrolled 
-                            ? 'bg-white/80 backdrop-blur-md border-b border-zinc-200/50 shadow-[0_2px_12px_rgba(0,0,0,0.02)] py-3' 
-                            : storeInfo?.themeSettings?.headerConfig?.transparent ? 'bg-transparent py-5' : 'bg-white border-b border-zinc-150 py-5'
-                    }`}
-                >
+                        {/* Header */}
+                        <header 
+                            className={`${storeInfo?.themeSettings?.headerConfig?.sticky !== false ? 'sticky top-0 z-45' : 'relative z-45'} w-full transition-all duration-300 ${
+                                isScrolled 
+                                    ? 'bg-white/80 backdrop-blur-md border-b border-zinc-200/50 shadow-[0_2px_12px_rgba(0,0,0,0.02)] py-3' 
+                                    : storeInfo?.themeSettings?.headerConfig?.transparent ? 'bg-transparent py-5' : 'bg-white border-b border-zinc-150 py-5'
+                            }`}
+                            style={{
+                                backgroundColor: isScrolled
+                                    ? (storeInfo?.themeSettings?.headerConfig?.backgroundColor 
+                                        ? `${storeInfo.themeSettings.headerConfig.backgroundColor}cc` 
+                                        : 'rgba(255,255,255,0.8)')
+                                    : (storeInfo?.themeSettings?.headerConfig?.transparent 
+                                        ? 'transparent' 
+                                        : (storeInfo?.themeSettings?.headerConfig?.backgroundColor || '#ffffff')),
+                                color: storeInfo?.themeSettings?.headerConfig?.textColor || ''
+                            }}
+                        >
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between min-h-[3rem]">
                         {/* Logo & Name */}
                         <Link to={getLink('/')} className="flex items-center gap-3.5 group">
@@ -143,56 +161,72 @@ const StorefrontLayout = ({ children, cartCount, customer, onLogout, storeInfo }
                                 <img 
                                     src={storeInfo?.themeSettings?.headerConfig?.logoUrl || (storeInfo.storeLogo.startsWith('http') || storeInfo.storeLogo.startsWith('data:') ? storeInfo.storeLogo : `${ASSETS_BASE_URL}${storeInfo.storeLogo}`)} 
                                     alt={storeInfo.storeName} 
-                                    className={`${logoSizeClass} ${logoShapeClass} object-cover border border-zinc-150 shadow-sm group-hover:scale-[1.03] transition-transform duration-300`} 
+                                    className={`${logoShapeClass} object-contain border border-zinc-150 shadow-sm group-hover:scale-[1.03] transition-transform duration-300`} 
+                                    style={{
+                                        width: storeInfo?.themeSettings?.headerConfig?.logoWidth || 'auto',
+                                        height: storeInfo?.themeSettings?.headerConfig?.logoHeight || '36px'
+                                    }}
                                 />
                             ) : (
                                 <div className={`${logoSizeClass} ${logoShapeClass} flex items-center justify-center font-extrabold text-white shadow-sm transition-transform duration-300 group-hover:scale-[1.03]`} style={{ backgroundColor: 'var(--color-primary)' }}>
                                     {storeInfo?.storeName?.charAt(0).toUpperCase() || 'S'}
                                 </div>
                             )}
-                            <span className="font-extrabold text-md tracking-tight text-zinc-900 group-hover:text-[var(--color-primary)] transition-colors duration-300">
-                                {storeInfo?.storeName || 'My Store'}
-                            </span>
+                             <span className="font-extrabold text-md tracking-tight text-zinc-900 group-hover:text-[var(--color-primary)] transition-colors duration-300" style={{ color: storeInfo?.themeSettings?.headerConfig?.textColor || '' }}>
+                                 {storeInfo?.storeName || 'My Store'}
+                             </span>
                         </Link>
+
+                        {storeInfo?.themeSettings?.headerConfig?.customText && (
+                            <div className="hidden lg:flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 bg-zinc-50 border border-zinc-200/80 rounded-lg">
+                                {storeInfo.themeSettings.headerConfig.customIcon && (
+                                    <span className="text-[12px]">{storeInfo.themeSettings.headerConfig.customIcon}</span>
+                                )}
+                                <span className="text-zinc-650">{storeInfo.themeSettings.headerConfig.customText}</span>
+                            </div>
+                        )}
 
                         {/* Desktop Dynamic Navigation */}
                         <nav className="hidden md:flex items-center gap-8 lg:gap-10">
                             {storeInfo?.themeSettings?.headerConfig?.menuItems ? (
                                 storeInfo.themeSettings.headerConfig.menuItems.map((item, idx) => (
-                                    <Link 
-                                        key={idx}
-                                        to={item.link.startsWith('/') ? getLink(item.link === '/' ? '' : item.link) : item.link} 
-                                        className={`text-[11px] font-bold uppercase tracking-wider relative py-1.5 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[var(--color-primary)] after:origin-left after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300 ${
-                                            location.pathname === getLink(item.link === '/' ? '' : item.link)
-                                                ? 'text-zinc-950 after:scale-x-100' 
-                                                : 'text-zinc-500 hover:text-zinc-950'
-                                        }`}
-                                    >
-                                        {item.label}
-                                    </Link>
+                                     <Link 
+                                         key={idx}
+                                         to={item.link.startsWith('/') ? getLink(item.link === '/' ? '' : item.link) : item.link} 
+                                         className={`text-[11px] font-bold uppercase tracking-wider relative py-1.5 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[var(--color-primary)] after:origin-left after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300 ${
+                                             location.pathname === getLink(item.link === '/' ? '' : item.link)
+                                                 ? 'text-zinc-950 after:scale-x-100' 
+                                                 : 'text-zinc-500 hover:text-zinc-950'
+                                         }`}
+                                         style={{ color: storeInfo?.themeSettings?.headerConfig?.textColor || '' }}
+                                     >
+                                         {item.label}
+                                     </Link>
                                 ))
                             ) : (
                                 <>
-                                    <Link 
-                                        to={getLink('/')} 
-                                        className={`text-[11px] font-bold uppercase tracking-wider relative py-1.5 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[var(--color-primary)] after:origin-left after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300 ${
-                                            location.pathname === getLink('/') || location.pathname === getLink('/') + '/'
-                                                ? 'text-zinc-950 after:scale-x-100' 
-                                                : 'text-zinc-500 hover:text-zinc-950'
-                                        }`}
-                                    >
-                                        Home
-                                    </Link>
-                                    <Link 
-                                        to={getLink('/catalog')} 
-                                        className={`text-[11px] font-bold uppercase tracking-wider relative py-1.5 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[var(--color-primary)] after:origin-left after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300 ${
-                                            location.pathname.includes('/catalog') 
-                                                ? 'text-zinc-950 after:scale-x-100' 
-                                                : 'text-zinc-550 hover:text-zinc-950'
-                                        }`}
-                                    >
-                                        Catalog
-                                    </Link>
+                                     <Link 
+                                         to={getLink('/')} 
+                                         className={`text-[11px] font-bold uppercase tracking-wider relative py-1.5 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[var(--color-primary)] after:origin-left after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300 ${
+                                             location.pathname === getLink('/') || location.pathname === getLink('/') + '/'
+                                                 ? 'text-zinc-950 after:scale-x-100' 
+                                                 : 'text-zinc-500 hover:text-zinc-950'
+                                         }`}
+                                         style={{ color: storeInfo?.themeSettings?.headerConfig?.textColor || '' }}
+                                     >
+                                         Home
+                                     </Link>
+                                     <Link 
+                                         to={getLink('/catalog')} 
+                                         className={`text-[11px] font-bold uppercase tracking-wider relative py-1.5 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[var(--color-primary)] after:origin-left after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300 ${
+                                             location.pathname.includes('/catalog') 
+                                                 ? 'text-zinc-950 after:scale-x-100' 
+                                                 : 'text-zinc-550 hover:text-zinc-950'
+                                         }`}
+                                         style={{ color: storeInfo?.themeSettings?.headerConfig?.textColor || '' }}
+                                     >
+                                         Catalog
+                                     </Link>
                                 </>
                             )}
                         </nav>
@@ -200,23 +234,27 @@ const StorefrontLayout = ({ children, cartCount, customer, onLogout, storeInfo }
                         {/* Actions */}
                         <div className="flex items-center gap-2.5 sm:gap-3.5">
                             {/* Search Trigger */}
-                            <button
-                                onClick={() => setShowSearchOverlay(true)}
-                                className="p-2.5 text-zinc-600 hover:text-zinc-950 rounded-xl hover:bg-zinc-100 active:scale-95 transition-all cursor-pointer"
-                                aria-label="Search"
-                            >
-                                <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
-                                    <circle cx="11" cy="11" r="8"></circle>
-                                    <path d="m21 21-4.3-4.3"></path>
-                                </svg>
-                            </button>
+                            {storeInfo?.themeSettings?.headerConfig?.searchEnabled !== false && (
+                                <button
+                                    onClick={() => setShowSearchOverlay(true)}
+                                    className="p-2.5 text-zinc-600 hover:text-zinc-950 rounded-xl hover:bg-zinc-100 active:scale-95 transition-all cursor-pointer"
+                                    aria-label="Search"
+                                    style={{ color: storeInfo?.themeSettings?.headerConfig?.textColor || '' }}
+                                >
+                                    <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                                        <circle cx="11" cy="11" r="8"></circle>
+                                        <path d="m21 21-4.3-4.3"></path>
+                                    </svg>
+                                </button>
+                            )}
 
                             {/* Wishlist Link */}
-                            {customer && (
+                            {storeInfo?.themeSettings?.headerConfig?.wishlistEnabled !== false && (
                                 <Link 
-                                    to={getLink('/wishlist')}
+                                    to={customer ? getLink('/wishlist') : getLink('/login')}
                                     className="p-2.5 bg-white border border-zinc-200/80 rounded-xl hover:border-zinc-300 text-zinc-700 hover:text-red-500 transition-all shadow-sm hover:scale-[1.04] active:scale-95 flex items-center justify-center"
                                     title="Wishlist"
+                                    style={{ color: storeInfo?.themeSettings?.headerConfig?.textColor || '' }}
                                 >
                                     <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -225,61 +263,68 @@ const StorefrontLayout = ({ children, cartCount, customer, onLogout, storeInfo }
                             )}
 
                             {/* Customer Auth */}
-                            {customer ? (
-                                <div className="hidden sm:flex items-center gap-2.5 bg-zinc-50 border border-zinc-200/60 pl-2 pr-3 py-1 rounded-full shadow-[0_1px_4px_rgba(0,0,0,0.01)]">
-                                    <Link to={getLink('/account')} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                                        <div className="w-6.5 h-6.5 rounded-full text-white flex items-center justify-center text-[10px] font-black shadow-sm" style={{ backgroundColor: 'var(--color-primary)' }}>
-                                            {customer.name?.charAt(0).toUpperCase() || 'U'}
-                                        </div>
-                                        <span className="text-[11px] font-bold text-zinc-700">Hi, {customer.name.split(' ')[0]}</span>
-                                    </Link>
-                                    <span className="w-px h-3 bg-zinc-200"></span>
-                                    <button 
-                                        onClick={onLogout}
-                                        className="text-[10px] font-bold uppercase tracking-wider text-red-500 hover:text-red-700 transition-colors cursor-pointer"
+                            {storeInfo?.themeSettings?.headerConfig?.profileEnabled !== false && (
+                                customer ? (
+                                    <div className="hidden sm:flex items-center gap-2.5 bg-zinc-50 border border-zinc-200/60 pl-2 pr-3 py-1 rounded-full shadow-[0_1px_4px_rgba(0,0,0,0.01)]">
+                                        <Link to={getLink('/account')} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                                            <div className="w-6.5 h-6.5 rounded-full text-white flex items-center justify-center text-[10px] font-black shadow-sm" style={{ backgroundColor: 'var(--color-primary)' }}>
+                                                {customer.name?.charAt(0).toUpperCase() || 'U'}
+                                            </div>
+                                            <span className="text-[11px] font-bold text-zinc-700">Hi, {customer.name.split(' ')[0]}</span>
+                                        </Link>
+                                        <span className="w-px h-3 bg-zinc-200"></span>
+                                        <button 
+                                            onClick={onLogout}
+                                            className="text-[10px] font-bold uppercase tracking-wider text-red-500 hover:text-red-700 transition-colors cursor-pointer"
+                                        >
+                                            Logout
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <Link 
+                                        to={getLink('/login')}
+                                        className="hidden sm:flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-zinc-700 hover:text-white hover:bg-[var(--color-primary)] transition-all bg-white border border-zinc-200/80 px-4.5 py-2.5 rounded-full shadow-[0_1px_3px_rgba(0,0,0,0.02)] hover:border-[var(--color-primary)]"
+                                        style={{ color: storeInfo?.themeSettings?.headerConfig?.textColor || '' }}
                                     >
-                                        Logout
-                                    </button>
-                                </div>
-                            ) : (
-                                <Link 
-                                    to={getLink('/login')}
-                                    className="hidden sm:flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-zinc-700 hover:text-white hover:bg-[var(--color-primary)] transition-all bg-white border border-zinc-200/80 px-4.5 py-2.5 rounded-full shadow-[0_1px_3px_rgba(0,0,0,0.02)] hover:border-[var(--color-primary)]"
-                                >
-                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-                                        <circle cx="9" cy="7" r="4"></circle>
-                                    </svg>
-                                    Login
-                                </Link>
+                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                                            <circle cx="9" cy="7" r="4"></circle>
+                                        </svg>
+                                        Login
+                                    </Link>
+                                )
                             )}
 
                             {/* Cart Icon */}
-                            <Link 
-                                to={getLink('/cart')}
-                                className="relative p-2.5 bg-white border border-zinc-200/80 rounded-xl hover:border-zinc-300 text-zinc-700 transition-premium shadow-sm hover:scale-[1.04] active:scale-95 flex items-center justify-center"
-                            >
-                                <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" strokeWidth={2.2} viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                                </svg>
-                                {cartCount > 0 && (
-                                    <span 
-                                        className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full text-[9px] font-black text-white flex items-center justify-center shadow-md animate-scale-in"
-                                        style={{ 
-                                            backgroundColor: 'var(--color-primary)',
-                                            animation: 'pulse-ring 2.2s infinite' 
-                                        }}
-                                    >
-                                        {cartCount}
-                                    </span>
-                                )}
-                            </Link>
+                            {storeInfo?.themeSettings?.headerConfig?.cartEnabled !== false && (
+                                <Link 
+                                    to={getLink('/cart')}
+                                    className="relative p-2.5 bg-white border border-zinc-200/80 rounded-xl hover:border-zinc-300 text-zinc-700 transition-premium shadow-sm hover:scale-[1.04] active:scale-95 flex items-center justify-center"
+                                    style={{ color: storeInfo?.themeSettings?.headerConfig?.textColor || '' }}
+                                >
+                                    <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" strokeWidth={2.2} viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                    </svg>
+                                    {cartCount > 0 && (
+                                        <span 
+                                            className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full text-[9px] font-black text-white flex items-center justify-center shadow-md animate-scale-in"
+                                            style={{ 
+                                                backgroundColor: 'var(--color-primary)',
+                                                animation: 'pulse-ring 2.2s infinite' 
+                                            }}
+                                        >
+                                            {cartCount}
+                                        </span>
+                                    )}
+                                </Link>
+                            )}
 
                             {/* Mobile Hamburger toggle */}
                             <button
                                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                                 className="md:hidden p-2.5 bg-white border border-zinc-200/85 rounded-xl text-zinc-700 hover:bg-zinc-55 active:scale-95 transition-premium flex items-center justify-center cursor-pointer"
                                 aria-label="Toggle Navigation"
+                                style={{ color: storeInfo?.themeSettings?.headerConfig?.textColor || '' }}
                             >
                                 <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                                     {isMobileMenuOpen ? (
@@ -349,74 +394,81 @@ const StorefrontLayout = ({ children, cartCount, customer, onLogout, storeInfo }
                                             {page.title}
                                         </Link>
                                     ))}
-                                    {customer && (
-                                        <>
-                                            <Link 
-                                                to={getLink('/wishlist')}
-                                                className={`text-sm font-bold tracking-wide transition-colors ${
-                                                    location.pathname.includes('/wishlist') 
-                                                        ? 'text-[var(--color-primary)]' 
-                                                        : 'text-zinc-600 hover:text-zinc-950'
-                                                }`}
-                                            >
-                                                Wishlist
-                                            </Link>
-                                            <Link 
-                                                to={getLink('/account')}
-                                                className={`text-sm font-bold tracking-wide transition-colors ${
-                                                    location.pathname.includes('/account') 
-                                                        ? 'text-[var(--color-primary)]' 
-                                                        : 'text-zinc-600 hover:text-zinc-950'
-                                                }`}
-                                            >
-                                                My Account
-                                            </Link>
-                                        </>
+                                    {storeInfo?.themeSettings?.headerConfig?.wishlistEnabled !== false && (
+                                        <Link 
+                                            to={customer ? getLink('/wishlist') : getLink('/login')}
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                            className={`text-sm font-bold tracking-wide transition-colors ${
+                                                location.pathname.includes('/wishlist') 
+                                                    ? 'text-[var(--color-primary)]' 
+                                                    : 'text-zinc-600 hover:text-zinc-950'
+                                            }`}
+                                        >
+                                            Wishlist
+                                        </Link>
+                                    )}
+                                    {storeInfo?.themeSettings?.headerConfig?.profileEnabled !== false && customer && (
+                                        <Link 
+                                            to={getLink('/account')}
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                            className={`text-sm font-bold tracking-wide transition-colors ${
+                                                location.pathname.includes('/account') 
+                                                    ? 'text-[var(--color-primary)]' 
+                                                    : 'text-zinc-600 hover:text-zinc-950'
+                                            }`}
+                                        >
+                                            My Account
+                                        </Link>
                                     )}
                                 </nav>
                             </div>
 
-                            <div className="border-t border-zinc-150 pt-6">
-                                {customer ? (
-                                    <div className="space-y-4">
+                            {storeInfo?.themeSettings?.headerConfig?.profileEnabled !== false && (
+                                <div className="border-t border-zinc-150 pt-6">
+                                    {customer ? (
+                                        <div className="space-y-4">
+                                            <Link 
+                                                to={getLink('/account')}
+                                                onClick={() => setIsMobileMenuOpen(false)}
+                                                className="flex items-center gap-3 hover:opacity-85"
+                                            >
+                                                <div className="w-8 h-8 rounded-full text-white flex items-center justify-center text-xs font-black shadow-sm" style={{ backgroundColor: 'var(--color-primary)' }}>
+                                                    {customer.name?.charAt(0).toUpperCase() || 'U'}
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">My Account</p>
+                                                    <p className="text-sm font-bold text-zinc-800 truncate">{customer.name}</p>
+                                                </div>
+                                            </Link>
+                                            <button 
+                                                onClick={() => {
+                                                    onLogout();
+                                                    setIsMobileMenuOpen(false);
+                                                }}
+                                                className="w-full py-3 border border-red-200 text-red-500 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-red-50 active:scale-95 transition-all cursor-pointer"
+                                            >
+                                                Log Out
+                                            </button>
+                                        </div>
+                                    ) : (
                                         <Link 
-                                            to={getLink('/account')}
+                                            to={getLink('/login')}
                                             onClick={() => setIsMobileMenuOpen(false)}
-                                            className="flex items-center gap-3 hover:opacity-85"
+                                            className="w-full flex items-center justify-center gap-2 py-3 bg-[var(--color-primary)] text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:opacity-90 active:scale-95 transition-all shadow-md"
                                         >
-                                            <div className="w-8 h-8 rounded-full text-white flex items-center justify-center text-xs font-black shadow-sm" style={{ backgroundColor: 'var(--color-primary)' }}>
-                                                {customer.name?.charAt(0).toUpperCase() || 'U'}
-                                            </div>
-                                            <div className="min-w-0">
-                                                <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">My Account</p>
-                                                <p className="text-sm font-bold text-zinc-800 truncate">{customer.name}</p>
-                                            </div>
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                                                <circle cx="9" cy="7" r="4"></circle>
+                                            </svg>
+                                            Log In
                                         </Link>
-                                        <button 
-                                            onClick={() => {
-                                                onLogout();
-                                                setIsMobileMenuOpen(false);
-                                            }}
-                                            className="w-full py-3 border border-red-200 text-red-500 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-red-50 active:scale-95 transition-all cursor-pointer"
-                                        >
-                                            Log Out
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <Link 
-                                        to={getLink('/login')}
-                                        className="w-full flex items-center justify-center gap-2 py-3 bg-[var(--color-primary)] text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:opacity-90 active:scale-95 transition-all shadow-md"
-                                    >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-                                            <circle cx="9" cy="7" r="4"></circle>
-                                        </svg>
-                                        Log In
-                                    </Link>
-                                )}
-                            </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
+                        )}
+                    </>
                 )}
 
                 {/* Full-Screen Search Overlay */}
@@ -476,14 +528,15 @@ const StorefrontLayout = ({ children, cartCount, customer, onLogout, storeInfo }
                     {children}
                 </main>
                 {/* Footer */}
-                <footer 
-                    className="mt-24 relative overflow-hidden border-t"
-                    style={{
-                        backgroundColor: footerBg,
-                        color: footerText,
-                        borderColor: footerBorder
-                    }}
-                >
+                {storeInfo?.themeSettings?.footerConfig?.enabled !== false && (
+                    <footer 
+                        className="mt-24 relative overflow-hidden border-t"
+                        style={{
+                            backgroundColor: footerBg,
+                            color: footerText,
+                            borderColor: footerBorder
+                        }}
+                    >
                     {/* Background glows */}
                     <div className="absolute top-0 left-1/4 w-[350px] h-[350px] rounded-full bg-[var(--color-primary-semi)] blur-[100px] pointer-events-none opacity-20"></div>
 
@@ -655,7 +708,8 @@ const StorefrontLayout = ({ children, cartCount, customer, onLogout, storeInfo }
                     <div className="border-t py-8 text-center text-[10px] font-bold tracking-widest relative z-10 uppercase" style={{ color: footerTextMuted, borderColor: footerBorder }}>
                         {storeInfo?.themeSettings?.footerConfig?.copyrightText || `© ${new Date().getFullYear()} ${storeInfo?.storeName || 'Storify'}. All rights reserved. Powered by Storify.`}
                     </div>
-                </footer>
+                    </footer>
+                )}
             </div>
         </ThemeRenderer>
     );

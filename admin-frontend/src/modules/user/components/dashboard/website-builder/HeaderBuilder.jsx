@@ -1,4 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
+
+const ColorPickerField = ({ value, onChange }) => {
+    return (
+        <div className="flex gap-2 items-center">
+            <input 
+                type="color"
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                className="w-8 h-8 rounded border border-zinc-200 p-0 cursor-pointer"
+            />
+            <input 
+                type="text"
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                placeholder="#ffffff"
+                maxLength={7}
+                className="w-20 px-2 py-1.5 border border-zinc-200 rounded-lg text-[10px] font-bold uppercase focus:outline-none focus:ring-1 focus:ring-[#008060] bg-white shadow-sm"
+            />
+        </div>
+    );
+};
 
 export default function HeaderBuilder({ headerConfig = {}, onChange }) {
     const handleFieldChange = (field, value) => {
@@ -70,30 +91,40 @@ export default function HeaderBuilder({ headerConfig = {}, onChange }) {
                                 />
                             </div>
 
+                            <div>
+                                <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Banner Icon</label>
+                                <select 
+                                    value={announce.icon || ''}
+                                    onChange={(e) => handleAnnounceChange('icon', e.target.value)}
+                                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-[#008060] bg-white cursor-pointer"
+                                >
+                                    <option value="">None</option>
+                                    <option value="✨">Sparkles ✨</option>
+                                    <option value="🚚">Truck 🚚</option>
+                                    <option value="🎁">Gift 🎁</option>
+                                    <option value="🔥">Fire 🔥</option>
+                                    <option value="❤️">Heart ❤️</option>
+                                    <option value="⭐">Star ⭐</option>
+                                    <option value="🛡️">Shield 🛡️</option>
+                                    <option value="🕒">Clock 🕒</option>
+                                    <option value="ℹ️">Info ℹ️</option>
+                                </select>
+                            </div>
+
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
                                     <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Bg Color</label>
-                                    <div className="flex gap-2 items-center">
-                                        <input 
-                                            type="color"
-                                            value={announce.backgroundColor || '#2563eb'}
-                                            onChange={(e) => handleAnnounceChange('backgroundColor', e.target.value)}
-                                            className="w-8 h-8 rounded border border-zinc-200 p-0 cursor-pointer"
-                                        />
-                                        <span className="text-[10px] font-black uppercase text-zinc-500">{announce.backgroundColor || '#2563eb'}</span>
-                                    </div>
+                                    <ColorPickerField 
+                                        value={announce.backgroundColor || '#2563eb'}
+                                        onChange={(val) => handleAnnounceChange('backgroundColor', val)}
+                                    />
                                 </div>
                                 <div>
                                     <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Text Color</label>
-                                    <div className="flex gap-2 items-center">
-                                        <input 
-                                            type="color"
-                                            value={announce.textColor || '#ffffff'}
-                                            onChange={(e) => handleAnnounceChange('textColor', e.target.value)}
-                                            className="w-8 h-8 rounded border border-zinc-200 p-0 cursor-pointer"
-                                        />
-                                        <span className="text-[10px] font-black uppercase text-zinc-500">{announce.textColor || '#ffffff'}</span>
-                                    </div>
+                                    <ColorPickerField 
+                                        value={announce.textColor || '#ffffff'}
+                                        onChange={(val) => handleAnnounceChange('textColor', val)}
+                                    />
                                 </div>
                             </div>
                         </>
@@ -106,6 +137,15 @@ export default function HeaderBuilder({ headerConfig = {}, onChange }) {
                     Header Setup
                 </h4>
                 <div className="space-y-4">
+                    <div className="flex items-center justify-between border-b border-zinc-100 pb-3 mb-2">
+                        <label className="text-xs font-bold text-zinc-700">Show Header</label>
+                        <input 
+                            type="checkbox"
+                            checked={headerConfig.enabled !== false}
+                            onChange={(e) => handleFieldChange('enabled', e.target.checked)}
+                            className="w-4 h-4 text-[#008060] rounded focus:ring-0 cursor-pointer"
+                        />
+                    </div>
                     <div>
                         <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Logo URL</label>
                         <input 
@@ -115,6 +155,37 @@ export default function HeaderBuilder({ headerConfig = {}, onChange }) {
                             onChange={(e) => handleFieldChange('logoUrl', e.target.value)}
                             className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-[#008060]"
                         />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <div className="flex justify-between items-center mb-1">
+                                <label className="block text-[10px] font-bold text-zinc-500 uppercase">Logo Width</label>
+                                <span className="text-[10px] font-semibold text-zinc-650 bg-zinc-100 px-1.5 py-0.5 rounded">{parseInt(headerConfig.logoWidth) || 120}px</span>
+                            </div>
+                            <input 
+                                type="range"
+                                min="40"
+                                max="300"
+                                value={parseInt(headerConfig.logoWidth) || 120}
+                                onChange={(e) => handleFieldChange('logoWidth', `${e.target.value}px`)}
+                                className="w-full h-1.5 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-[#008060]"
+                            />
+                        </div>
+                        <div>
+                            <div className="flex justify-between items-center mb-1">
+                                <label className="block text-[10px] font-bold text-zinc-500 uppercase">Logo Height</label>
+                                <span className="text-[10px] font-semibold text-zinc-650 bg-zinc-100 px-1.5 py-0.5 rounded">{parseInt(headerConfig.logoHeight) || 32}px</span>
+                            </div>
+                            <input 
+                                type="range"
+                                min="20"
+                                max="120"
+                                value={parseInt(headerConfig.logoHeight) || 32}
+                                onChange={(e) => handleFieldChange('logoHeight', `${e.target.value}px`)}
+                                className="w-full h-1.5 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-[#008060]"
+                            />
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
@@ -150,44 +221,91 @@ export default function HeaderBuilder({ headerConfig = {}, onChange }) {
                         </div>
                     </div>
 
+                    <div className="grid grid-cols-2 gap-3 border-t pt-3">
+                        <div>
+                            <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Header Bg Color</label>
+                            <ColorPickerField 
+                                value={headerConfig.backgroundColor || '#ffffff'}
+                                onChange={(val) => handleFieldChange('backgroundColor', val)}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Header Link Color</label>
+                            <ColorPickerField 
+                                value={headerConfig.textColor || '#000000'}
+                                onChange={(val) => handleFieldChange('textColor', val)}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 border-t pt-3">
+                        <div className="col-span-2">
+                            <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Custom Header Info Text</label>
+                            <input 
+                                type="text"
+                                placeholder="e.g. Call us: 1800-123-456"
+                                value={headerConfig.customText || ''}
+                                onChange={(e) => handleFieldChange('customText', e.target.value)}
+                                className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-[#008060]"
+                            />
+                        </div>
+                        <div className="col-span-2">
+                            <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Custom Info Icon</label>
+                            <select 
+                                value={headerConfig.customIcon || ''}
+                                onChange={(e) => handleFieldChange('customIcon', e.target.value)}
+                                className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-[#008060] bg-white cursor-pointer"
+                            >
+                                <option value="">None</option>
+                                <option value="📞">Phone 📞</option>
+                                <option value="📍">Map Pin 📍</option>
+                                <option value="🚚">Truck 🚚</option>
+                                <option value="🕒">Clock 🕒</option>
+                                <option value="🎁">Gift 🎁</option>
+                                <option value="✨">Sparkles ✨</option>
+                                <option value="❤️">Heart ❤️</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <div className="space-y-2 border-t pt-3">
-                        <label className="block text-[10px] font-bold text-zinc-550 uppercase">Toggles</label>
-                        <div className="grid grid-cols-2 gap-3">
-                            <label className="flex items-center gap-2 text-xs font-bold text-zinc-700 cursor-pointer">
+                        <label className="block text-[10px] font-black text-zinc-450 uppercase tracking-wider">Toggles</label>
+                        <div className="grid grid-cols-2 gap-2.5">
+                            <label className="flex items-center gap-2.5 text-xs font-bold text-zinc-750 hover:text-zinc-900 cursor-pointer bg-zinc-50 hover:bg-zinc-100/80 px-3 py-2.5 rounded-xl border border-zinc-200/70 transition-all select-none shadow-[0_1px_2px_rgba(0,0,0,0.01)] active:scale-98">
                                 <input 
                                     type="checkbox"
-                                    checked={!!headerConfig.searchEnabled}
+                                    checked={headerConfig.searchEnabled !== false}
                                     onChange={(e) => handleFieldChange('searchEnabled', e.target.checked)}
-                                    className="w-4 h-4 text-[#008060] rounded focus:ring-0"
+                                    className="w-4 h-4 text-[#008060] rounded border-zinc-300 focus:ring-[#008060] cursor-pointer accent-[#008060]"
                                 />
                                 Search Bar
                             </label>
-                            <label className="flex items-center gap-2 text-xs font-bold text-zinc-700 cursor-pointer">
+                            <label className="flex items-center gap-2.5 text-xs font-bold text-zinc-750 hover:text-zinc-900 cursor-pointer bg-zinc-50 hover:bg-zinc-100/80 px-3 py-2.5 rounded-xl border border-zinc-200/70 transition-all select-none shadow-[0_1px_2px_rgba(0,0,0,0.01)] active:scale-98">
                                 <input 
                                     type="checkbox"
-                                    checked={!!headerConfig.cartEnabled}
+                                    checked={headerConfig.cartEnabled !== false}
                                     onChange={(e) => handleFieldChange('cartEnabled', e.target.checked)}
-                                    className="w-4 h-4 text-[#008060] rounded focus:ring-0"
+                                    className="w-4 h-4 text-[#008060] rounded border-zinc-300 focus:ring-[#008060] cursor-pointer accent-[#008060]"
                                 />
                                 Cart Icon
                             </label>
-                            <label className="flex items-center gap-2 text-xs font-bold text-zinc-700 cursor-pointer">
+                            <label className="flex items-center gap-2.5 text-xs font-bold text-zinc-750 hover:text-zinc-900 cursor-pointer bg-zinc-50 hover:bg-zinc-100/80 px-3 py-2.5 rounded-xl border border-zinc-200/70 transition-all select-none shadow-[0_1px_2px_rgba(0,0,0,0.01)] active:scale-98">
                                 <input 
                                     type="checkbox"
-                                    checked={!!headerConfig.wishlistEnabled}
+                                    checked={headerConfig.wishlistEnabled !== false}
                                     onChange={(e) => handleFieldChange('wishlistEnabled', e.target.checked)}
-                                    className="w-4 h-4 text-[#008060] rounded focus:ring-0"
+                                    className="w-4 h-4 text-[#008060] rounded border-zinc-300 focus:ring-[#008060] cursor-pointer accent-[#008060]"
                                 />
                                 Wishlist
                             </label>
-                            <label className="flex items-center gap-2 text-xs font-bold text-zinc-700 cursor-pointer">
+                            <label className="flex items-center gap-2.5 text-xs font-bold text-zinc-750 hover:text-zinc-900 cursor-pointer bg-zinc-50 hover:bg-zinc-100/80 px-3 py-2.5 rounded-xl border border-zinc-200/70 transition-all select-none shadow-[0_1px_2px_rgba(0,0,0,0.01)] active:scale-98">
                                 <input 
                                     type="checkbox"
-                                    checked={!!headerConfig.profileEnabled}
+                                    checked={headerConfig.profileEnabled !== false}
                                     onChange={(e) => handleFieldChange('profileEnabled', e.target.checked)}
-                                    className="w-4 h-4 text-[#008060] rounded focus:ring-0"
+                                    className="w-4 h-4 text-[#008060] rounded border-zinc-300 focus:ring-[#008060] cursor-pointer accent-[#008060]"
                                 />
-                                Profile Account
+                                Profile
                             </label>
                         </div>
                     </div>

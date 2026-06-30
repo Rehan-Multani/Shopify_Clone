@@ -9,8 +9,47 @@ export const ImageBannerSection = ({ settings = {} }) => {
         subtitle = 'Grab the latest designs at 30% discount',
         buttonLabel = 'Shop Now',
         buttonLink = '#',
-        height = '400px'
+        height = '400px',
+        layout = 'side'
     } = settings;
+
+    if (layout === 'overlay') {
+        return (
+            <section 
+                className="relative overflow-hidden rounded-3xl my-6 mx-auto max-w-7xl shadow-sm border border-zinc-200/40 flex items-center justify-center text-center p-8 sm:p-12 md:p-16"
+                style={{ 
+                    minHeight: height, 
+                    backgroundImage: `url(${imageUrl})`, 
+                    backgroundSize: 'cover', 
+                    backgroundPosition: 'center' 
+                }}
+            >
+                <div className="absolute inset-0 bg-black/45 z-0"></div>
+                <div className="relative z-10 flex flex-col items-center space-y-4 text-white">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-[var(--color-primary)]">
+                        Featured Offer
+                    </span>
+                    <h2 className="text-2xl sm:text-4xl font-black leading-tight uppercase drop-shadow">
+                        {title}
+                    </h2>
+                    <p className="text-xs sm:text-sm text-white/90 font-semibold leading-relaxed max-w-md drop-shadow">
+                        {subtitle}
+                    </p>
+                    {buttonLabel && (
+                        <div className="pt-2">
+                            <a
+                                href={buttonLink}
+                                className="inline-block px-7 py-3 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-md hover:opacity-90 active:scale-95 transition-premium btn-premium"
+                                style={{ backgroundColor: 'var(--color-primary)', borderRadius: 'var(--border-radius)' }}
+                            >
+                                {buttonLabel}
+                            </a>
+                        </div>
+                    )}
+                </div>
+            </section>
+        );
+    }
 
     return (
         <section className="relative overflow-hidden rounded-3xl my-6 mx-auto max-w-7xl shadow-sm border border-zinc-200/40">

@@ -5,7 +5,7 @@ import { getStorePath } from '../storeUrlHelper';
 const CATALOG_API_URL = import.meta.env.VITE_CATALOG_API_URL;
 const ASSETS_BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || '';
 
-const ProductCard = ({ product, storeId, onAddToCart }) => {
+const ProductCard = ({ product, storeId, onAddToCart, cardShape }) => {
     const [imageError, setImageError] = useState(false);
     const [isWishlisted, setIsWishlisted] = useState(false);
     const [adding, setAdding] = useState(false);
@@ -43,12 +43,27 @@ const ProductCard = ({ product, storeId, onAddToCart }) => {
         ? Math.round(((product.actualPrice - product.sellingPrice) / product.actualPrice) * 100)
         : 0;
 
+    const shapeStyle = cardShape === 'square' ? { borderRadius: '0px' }
+                     : cardShape === 'circle' ? { borderRadius: '50%' }
+                     : cardShape === 'pill' ? { borderRadius: '24px' }
+                     : cardShape === 'curved' ? { borderRadius: '12px' }
+                     : { borderRadius: 'var(--border-radius)' };
+
+    const innerShapeStyle = cardShape === 'square' ? { borderRadius: '0px' }
+                           : cardShape === 'circle' ? { borderRadius: '50%' }
+                           : cardShape === 'pill' ? { borderRadius: '16px' }
+                           : cardShape === 'curved' ? { borderRadius: '8px' }
+                           : { borderRadius: 'calc(var(--border-radius) - 4px)' };
+
     return (
         <div 
-            className="bg-white border border-zinc-200/60 rounded-2xl overflow-hidden card-premium flex flex-col p-3 group relative transition-all duration-300"
-            style={{ borderRadius: 'var(--border-radius)' }}
+            className="bg-white border border-zinc-200/60 overflow-hidden card-premium flex flex-col p-3 group relative transition-all duration-300"
+            style={shapeStyle}
         >
-            <div className="aspect-square w-full rounded-xl overflow-hidden bg-[#fafafa] border border-zinc-100 flex items-center justify-center relative mb-3.5">
+            <div 
+                className="aspect-square w-full overflow-hidden bg-[#fafafa] border border-zinc-100 flex items-center justify-center relative mb-3.5"
+                style={innerShapeStyle}
+            >
                 {discountPercentage > 0 && (
                     <span 
                         className="absolute top-2.5 left-2.5 z-10 px-2 py-0.5 text-[8px] font-black uppercase tracking-wider text-white rounded-md shadow-sm"
@@ -228,7 +243,7 @@ const FeaturedProductsSection = ({ settings = {}, storeId: propStoreId, onAddToC
 
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
                 {products.map((product) => (
-                    <ProductCard key={product._id} product={product} storeId={storeId} onAddToCart={onAddToCart} />
+                    <ProductCard key={product._id} product={product} storeId={storeId} onAddToCart={onAddToCart} cardShape={settings.cardShape} />
                 ))}
             </div>
         </section>

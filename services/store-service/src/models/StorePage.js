@@ -48,8 +48,8 @@ const storePageSchema = new mongoose.Schema({
     },
     sections: [{
         sectionId: {
-            type: mongoose.Schema.Types.ObjectId,
-            default: () => new mongoose.Types.ObjectId()
+            type: String,
+            default: () => new mongoose.Types.ObjectId().toString()
         },
         type: {
             type: String,
