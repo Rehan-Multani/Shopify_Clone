@@ -8,6 +8,7 @@ import MerchantsTab from '../components/tabs/MerchantsTab';
 import PlansTab from '../components/tabs/PlansTab';
 import BillingTab from '../components/tabs/BillingTab';
 import AppsTab from '../components/tabs/AppsTab';
+import ThemesTab from '../components/tabs/ThemesTab';
 import AnalyticsTab from '../components/tabs/AnalyticsTab';
 import SupportTab from '../components/tabs/SupportTab';
 import AnnouncementsTab from '../components/tabs/AnnouncementsTab';
@@ -41,6 +42,7 @@ const MasterAdminPage = () => {
             case 'plans':         return <PlansTab />;
             case 'billing':       return <BillingTab />;
             case 'apps':          return <AppsTab />;
+            case 'themes':        return <ThemesTab />;
             case 'analytics':     return <AnalyticsTab />;
             case 'support':       return <SupportTab />;
             case 'announcements': return <AnnouncementsTab />;

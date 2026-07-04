@@ -1,0 +1,9 @@
+{
+  "id": "fashion",
+  "name": "Fashion Store",
+  "version": "1.0.0",
+  "industry": "Fashion",
+  "type": "free",
+  "thumbnail": "thumbnail.webp",
+  "schema": "schema.json"
+}

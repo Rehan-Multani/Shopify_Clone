@@ -1,0 +1,9 @@
+{
+  "id": "furniture",
+  "name": "Furniture Store",
+  "version": "1.0.0",
+  "industry": "Furniture",
+  "type": "free",
+  "thumbnail": "thumbnail.webp",
+  "schema": "schema.json"
+}

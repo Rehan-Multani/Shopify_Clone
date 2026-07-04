@@ -185,6 +185,11 @@ app.use('/api/master-admin/overview', createServiceProxy(MERCHANT_ADMIN_SERVICE_
 }));
 
 
+// Theme Routes (maps public /api/themes to merchant-admin-service /api/admin/themes)
+app.use('/api/themes', createServiceProxy(MERCHANT_ADMIN_SERVICE_URL, (path, req) => {
+    return req.originalUrl.replace('/api/themes', '/api/admin/themes');
+}));
+
 app.use('/api/admin', createServiceProxy(MERCHANT_ADMIN_SERVICE_URL));
 
 

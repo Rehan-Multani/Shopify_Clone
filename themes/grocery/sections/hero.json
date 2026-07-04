@@ -1,0 +1,9 @@
+{
+  "name": "Hero Banner",
+  "settings": {
+    "heading": "Discover Our Premium Collection",
+    "subheading": "Curated premium products just for you.",
+    "button_label": "Shop Collection",
+    "background_image": "hero.webp"
+  }
+}

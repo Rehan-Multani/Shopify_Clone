@@ -1,0 +1,8 @@
+{
+  "name": "Featured Products Grid",
+  "settings": {
+    "title": "Best Sellers",
+    "products_count": 8,
+    "columns": 4
+  }
+}

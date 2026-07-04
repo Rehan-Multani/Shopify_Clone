@@ -5,6 +5,7 @@ import merchantRoutes from './routes/merchantRoutes.js';
 import planRoutes from './routes/planRoutes.js';
 import supportRoutes from './routes/supportRoutes.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
+import themeRoutes from './routes/themeRoutes.js';
 import path from 'path';
 import dotenv from 'dotenv';
 
@@ -65,6 +66,7 @@ app.use('/api/admin', merchantRoutes);
 app.use('/api/admin/plans', planRoutes);
 app.use('/api/admin/support-tickets', supportRoutes);
 app.use('/api/admin', analyticsRoutes);
+app.use('/api/admin/themes', themeRoutes);
 
 
 // Health check

@@ -1,0 +1,21 @@
+{
+  "name": "Header Navigation",
+  "settings": {
+    "logo_width": 150,
+    "sticky_header": true,
+    "menu_links": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Catalog",
+        "url": "/collections/all"
+      },
+      {
+        "label": "About",
+        "url": "/pages/about"
+      }
+    ]
+  }
+}

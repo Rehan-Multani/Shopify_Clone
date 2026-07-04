@@ -1,0 +1,9 @@
+{
+  "title": "Product Details Page",
+  "sections": [
+    "header",
+    "product-details",
+    "related-products",
+    "footer"
+  ]
+}

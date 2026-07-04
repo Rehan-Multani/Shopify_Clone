@@ -1,0 +1,9 @@
+{
+  "id": "beauty",
+  "name": "Beauty Store",
+  "version": "1.0.0",
+  "industry": "Beauty",
+  "type": "free",
+  "thumbnail": "thumbnail.webp",
+  "schema": "schema.json"
+}

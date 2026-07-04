@@ -1,0 +1,9 @@
+{
+  "id": "electronics",
+  "name": "Electronics Store",
+  "version": "1.0.0",
+  "industry": "Electronics",
+  "type": "free",
+  "thumbnail": "thumbnail.webp",
+  "schema": "schema.json"
+}
