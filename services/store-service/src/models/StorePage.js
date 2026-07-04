@@ -11,6 +11,7 @@ const storePageSchema = new mongoose.Schema({
         ref: 'Store',
         required: true
     },
+
     slug: {
         type: String,
         required: true

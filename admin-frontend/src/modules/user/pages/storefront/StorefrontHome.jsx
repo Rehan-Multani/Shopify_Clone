@@ -56,8 +56,14 @@ const StorefrontHome = ({ cartCount, onAddToCart, customer, onLogout, storeInfo 
         if (!storeId) return;
         const fetchHomeLayout = async () => {
             try {
-                // Fetch page sections
-                const res = await fetch(`${GATEWAY_URL}/store-pages/home?storeId=${storeId}`);
+                // Fetch page sections (passing previewThemeId/themeId if present in browser query string)
+                const searchParams = new URLSearchParams(window.location.search);
+                const previewThemeId = searchParams.get('previewThemeId') || searchParams.get('themeId') || '';
+                const url = previewThemeId
+                    ? `${GATEWAY_URL}/store-pages/home?storeId=${storeId}&previewThemeId=${previewThemeId}`
+                    : `${GATEWAY_URL}/store-pages/home?storeId=${storeId}`;
+
+                const res = await fetch(url);
                 const data = await res.json();
                 if (data.success && data.page?.sections) {
                     const sorted = (data.page.sections || []).sort((a, b) => (a.order || 0) - (b.order || 0));

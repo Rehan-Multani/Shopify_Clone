@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import ComponentLibrary from './ComponentLibrary';
 import SectionTree from './SectionTree';
 import BuilderCanvas from './BuilderCanvas';
@@ -23,6 +23,7 @@ const formatText = (text) => {
 
 export default function WebsiteBuilder() {
     const navigate = useNavigate();
+    const location = useLocation();
     const token = localStorage.getItem('merchantToken');
     const storeId = localStorage.getItem('activeStoreId') || '';
 
@@ -72,7 +73,13 @@ export default function WebsiteBuilder() {
             }
 
             // Fetch theme settings
-            const themeRes = await fetch(`${STORE_API_URL}/themes`, {
+            const searchParams = new URLSearchParams(location.search);
+            const themeId = searchParams.get('themeId') || '';
+            const themeUrl = themeId 
+                ? `${STORE_API_URL}/themes?themeId=${themeId}`
+                : `${STORE_API_URL}/themes`;
+
+            const themeRes = await fetch(themeUrl, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'x-store-id': storeId
@@ -86,7 +93,10 @@ export default function WebsiteBuilder() {
             }
 
             // Fetch page options
-            const pagesRes = await fetch(`${STORE_API_URL}/store-pages?storeId=${storeId}`, {
+            const pagesUrl = themeId 
+                ? `${STORE_API_URL}/store-pages?storeId=${storeId}&themeId=${themeId}`
+                : `${STORE_API_URL}/store-pages?storeId=${storeId}`;
+            const pagesRes = await fetch(pagesUrl, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -367,7 +377,13 @@ export default function WebsiteBuilder() {
         if (!newPageForm.slug || !newPageForm.title) return;
 
         try {
-            const res = await fetch(`${STORE_API_URL}/store-pages`, {
+            const searchParams = new URLSearchParams(location.search);
+            const themeId = searchParams.get('themeId') || '';
+            const pageCreateUrl = themeId 
+                ? `${STORE_API_URL}/store-pages?themeId=${themeId}`
+                : `${STORE_API_URL}/store-pages`;
+
+            const res = await fetch(pageCreateUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -422,7 +438,13 @@ export default function WebsiteBuilder() {
         setSaving(true);
         try {
             // A. Save Global Theme
-            const themeRes = await fetch(`${STORE_API_URL}/themes`, {
+            const searchParams = new URLSearchParams(location.search);
+            const themeId = searchParams.get('themeId') || '';
+            const themeSaveUrl = themeId 
+                ? `${STORE_API_URL}/themes?themeId=${themeId}`
+                : `${STORE_API_URL}/themes`;
+
+            const themeRes = await fetch(themeSaveUrl, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -433,7 +455,11 @@ export default function WebsiteBuilder() {
             });
 
             // B. Save Active Page settings & sections
-            const pageRes = await fetch(`${STORE_API_URL}/store-pages/${activePage.slug}`, {
+            const pageSaveUrl = themeId 
+                ? `${STORE_API_URL}/store-pages/${activePage.slug}?themeId=${themeId}`
+                : `${STORE_API_URL}/store-pages/${activePage.slug}`;
+
+            const pageRes = await fetch(pageSaveUrl, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

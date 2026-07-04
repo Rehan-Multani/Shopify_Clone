@@ -46,15 +46,9 @@ const StorefrontContainer = ({ resolvedStoreId }) => {
                 if (res.ok) {
                     const data = await res.json();
                     
-                    // Fetch theme as well
-                    const themeRes = await fetch(`${GATEWAY_URL}/themes`, {
-                        headers: { 'x-store-id': storeId }
-                    });
-                    const themeData = await themeRes.json();
-                    
                     setStoreInfo({
                         ...data,
-                        themeSettings: themeRes.ok && themeData.success ? themeData.theme : {}
+                        themeSettings: {}
                     });
                 }
             } catch (err) {

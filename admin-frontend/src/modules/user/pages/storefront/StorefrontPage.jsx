@@ -20,7 +20,13 @@ const StorefrontPage = ({ cartCount, customer, onLogout, storeInfo }) => {
         const fetchPageDetails = async () => {
             try {
                 setLoading(true);
-                const res = await fetch(`${GATEWAY_URL}/store-pages/${slug}?storeId=${storeId}`);
+                const searchParams = new URLSearchParams(window.location.search);
+                const previewThemeId = searchParams.get('previewThemeId') || searchParams.get('themeId') || '';
+                const url = previewThemeId
+                    ? `${GATEWAY_URL}/store-pages/${slug}?storeId=${storeId}&previewThemeId=${previewThemeId}`
+                    : `${GATEWAY_URL}/store-pages/${slug}?storeId=${storeId}`;
+
+                const res = await fetch(url);
                 const data = await res.json();
                 if (res.ok && data.success) {
                     setPage(data.page);

@@ -1,5 +1,6 @@
 import StorePage from '../models/StorePage.js';
 import { DEFAULT_HOME_SECTIONS } from '../data/defaultSections.js';
+import mongoose from 'mongoose';
 
 const DEFAULT_PAGES = [
     { slug: 'home', title: 'Home Page', isDefault: true, isHomePage: true },
@@ -21,6 +22,7 @@ export const getPages = async (req, res) => {
         }
 
         const filter = req.merchant ? { merchantId: req.merchant._id, storeId } : { storeId };
+
         let pages = await StorePage.find(filter);
 
         const formattedPages = pages.map(p => {
@@ -35,10 +37,15 @@ export const getPages = async (req, res) => {
         DEFAULT_PAGES.forEach(defaultPage => {
             const exists = formattedPages.some(p => p.slug === defaultPage.slug);
             if (!exists) {
+                let themeSections = [];
+                if (defaultPage.slug === 'home') {
+                    themeSections = DEFAULT_HOME_SECTIONS;
+                }
+
                 formattedPages.push({
                     ...defaultPage,
                     content: '',
-                    sections: defaultPage.slug === 'home' ? DEFAULT_HOME_SECTIONS : [],
+                    sections: themeSections,
                     isNew: true
                 });
             }
@@ -66,6 +73,7 @@ export const getPageBySlug = async (req, res) => {
         }
 
         const filter = req.merchant ? { merchantId: req.merchant._id, storeId, slug } : { storeId, slug };
+
         let page = await StorePage.findOne(filter);
 
         if (!page) {
@@ -73,10 +81,16 @@ export const getPageBySlug = async (req, res) => {
             if (!defaultPage) {
                 return res.status(404).json({ success: false, message: 'Page not found' });
             }
+
+            let themeSections = [];
+            if (slug === 'home') {
+                themeSections = DEFAULT_HOME_SECTIONS;
+            }
+
             page = {
                 ...defaultPage,
                 content: '',
-                sections: slug === 'home' ? DEFAULT_HOME_SECTIONS : [],
+                sections: themeSections,
                 isNew: true
             };
         } else {
@@ -125,6 +139,13 @@ export const updatePage = async (req, res) => {
             await page.save();
         } else {
             const defaultPage = DEFAULT_PAGES.find(p => p.slug === slug);
+            let themeSections = sections;
+            if (themeSections === undefined) {
+                if (slug === 'home') {
+                    themeSections = DEFAULT_HOME_SECTIONS;
+                }
+            }
+
             page = await StorePage.create({
                 merchantId,
                 storeId,
@@ -132,7 +153,7 @@ export const updatePage = async (req, res) => {
                 title: title || (defaultPage ? defaultPage.title : slug),
                 content: content || '',
                 isHomePage: isHomePage !== undefined ? isHomePage : (defaultPage ? !!defaultPage.isHomePage : false),
-                sections: sections !== undefined ? sections : (slug === 'home' ? DEFAULT_HOME_SECTIONS : []),
+                sections: themeSections || [],
                 seo: seo || {},
                 visibility: visibility || 'published',
                 publishDate: publishDate || Date.now(),
@@ -163,7 +184,9 @@ export const deletePage = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Store ID (x-store-id) is required' });
         }
 
-        await StorePage.deleteOne({ merchantId, storeId, slug });
+        const filter = { merchantId, storeId, slug };
+
+        await StorePage.deleteOne(filter);
 
         res.status(200).json({
             success: true,
@@ -192,7 +215,9 @@ export const updatePageSections = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Sections must be an array' });
         }
 
-        let page = await StorePage.findOne({ merchantId, storeId, slug });
+        const filter = { merchantId, storeId, slug };
+
+        let page = await StorePage.findOne(filter);
 
         if (!page) {
             const defaultPage = DEFAULT_PAGES.find(p => p.slug === slug);
@@ -233,7 +258,9 @@ export const updateSectionSettings = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Store ID (x-store-id) is required' });
         }
 
-        let page = await StorePage.findOne({ merchantId, storeId, slug });
+        const filter = { merchantId, storeId, slug };
+
+        let page = await StorePage.findOne(filter);
 
         if (!page) {
             return res.status(404).json({ success: false, message: 'Page not found' });
@@ -251,7 +278,6 @@ export const updateSectionSettings = async (req, res) => {
             section.enabled = enabled;
         }
 
-        // Mark the settings subdocument path as modified to ensure Mongoose updates mixed type
         page.markModified('sections');
         await page.save();
 
@@ -282,10 +308,9 @@ export const createPage = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Slug and title are required' });
         }
 
-        // Check if slug already exists for this store
         const existingPage = await StorePage.findOne({ storeId, slug });
         if (existingPage) {
-            return res.status(400).json({ success: false, message: 'A page with this slug already exists' });
+            return res.status(400).json({ success: false, message: 'A page with this slug already exists for this store' });
         }
 
         const page = await StorePage.create({

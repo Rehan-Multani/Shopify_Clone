@@ -59,8 +59,14 @@ const StorefrontLayout = ({ children, cartCount, customer, onLogout, storeInfo }
 
     useEffect(() => {
         if (!storeId) return;
-        // Fetch pages to display in navigation and footer
-        fetch(`${GATEWAY_URL}/store-pages?storeId=${storeId}`)
+        // Fetch pages to display in navigation and footer (passing previewThemeId/themeId if present in browser query string)
+        const searchParams = new URLSearchParams(location.search);
+        const previewThemeId = searchParams.get('previewThemeId') || searchParams.get('themeId') || '';
+        const url = previewThemeId
+            ? `${GATEWAY_URL}/store-pages?storeId=${storeId}&previewThemeId=${previewThemeId}`
+            : `${GATEWAY_URL}/store-pages?storeId=${storeId}`;
+
+        fetch(url)
             .then(res => res.json())
             .then(data => {
                 if (data.success && data.pages) {
@@ -68,7 +74,7 @@ const StorefrontLayout = ({ children, cartCount, customer, onLogout, storeInfo }
                 }
             })
             .catch(err => console.error('Error fetching pages for storefront layout:', err));
-    }, [storeId]);
+    }, [storeId, location.search]);
 
     useEffect(() => {
         const handleScroll = () => {

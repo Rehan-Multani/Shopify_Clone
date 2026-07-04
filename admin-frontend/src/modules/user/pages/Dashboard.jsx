@@ -22,7 +22,6 @@ import ViewCustomer from '../components/dashboard/ViewCustomer';
 import AddCompany from '../components/dashboard/AddCompany';
 import SidekickChat from '../components/dashboard/SidekickChat';
 import CSVImportModal from '../components/dashboard/CSVImportModal';
-import ThemesTab from '../components/dashboard/ThemesTab';
 import AddCollection from '../components/dashboard/AddCollection';
 import CreatePurchaseOrder from '../components/dashboard/CreatePurchaseOrder';
 import CreateTransfer from '../components/dashboard/CreateTransfer';
@@ -218,10 +217,8 @@ const Dashboard = () => {
         }
 
         if (tab === 'online-store') {
-            if (location.pathname.endsWith('/themes')) return <ThemesTab />;
             if (location.pathname.includes('/pages/edit/')) return <EditPageTab />;
-            if (location.pathname.endsWith('/pages')) return <PagesTab />;
-            return <ThemesTab />;
+            return <PagesTab />;
         }
 
         if (tab === 'domains') {
