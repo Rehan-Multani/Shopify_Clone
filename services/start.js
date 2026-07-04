@@ -1,6 +1,5 @@
 import { spawn } from 'child_process';
 import path from 'path';
-// Trigger restart
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);

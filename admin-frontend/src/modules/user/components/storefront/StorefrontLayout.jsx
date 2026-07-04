@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useParams, useLocation } from 'react-router-dom';
-import ThemeRenderer from './ThemeRenderer';
 import { getStorePath } from './storeUrlHelper';
 
 const GATEWAY_URL = import.meta.env.VITE_API_BASE_URL;
@@ -119,7 +118,7 @@ const StorefrontLayout = ({ children, cartCount, customer, onLogout, storeInfo }
     const footerCardBg = isFooterDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)';
 
     return (
-        <ThemeRenderer themeSettings={storeInfo?.themeSettings || {}}>
+        <>
             <div className="flex flex-col min-h-screen bg-[var(--color-secondary)] selection:bg-[var(--color-primary-semi)] selection:text-[var(--color-primary-dark)] text-[var(--color-text)]">
                 {/* Dynamic Announcement Bar & Header */}
                 {storeInfo?.themeSettings?.headerConfig?.enabled !== false && (
@@ -717,7 +716,7 @@ const StorefrontLayout = ({ children, cartCount, customer, onLogout, storeInfo }
                     </footer>
                 )}
             </div>
-        </ThemeRenderer>
+        </>
     );
 };
 
