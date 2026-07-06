@@ -42,13 +42,43 @@ const StorefrontContainer = ({ resolvedStoreId }) => {
         // Fetch store settings publicly
         const fetchStoreDetails = async () => {
             try {
-                const res = await fetch(`${GATEWAY_URL}/stores/${storeId}`);
+                const searchParams = new URLSearchParams(window.location.search);
+                const cleanPreview = searchParams.get('cleanPreview') || '';
+                const folder = searchParams.get('folder') || '';
+                const previewThemeId = searchParams.get('previewThemeId') || searchParams.get('themeId') || '';
+
+                let storeUrl = `${GATEWAY_URL}/stores/${storeId}`;
+                const queryParts = [];
+                if (cleanPreview) queryParts.push(`cleanPreview=${cleanPreview}`);
+                if (folder) queryParts.push(`folder=${folder}`);
+                if (previewThemeId) queryParts.push(`themeId=${previewThemeId}`);
+                if (queryParts.length > 0) {
+                    storeUrl += `?${queryParts.join('&')}`;
+                }
+
+                const res = await fetch(storeUrl);
                 if (res.ok) {
                     const data = await res.json();
                     
+                    let activeSettings = {};
+                    if (data.activeTheme && data.installedThemes) {
+                        const activeInstall = data.installedThemes.find(t => t.themeId === data.activeTheme.themeId);
+                        if (activeInstall) {
+                            activeSettings = activeInstall.publishedThemeSettings || {};
+                        }
+                    }
+
+                    // If previewing, load draftThemeSettings
+                    if (previewThemeId && data.installedThemes) {
+                        const previewInstall = data.installedThemes.find(t => t.themeId === previewThemeId);
+                        if (previewInstall) {
+                            activeSettings = previewInstall.draftThemeSettings || previewInstall.publishedThemeSettings || {};
+                        }
+                    }
+
                     setStoreInfo({
                         ...data,
-                        themeSettings: {}
+                        themeSettings: activeSettings
                     });
                 }
             } catch (err) {

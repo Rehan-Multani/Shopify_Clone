@@ -4,6 +4,7 @@ import PlatformSetting from '../models/PlatformSetting.js';
 import dns from 'dns';
 import { exec } from 'child_process';
 import path from 'path';
+import fs from 'fs';
 
 const getLast6MonthsMockData = (totalRevenue) => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -102,7 +103,43 @@ export const getStoreById = async (req, res) => {
         if (!store) {
             return res.status(404).json({ message: 'Store not found' });
         }
-        res.json(store);
+
+        let storeObj = store.toObject();
+
+        if (req.query.cleanPreview === 'true' && req.query.folder) {
+            const folder = req.query.folder;
+            const themesDir = path.resolve(process.cwd(), '..', 'themes');
+            const defaultSettingsPath = path.join(themesDir, folder, 'defaultSettings.json');
+            
+            let defaultSettings = {};
+            try {
+                if (fs.existsSync(defaultSettingsPath)) {
+                    defaultSettings = JSON.parse(fs.readFileSync(defaultSettingsPath, 'utf8'));
+                }
+            } catch (err) {
+                console.error("Error reading defaultSettings in cleanPreview:", err);
+            }
+
+            const mockThemeId = req.query.themeId || 'mock-theme-id';
+            
+            storeObj.activeTheme = {
+                themeId: mockThemeId,
+                folder: folder,
+                version: req.query.version || '1.0.0',
+                installedAt: new Date()
+            };
+
+            storeObj.installedThemes = [{
+                themeId: mockThemeId,
+                folder: folder,
+                version: req.query.version || '1.0.0',
+                installedAt: new Date(),
+                draftThemeSettings: defaultSettings,
+                publishedThemeSettings: defaultSettings
+            }];
+        }
+
+        res.json(storeObj);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

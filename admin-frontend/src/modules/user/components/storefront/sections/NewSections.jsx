@@ -1,6 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
+const GATEWAY_URL = import.meta.env.VITE_API_BASE_URL;
+const ASSETS_BASE_URL = GATEWAY_URL?.replace('/api', '') || '';
+
+const getImageUrl = (path) => {
+    if (!path) return '';
+    if (path.startsWith('http') || path.startsWith('data:')) return path;
+    const cleanPath = path.startsWith('/') ? path : `/${path}`;
+    return `${ASSETS_BASE_URL}${cleanPath}`;
+};
+
 // Image Banner
 export const ImageBannerSection = ({ settings = {} }) => {
     const {
@@ -19,7 +29,7 @@ export const ImageBannerSection = ({ settings = {} }) => {
                 className="relative overflow-hidden rounded-3xl my-6 mx-auto max-w-7xl shadow-sm border border-zinc-200/40 flex items-center justify-center text-center p-8 sm:p-12 md:p-16"
                 style={{ 
                     minHeight: height, 
-                    backgroundImage: `url(${imageUrl})`, 
+                    backgroundImage: `url(${getImageUrl(imageUrl)})`, 
                     backgroundSize: 'cover', 
                     backgroundPosition: 'center' 
                 }}
@@ -78,7 +88,7 @@ export const ImageBannerSection = ({ settings = {} }) => {
                 </div>
                 <div className="flex-1 relative" style={{ minHeight: height }}>
                     <img 
-                        src={imageUrl} 
+                        src={getImageUrl(imageUrl)} 
                         alt={title}
                         className="absolute inset-0 w-full h-full object-cover"
                     />
@@ -168,7 +178,7 @@ export const CarouselSection = ({ settings = {}, blocks = [] }) => {
         >
             <div className="absolute inset-0 transition-opacity duration-700">
                 <img 
-                    src={activeSlide.imageUrl} 
+                    src={getImageUrl(activeSlide.imageUrl)} 
                     alt={activeSlide.title} 
                     className="w-full h-full object-cover"
                 />

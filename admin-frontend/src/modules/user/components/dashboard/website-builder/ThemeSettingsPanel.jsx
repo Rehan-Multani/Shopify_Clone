@@ -38,12 +38,26 @@ const BORDERS = [
     { name: 'Pill (Round)', value: '99px' }
 ];
 
-export default function ThemeSettingsPanel({ themeSettings = {}, onChange }) {
+export default function ThemeSettingsPanel({ themeSettings = {}, onChange, schema = { settings: [] } }) {
+    const setNestedKey = (obj, path, value) => {
+        const keys = path.split('.');
+        const nextObj = { ...obj };
+        let current = nextObj;
+        for (let i = 0; i < keys.length - 1; i++) {
+            const key = keys[i];
+            current[key] = { ...(current[key] || {}) };
+            current = current[key];
+        }
+        current[keys[keys.length - 1]] = value;
+        return nextObj;
+    };
+
+    const getNestedKey = (obj, path) => {
+        return path.split('.').reduce((acc, key) => (acc ? acc[key] : undefined), obj);
+    };
+
     const handleFieldChange = (key, value) => {
-        onChange({
-            ...themeSettings,
-            [key]: value
-        });
+        onChange(setNestedKey(themeSettings, key, value));
     };
 
     const handleNestedChange = (group, key, value) => {
@@ -55,6 +69,78 @@ export default function ThemeSettingsPanel({ themeSettings = {}, onChange }) {
             }
         });
     };
+
+    // Render dynamic schema if present
+    if (schema && schema.settings && schema.settings.length > 0) {
+        return (
+            <div className="space-y-6">
+                {schema.settings.map((group, gIdx) => (
+                    <div key={gIdx} className="space-y-4">
+                        <h4 className="text-xs font-black text-zinc-400 uppercase tracking-widest border-b pb-1.5 mb-2">
+                            {group.name}
+                        </h4>
+                        <div className="space-y-3">
+                            {group.settings.map((field, fIdx) => {
+                                const val = getNestedKey(themeSettings, field.id) !== undefined
+                                    ? getNestedKey(themeSettings, field.id)
+                                    : field.default;
+
+                                return (
+                                    <div key={fIdx} className="space-y-1">
+                                        <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">
+                                            {field.label}
+                                        </label>
+
+                                        {field.type === 'color' && (
+                                            <ColorPickerField
+                                                value={val}
+                                                onChange={(newVal) => handleFieldChange(field.id, newVal)}
+                                            />
+                                        )}
+
+                                        {field.type === 'select' && (
+                                            <select
+                                                value={val}
+                                                onChange={(e) => handleFieldChange(field.id, e.target.value)}
+                                                className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-[#008060] bg-white shadow-sm"
+                                            >
+                                                {field.options.map(opt => (
+                                                    <option key={opt.value} value={opt.value}>
+                                                        {opt.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        )}
+
+                                        {field.type === 'toggle' && (
+                                            <label className="flex items-center gap-2 cursor-pointer mt-1">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={!!val}
+                                                    onChange={(e) => handleFieldChange(field.id, e.target.checked)}
+                                                    className="w-4 h-4 text-[#008060] rounded border-zinc-300 focus:ring-[#008060]"
+                                                />
+                                                <span className="text-xs text-zinc-600 font-medium">Enabled</span>
+                                            </label>
+                                        )}
+
+                                        {field.type === 'text' && (
+                                            <input
+                                                type="text"
+                                                value={val || ''}
+                                                onChange={(e) => handleFieldChange(field.id, e.target.value)}
+                                                className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-[#008060] bg-white"
+                                            />
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                ))}
+            </div>
+        );
+    }
 
     const typo = themeSettings.typography || { headingFont: 'Inter', bodyFont: 'Inter', headingWeight: '700', bodyWeight: '400', lineHeight: '1.5', letterSpacing: '0px', responsive: true };
     const btn = themeSettings.buttons || { size: 'medium', borderRadius: '8px', shadow: 'sm', hoverEffect: 'brightness', ripple: true, gradient: false };

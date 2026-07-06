@@ -4,14 +4,14 @@ export const DEFAULT_HOME_SECTIONS = [
         order: 1, 
         enabled: true, 
         settings: { 
-            backgroundImage: 'https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?w=1600',
+            backgroundImage: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1600',
             alignment: 'center'
         },
         blocks: [
-            { type: 'heading', settings: { text: 'Comfort & Care for <br/>Every Step' } },
-            { type: 'subheading', settings: { text: 'Premium adult diapers, baby care, hygiene essentials, and mobility aids – delivered with love to your doorstep.' } },
+            { type: 'heading', settings: { text: 'Elevate Your Style <br/>Every Single Day' } },
+            { type: 'subheading', settings: { text: 'Discover the latest trends in fashion, electronics, accessories and more - curated just for you.' } },
             { type: 'button', settings: { label: 'Shop Now →', link: '/catalog' } },
-            { type: 'button', settings: { label: 'View Deals', link: '/catalog' } }
+            { type: 'button', settings: { label: 'View Collection', link: '/catalog' } }
         ]
     },
     { 
@@ -29,16 +29,16 @@ export const DEFAULT_HOME_SECTIONS = [
         order: 3, 
         enabled: true, 
         settings: { 
-            title: 'Why QubanHC', 
-            subtitle: "We're not just a store – we're a commitment to your family's health and comfort."
+            title: 'Why Shop With Us', 
+            subtitle: "We offer premium quality, fast shipping, and exceptional customer support."
         },
         blocks: [
-            { type: 'feature', settings: { title: 'Free Shipping', text: 'Orders above ₹999 shipped free. No hidden charges, just care.', icon: 'truck' } },
-            { type: 'feature', settings: { title: 'Easy Returns', text: '30‑day hassle‑free returns. If it’s not right, we’ll make it right.', icon: 'rotate-ccw' } },
+            { type: 'feature', settings: { title: 'Free Shipping', text: 'Orders above ₹999 shipped free. No hidden charges.', icon: 'truck' } },
+            { type: 'feature', settings: { title: 'Easy Returns', text: '30‑day hassle‑free returns. If it’s not right, we’ll fix it.', icon: 'rotate-ccw' } },
             { type: 'feature', settings: { title: 'Secure Payments', text: 'Your data is safe with 256‑bit SSL. Pay your way, worry‑free.', icon: 'shield-check' } },
             { type: 'feature', settings: { title: '24/7 Support', text: 'Friendly experts ready to help anytime. Chat, call, or email.', icon: 'phone' } },
-            { type: 'feature', settings: { title: 'Medical‑Grade Quality', text: 'Every product meets strict healthcare standards. Your well‑being matters.', icon: 'heart-pulse' } },
-            { type: 'feature', settings: { title: 'Express Delivery', text: 'Same‑day dispatch & real‑time tracking. Care delivered fast.', icon: 'lightning' } }
+            { type: 'feature', settings: { title: 'Premium Quality', text: 'Every product meets strict quality standards. Your satisfaction matters.', icon: 'heart-pulse' } },
+            { type: 'feature', settings: { title: 'Express Delivery', text: 'Same‑day dispatch & real‑time tracking. Shipped fast.', icon: 'lightning' } }
         ]
     },
     { 
@@ -46,7 +46,7 @@ export const DEFAULT_HOME_SECTIONS = [
         order: 4, 
         enabled: true, 
         settings: { 
-            title: 'Featured Hygiene Essentials', 
+            title: 'Featured Products', 
             limit: 8 
         },
         blocks: []
@@ -56,11 +56,11 @@ export const DEFAULT_HOME_SECTIONS = [
         order: 5, 
         enabled: true, 
         settings: { 
-            title: 'What Our Families Say'
+            title: 'What Our Customers Say'
         },
         blocks: [
-            { type: 'testimonial', settings: { author: 'Sarah K.', text: 'Absolutely love the diapers and wipes, extremely soft and durable!' } },
-            { type: 'testimonial', settings: { author: 'Rajesh M.', text: 'Express delivery was incredibly fast. Customer support is very friendly and supportive.' } }
+            { type: 'testimonial', settings: { author: 'John D.', text: 'Absolutely love the premium quality and fast shipping! Will buy again.' } },
+            { type: 'testimonial', settings: { author: 'Emma W.', text: 'Incredibly fast customer support and super easy return process.' } }
         ]
     },
     { 
@@ -68,8 +68,8 @@ export const DEFAULT_HOME_SECTIONS = [
         order: 6, 
         enabled: true, 
         settings: { 
-            title: 'Stay in the Care Loop', 
-            subtitle: 'Be the first to know about new hygiene products, baby & adult care, and exclusive offers from QubanHC.' 
+            title: 'Join Our Newsletter', 
+            subtitle: 'Be the first to know about new products, exclusive collection launches, and special offers.' 
         },
         blocks: []
     }

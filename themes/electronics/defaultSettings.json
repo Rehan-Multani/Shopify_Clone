@@ -1,0 +1,25 @@
+{
+  "primaryColor": "#2563eb",
+  "secondaryColor": "#f0fdf4",
+  "accentColor": "#3b82f6",
+  "borderRadius": "8px",
+  "headerConfig": {
+    "enabled": true,
+    "sticky": true,
+    "transparent": false,
+    "backgroundColor": "#1e293b",
+    "textColor": "#ffffff",
+    "logoWidth": "auto",
+    "logoHeight": "36px",
+    "announcementBar": {
+      "enabled": true,
+      "text": "⚡ High Tech Deal: Up to 40% OFF on all smart accessories!",
+      "backgroundColor": "#2563eb",
+      "textColor": "#ffffff"
+    }
+  },
+  "footerConfig": {
+    "backgroundColor": "#0f172a",
+    "textColor": "#e2e8f0"
+  }
+}

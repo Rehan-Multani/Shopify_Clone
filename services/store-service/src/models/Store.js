@@ -100,7 +100,21 @@ const storeSchema = new mongoose.Schema({
     platformCommission: {
         type: Number,
         default: 0
-    }
+    },
+    activeTheme: {
+        themeId: { type: String, default: '' },
+        folder: { type: String, default: '' },
+        version: { type: String, default: '' },
+        installedAt: { type: Date }
+    },
+    installedThemes: [{
+        themeId: { type: String },
+        folder: { type: String },
+        version: { type: String },
+        installedAt: { type: Date, default: Date.now },
+        draftThemeSettings: { type: mongoose.Schema.Types.Mixed, default: {} },
+        publishedThemeSettings: { type: mongoose.Schema.Types.Mixed, default: {} }
+    }]
 }, {
     timestamps: true
 });

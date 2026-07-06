@@ -1,5 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import BlockStyleEditor from './BlockStyleEditor';
+
+const GATEWAY_URL = import.meta.env.VITE_API_BASE_URL;
+const ASSETS_BASE_URL = GATEWAY_URL?.replace('/api', '') || 'http://localhost:5000';
 
 const ColorPickerField = ({ value, onChange }) => {
     return (
@@ -18,6 +21,83 @@ const ColorPickerField = ({ value, onChange }) => {
                 maxLength={7}
                 className="w-20 px-2 py-1.5 border border-zinc-200 rounded-lg text-[10px] font-bold uppercase focus:outline-none focus:ring-1 focus:ring-[#008060] bg-white shadow-sm"
             />
+        </div>
+    );
+};
+
+const ImageUploadField = ({ value, onChange, label = 'Select Image' }) => {
+    const [uploading, setUploading] = useState(false);
+    const [error, setError] = useState('');
+
+    const handleFileChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        setUploading(true);
+        setError('');
+
+        try {
+            const formData = new FormData();
+            formData.append('image', file);
+
+            const res = await fetch(`${GATEWAY_URL}/banners/upload`, {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await res.json();
+            if (res.ok && data.url) {
+                onChange(data.url);
+            } else {
+                setError(data.message || 'Upload failed');
+            }
+        } catch (err) {
+            console.error('Error uploading image:', err);
+            setError('Connection error. Failed to upload.');
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const imageUrl = value ? (value.startsWith('http') ? value : `${ASSETS_BASE_URL}${value}`) : null;
+
+    return (
+        <div className="space-y-2 border border-zinc-200 p-3 rounded-xl bg-zinc-50/50">
+            {imageUrl && (
+                <div className="relative aspect-video w-full overflow-hidden rounded-lg border border-zinc-200 bg-white">
+                    <img src={imageUrl} alt="Uploaded preview" className="w-full h-full object-cover" />
+                    <button 
+                        type="button"
+                        onClick={() => onChange('')}
+                        className="absolute top-1.5 right-1.5 p-1.5 bg-red-500 hover:bg-red-650 text-white rounded-full text-[10px] w-5 h-5 flex items-center justify-center font-bold"
+                        title="Remove Image"
+                    >
+                        ✕
+                    </button>
+                </div>
+            )}
+            <div className="flex items-center gap-3">
+                <label className="flex-1 flex flex-col items-center justify-center px-4 py-2 bg-white hover:bg-zinc-50 border border-zinc-200 rounded-xl cursor-pointer transition-all">
+                    <span className="text-[10px] font-bold text-zinc-650 tracking-wide text-center">
+                        {uploading ? '⌛ Uploading...' : label}
+                    </span>
+                    <input 
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        disabled={uploading}
+                        className="hidden"
+                    />
+                </label>
+                <input 
+                    type="text"
+                    value={value || ''}
+                    placeholder="Or paste image URL"
+                    onChange={(e) => onChange(e.target.value)}
+                    className="flex-[1.5] w-full px-2.5 py-2 border border-zinc-200 rounded-xl text-[10px] font-semibold focus:outline-none focus:ring-1 focus:ring-[#008060] bg-white shadow-sm"
+                />
+            </div>
+            {error && <p className="text-[9px] font-bold text-red-500 mt-1">{error}</p>}
         </div>
     );
 };
@@ -188,13 +268,11 @@ export default function SettingsPanel({
 
                 {(settings.backgroundType === 'image' || settings.layout === 'split') && (
                     <div>
-                        <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">{settings.layout === 'split' ? 'Featured Image URL' : 'Background Image URL'}</label>
-                        <input 
-                            type="text"
-                            placeholder="https://example.com/hero.jpg"
+                        <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">{settings.layout === 'split' ? 'Featured Image' : 'Background Image'}</label>
+                        <ImageUploadField 
                             value={settings.backgroundImage || ''}
-                            onChange={(e) => handleSettingChange('backgroundImage', e.target.value)}
-                            className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-[#008060]"
+                            onChange={(val) => handleSettingChange('backgroundImage', val)}
+                            label={settings.layout === 'split' ? 'Upload Featured Image' : 'Upload Background Image'}
                         />
                     </div>
                 )}
@@ -403,13 +481,11 @@ export default function SettingsPanel({
         return (
             <div className="space-y-4">
                 <div>
-                    <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Banner Image URL</label>
-                    <input 
-                        type="text"
-                        placeholder="https://example.com/banner.jpg"
+                    <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Banner Image</label>
+                    <ImageUploadField 
                         value={settings.imageUrl || ''}
-                        onChange={(e) => handleSettingChange('imageUrl', e.target.value)}
-                        className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-[#008060]"
+                        onChange={(val) => handleSettingChange('imageUrl', val)}
+                        label="Upload Banner Image"
                     />
                 </div>
                 <div>
@@ -904,13 +980,11 @@ export default function SettingsPanel({
                 return (
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Image URL</label>
-                            <input 
-                                type="text"
-                                placeholder="https://example.com/image.jpg"
+                            <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Image</label>
+                            <ImageUploadField 
                                 value={settings.imageUrl || ''}
-                                onChange={(e) => handleSettingChange('imageUrl', e.target.value)}
-                                className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-xs font-semibold focus:outline-none"
+                                onChange={(val) => handleSettingChange('imageUrl', val)}
+                                label="Upload Image"
                             />
                         </div>
                         <BlockStyleEditor 

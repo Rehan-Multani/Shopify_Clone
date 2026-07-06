@@ -173,7 +173,7 @@ export default function SectionTree({
                         onDragEnd={handleDragEnd}
                     >
                         <SortableContext
-                            items={sections.map(sec => sec.sectionId || sec._id || '')}
+                            items={sections.map((sec, idx) => sec.sectionId || sec._id || `sec-${idx}`)}
                             strategy={verticalListSortingStrategy}
                         >
                             <div className="space-y-2">

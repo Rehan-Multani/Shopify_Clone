@@ -1,0 +1,25 @@
+{
+  "primaryColor": "#111827",
+  "secondaryColor": "#f9fafb",
+  "accentColor": "#b45309",
+  "borderRadius": "4px",
+  "headerConfig": {
+    "enabled": true,
+    "sticky": true,
+    "transparent": false,
+    "backgroundColor": "#ffffff",
+    "textColor": "#111827",
+    "logoWidth": "auto",
+    "logoHeight": "36px",
+    "announcementBar": {
+      "enabled": true,
+      "text": "🕶️ End of Season Sale: Get Free Delivery on all premium orders!",
+      "backgroundColor": "#111827",
+      "textColor": "#ffffff"
+    }
+  },
+  "footerConfig": {
+    "backgroundColor": "#111827",
+    "textColor": "#f9fafb"
+  }
+}

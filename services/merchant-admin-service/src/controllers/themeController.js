@@ -1,5 +1,8 @@
 import Theme from '../models/Theme.js';
 import themeService from '../services/themeService.js';
+import sharp from 'sharp';
+import path from 'path';
+import fs from 'fs';
 
 /**
  * @desc    Get all registered themes (filterable by status)
@@ -265,3 +268,41 @@ export const deleteTheme = async (req, res) => {
         });
     }
 };
+
+/**
+ * @desc    Upload theme thumbnail image
+ * @route   POST /api/admin/themes/upload
+ * @access  Private/MasterAdmin
+ */
+export const uploadThemeThumbnail = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ success: false, message: 'Please upload an image file' });
+        }
+
+        const uploadDir = process.env.UPLOAD_DIR ? path.resolve(process.env.UPLOAD_DIR) : path.join(process.cwd(), 'public', 'uploads');
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+
+        const filename = `theme-thumbnail-${Date.now()}.webp`;
+        const filepath = path.join(uploadDir, filename);
+
+        await sharp(req.file.buffer)
+            .resize(800, 600, { fit: 'cover', withoutEnlargement: true })
+            .webp({ quality: 80 })
+            .toFile(filepath);
+
+        res.status(200).json({
+            success: true,
+            url: `/uploads/${filename}`
+        });
+    } catch (error) {
+        console.error('[ThemeController] Error uploading theme thumbnail:', error.message);
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+

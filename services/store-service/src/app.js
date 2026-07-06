@@ -4,6 +4,8 @@ import cookieParser from 'cookie-parser';
 import storeRoutes from './routes/storeRoutes.js';
 import storePageRoutes from './routes/storePageRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
+import themeRoutes from './routes/themeRoutes.js';
+import { getThemeStore } from './controllers/themeController.js';
 
 const app = express();
 
@@ -55,6 +57,8 @@ app.use((req, res, next) => {
 app.use('/api/stores', storeRoutes);
 app.use('/api/store-pages', storePageRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/themes', themeRoutes);
+app.get('/api/theme-store', getThemeStore);
 
 // Health check
 app.get('/api/store/health', (req, res) => {

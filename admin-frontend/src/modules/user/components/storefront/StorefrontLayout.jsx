@@ -119,7 +119,20 @@ const StorefrontLayout = ({ children, cartCount, customer, onLogout, storeInfo }
 
     return (
         <>
-            <div className="flex flex-col min-h-screen bg-[var(--color-secondary)] selection:bg-[var(--color-primary-semi)] selection:text-[var(--color-primary-dark)] text-[var(--color-text)]">
+            <div 
+                className="flex flex-col min-h-screen bg-[var(--color-secondary)] selection:bg-[var(--color-primary-semi)] selection:text-[var(--color-primary-dark)] text-[var(--color-text)]"
+                style={{
+                    '--color-primary': storeInfo?.themeSettings?.primaryColor || '#008060',
+                    '--color-secondary': storeInfo?.themeSettings?.secondaryColor || '#ffffff',
+                    '--color-accent': storeInfo?.themeSettings?.accentColor || '#14B8A6',
+                    '--border-radius': storeInfo?.themeSettings?.borderRadius || '8px',
+                    '--color-primary-light': hexToRgba(storeInfo?.themeSettings?.primaryColor || '#008060', 0.1),
+                    '--color-primary-semi': hexToRgba(storeInfo?.themeSettings?.primaryColor || '#008060', 0.25),
+                    '--color-primary-dark': hexToRgba(storeInfo?.themeSettings?.primaryColor || '#008060', 0.8),
+                    '--color-text': isDarkColor(storeInfo?.themeSettings?.secondaryColor || '#ffffff') ? '#ffffff' : '#18181b',
+                    fontFamily: storeInfo?.themeSettings?.fontFamily || 'Inter, sans-serif'
+                }}
+            >
                 {/* Dynamic Announcement Bar & Header */}
                 {storeInfo?.themeSettings?.headerConfig?.enabled !== false && (
                     <>

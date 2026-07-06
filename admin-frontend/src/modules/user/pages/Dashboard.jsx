@@ -60,6 +60,7 @@ import SupportTab from '../components/dashboard/SupportTab';
 import BannersTab from '../components/dashboard/BannersTab';
 import AddBanner from '../components/dashboard/AddBanner';
 import WebsiteBuilder from '../components/dashboard/website-builder/WebsiteBuilder';
+import ThemesTab from '../components/dashboard/ThemesTab';
 import DomainsTab from '../components/dashboard/DomainsTab';
 import VendorsTabSingle from '../components/dashboard/VendorsTabSingle';
 import AddVendorSingle from '../components/dashboard/AddVendorSingle';

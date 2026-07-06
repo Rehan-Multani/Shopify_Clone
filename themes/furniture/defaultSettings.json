@@ -1,0 +1,25 @@
+{
+  "primaryColor": "#78350f",
+  "secondaryColor": "#fdf8f6",
+  "accentColor": "#b45309",
+  "borderRadius": "6px",
+  "headerConfig": {
+    "enabled": true,
+    "sticky": true,
+    "transparent": false,
+    "backgroundColor": "#ffffff",
+    "textColor": "#1e293b",
+    "logoWidth": "auto",
+    "logoHeight": "36px",
+    "announcementBar": {
+      "enabled": true,
+      "text": "🏡 Revamp your living space with 15% OFF on Minimalist Sofas!",
+      "backgroundColor": "#78350f",
+      "textColor": "#ffffff"
+    }
+  },
+  "footerConfig": {
+    "backgroundColor": "#334155",
+    "textColor": "#f8fafc"
+  }
+}

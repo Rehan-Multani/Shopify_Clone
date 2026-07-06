@@ -16,6 +16,10 @@ const storePageSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    themeId: {
+        type: String,
+        default: ''
+    },
     title: {
         type: String,
         required: true
@@ -91,7 +95,7 @@ const storePageSchema = new mongoose.Schema({
     timestamps: true
 });
 
-storePageSchema.index({ storeId: 1, slug: 1 }, { unique: true });
+storePageSchema.index({ storeId: 1, slug: 1, themeId: 1 }, { unique: true });
 
 const StorePage = mongoose.model('StorePage', storePageSchema);
 export default StorePage;

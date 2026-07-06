@@ -1,6 +1,114 @@
 import StorePage from '../models/StorePage.js';
+import Store from '../models/Store.js';
 import { DEFAULT_HOME_SECTIONS } from '../data/defaultSections.js';
 import mongoose from 'mongoose';
+import fs from 'fs';
+import path from 'path';
+
+// Helper to read JSON safely
+const readJsonFile = (filePath) => {
+    try {
+        if (fs.existsSync(filePath)) {
+            return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        }
+    } catch (err) {
+        console.error(`Error reading file at ${filePath}:`, err);
+    }
+    return null;
+};
+
+const getThemeDefaultSections = async (storeId, themeId, folderName = '') => {
+    try {
+        let folder = folderName;
+        if (!folder) {
+            const store = await Store.findById(storeId);
+            if (!store) return DEFAULT_HOME_SECTIONS;
+
+            const targetThemeId = themeId || (store.activeTheme ? store.activeTheme.themeId : '');
+            const themeInfo = store.installedThemes.find(t => t.themeId === targetThemeId);
+
+            if (!themeInfo || !themeInfo.folder) {
+                return DEFAULT_HOME_SECTIONS;
+            }
+            folder = themeInfo.folder;
+        }
+
+        const themesDir = path.resolve(process.cwd(), '..', 'themes');
+        const indexPagePath = path.join(themesDir, folder, 'pages', 'index.json');
+        const indexPage = readJsonFile(indexPagePath);
+
+        let loadedSections = [];
+        if (indexPage && Array.isArray(indexPage.sections)) {
+            let orderCounter = 1;
+            for (const sectionName of indexPage.sections) {
+                if (sectionName === 'header' || sectionName === 'footer') continue;
+                
+                const sectionPath = path.join(themesDir, folder, 'sections', `${sectionName}.json`);
+                const sectionData = readJsonFile(sectionPath);
+                if (sectionData) {
+                    const settingsObj = { ...sectionData.settings };
+                    if (settingsObj.background_image !== undefined) {
+                        settingsObj.backgroundImage = settingsObj.background_image;
+                    }
+                    if (settingsObj.button_label !== undefined) {
+                        settingsObj.buttonLabel = settingsObj.button_label;
+                    }
+                    if (settingsObj.button_link !== undefined) {
+                        settingsObj.buttonLink = settingsObj.button_link;
+                    }
+                    if (settingsObj.heading !== undefined) {
+                        settingsObj.title = settingsObj.heading;
+                    }
+                    if (settingsObj.subheading !== undefined) {
+                        settingsObj.subtitle = settingsObj.subheading;
+                    }
+
+                    let sectionBlocks = [];
+                    if (sectionName === 'hero') {
+                        if (settingsObj.heading) {
+                            sectionBlocks.push({
+                                blockId: Math.random().toString(36).substr(2, 9),
+                                type: 'heading',
+                                settings: { text: settingsObj.heading }
+                            });
+                        }
+                        if (settingsObj.subheading) {
+                            sectionBlocks.push({
+                                blockId: Math.random().toString(36).substr(2, 9),
+                                type: 'subheading',
+                                settings: { text: settingsObj.subheading }
+                            });
+                        }
+                        if (settingsObj.buttonLabel) {
+                            sectionBlocks.push({
+                                blockId: Math.random().toString(36).substr(2, 9),
+                                type: 'button',
+                                settings: { label: settingsObj.buttonLabel, link: settingsObj.buttonLink || '/catalog' }
+                            });
+                        }
+                    }
+
+                    loadedSections.push({
+                        sectionId: Math.random().toString(36).substr(2, 9),
+                        type: sectionData.type || sectionName,
+                        enabled: true,
+                        locked: false,
+                        settings: settingsObj,
+                        blocks: sectionBlocks,
+                        order: orderCounter++
+                    });
+                }
+            }
+        }
+
+        if (loadedSections.length > 0) {
+            return loadedSections;
+        }
+    } catch (err) {
+        console.error('Error getting theme default sections:', err);
+    }
+    return DEFAULT_HOME_SECTIONS.map((s, i) => ({ ...s, sectionId: `fallback-${i}`, order: i + 1 }));
+};
 
 const DEFAULT_PAGES = [
     { slug: 'home', title: 'Home Page', isDefault: true, isHomePage: true },
@@ -21,25 +129,32 @@ export const getPages = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Store ID is required' });
         }
 
-        const filter = req.merchant ? { merchantId: req.merchant._id, storeId } : { storeId };
+        const store = await Store.findById(storeId);
+        const themeId = req.query.themeId || (store && store.activeTheme ? store.activeTheme.themeId : '');
+        const filter = req.merchant ? { merchantId: req.merchant._id, storeId, themeId } : { storeId, themeId };
 
         let pages = await StorePage.find(filter);
 
-        const formattedPages = pages.map(p => {
+        const formattedPages = await Promise.all(pages.map(async p => {
             const obj = p.toObject();
             const isDef = DEFAULT_PAGES.some(d => d.slug === obj.slug);
+            let sectionsList = obj.sections || [];
+            if (obj.slug === 'home' && sectionsList.length === 0) {
+                sectionsList = await getThemeDefaultSections(storeId, themeId);
+            }
             return {
                 ...obj,
+                sections: sectionsList,
                 isDefault: isDef
             };
-        });
+        }));
 
-        DEFAULT_PAGES.forEach(defaultPage => {
+        for (const defaultPage of DEFAULT_PAGES) {
             const exists = formattedPages.some(p => p.slug === defaultPage.slug);
             if (!exists) {
                 let themeSections = [];
                 if (defaultPage.slug === 'home') {
-                    themeSections = DEFAULT_HOME_SECTIONS;
+                    themeSections = await getThemeDefaultSections(storeId, themeId);
                 }
 
                 formattedPages.push({
@@ -49,7 +164,7 @@ export const getPages = async (req, res) => {
                     isNew: true
                 });
             }
-        });
+        }
 
         res.status(200).json({
             success: true,
@@ -72,9 +187,15 @@ export const getPageBySlug = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Store ID is required' });
         }
 
-        const filter = req.merchant ? { merchantId: req.merchant._id, storeId, slug } : { storeId, slug };
+        const useCleanPreview = req.query.cleanPreview === 'true';
+        const store = await Store.findById(storeId);
+        const themeId = req.query.themeId || req.query.previewThemeId || (store && store.activeTheme ? store.activeTheme.themeId : '');
+        const filter = req.merchant ? { merchantId: req.merchant._id, storeId, slug, themeId } : { storeId, slug, themeId };
 
-        let page = await StorePage.findOne(filter);
+        let page = null;
+        if (!useCleanPreview) {
+            page = await StorePage.findOne(filter);
+        }
 
         if (!page) {
             const defaultPage = DEFAULT_PAGES.find(p => p.slug === slug);
@@ -84,7 +205,7 @@ export const getPageBySlug = async (req, res) => {
 
             let themeSections = [];
             if (slug === 'home') {
-                themeSections = DEFAULT_HOME_SECTIONS;
+                themeSections = await getThemeDefaultSections(storeId, themeId, req.query.folder);
             }
 
             page = {
@@ -96,8 +217,13 @@ export const getPageBySlug = async (req, res) => {
         } else {
             const obj = page.toObject();
             const isDef = DEFAULT_PAGES.some(d => d.slug === obj.slug);
+            let sectionsList = obj.sections || [];
+            if (obj.slug === 'home' && sectionsList.length === 0) {
+                sectionsList = await getThemeDefaultSections(storeId, themeId, req.query.folder);
+            }
             page = {
                 ...obj,
+                sections: sectionsList,
                 isDefault: isDef
             };
         }
@@ -125,7 +251,9 @@ export const updatePage = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Store ID (x-store-id) is required' });
         }
 
-        let page = await StorePage.findOne({ merchantId, storeId, slug });
+        const store = await Store.findById(storeId);
+        const themeId = req.query.themeId || req.body.themeId || (store && store.activeTheme ? store.activeTheme.themeId : '');
+        let page = await StorePage.findOne({ merchantId, storeId, slug, themeId });
 
         if (page) {
             page.content = content !== undefined ? content : page.content;
@@ -142,13 +270,14 @@ export const updatePage = async (req, res) => {
             let themeSections = sections;
             if (themeSections === undefined) {
                 if (slug === 'home') {
-                    themeSections = DEFAULT_HOME_SECTIONS;
+                    themeSections = await getThemeDefaultSections(storeId, themeId);
                 }
             }
 
             page = await StorePage.create({
                 merchantId,
                 storeId,
+                themeId,
                 slug,
                 title: title || (defaultPage ? defaultPage.title : slug),
                 content: content || '',
@@ -184,7 +313,9 @@ export const deletePage = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Store ID (x-store-id) is required' });
         }
 
-        const filter = { merchantId, storeId, slug };
+        const store = await Store.findById(storeId);
+        const themeId = req.query.themeId || (store && store.activeTheme ? store.activeTheme.themeId : '');
+        const filter = { merchantId, storeId, slug, themeId };
 
         await StorePage.deleteOne(filter);
 
@@ -215,7 +346,9 @@ export const updatePageSections = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Sections must be an array' });
         }
 
-        const filter = { merchantId, storeId, slug };
+        const store = await Store.findById(storeId);
+        const themeId = req.query.themeId || req.body.themeId || (store && store.activeTheme ? store.activeTheme.themeId : '');
+        const filter = { merchantId, storeId, slug, themeId };
 
         let page = await StorePage.findOne(filter);
 
@@ -224,6 +357,7 @@ export const updatePageSections = async (req, res) => {
             page = await StorePage.create({
                 merchantId,
                 storeId,
+                themeId,
                 slug,
                 title: defaultPage ? defaultPage.title : slug,
                 isHomePage: defaultPage ? !!defaultPage.isHomePage : slug === 'home',
@@ -258,7 +392,9 @@ export const updateSectionSettings = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Store ID (x-store-id) is required' });
         }
 
-        const filter = { merchantId, storeId, slug };
+        const store = await Store.findById(storeId);
+        const themeId = req.query.themeId || req.body.themeId || (store && store.activeTheme ? store.activeTheme.themeId : '');
+        const filter = { merchantId, storeId, slug, themeId };
 
         let page = await StorePage.findOne(filter);
 
@@ -308,14 +444,17 @@ export const createPage = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Slug and title are required' });
         }
 
-        const existingPage = await StorePage.findOne({ storeId, slug });
+        const store = await Store.findById(storeId);
+        const themeId = req.query.themeId || req.body.themeId || (store && store.activeTheme ? store.activeTheme.themeId : '');
+        const existingPage = await StorePage.findOne({ storeId, slug, themeId });
         if (existingPage) {
-            return res.status(400).json({ success: false, message: 'A page with this slug already exists for this store' });
+            return res.status(400).json({ success: false, message: 'A page with this slug already exists for this store/theme' });
         }
 
         const page = await StorePage.create({
             merchantId,
             storeId,
+            themeId,
             slug,
             title,
             content: content || '',

@@ -1,0 +1,25 @@
+{
+  "primaryColor": "#16a34a",
+  "secondaryColor": "#f0fdf4",
+  "accentColor": "#15803d",
+  "borderRadius": "12px",
+  "headerConfig": {
+    "enabled": true,
+    "sticky": true,
+    "transparent": false,
+    "backgroundColor": "#ffffff",
+    "textColor": "#14532d",
+    "logoWidth": "auto",
+    "logoHeight": "36px",
+    "announcementBar": {
+      "enabled": true,
+      "text": "🥦 Fresh & Organic: Get 100% Organic Products delivered inside 2 hours!",
+      "backgroundColor": "#16a34a",
+      "textColor": "#ffffff"
+    }
+  },
+  "footerConfig": {
+    "backgroundColor": "#14532d",
+    "textColor": "#f0fdf4"
+  }
+}

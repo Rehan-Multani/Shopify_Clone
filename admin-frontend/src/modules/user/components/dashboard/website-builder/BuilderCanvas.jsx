@@ -1,4 +1,5 @@
 import React from 'react';
+import BannerSection from '../../storefront/sections/BannerSection';
 
 export default function BuilderCanvas({
     sections,
@@ -50,8 +51,17 @@ export default function BuilderCanvas({
 
     return (
         <div className="flex-grow flex items-start justify-center p-6 bg-zinc-100 overflow-y-auto h-full storefront-scrollbar">
+            <style>{`
+                .builder-canvas-preview-mode a,
+                .builder-canvas-preview-mode button,
+                .builder-canvas-preview-mode input,
+                .builder-canvas-preview-mode select,
+                .builder-canvas-preview-mode textarea {
+                    pointer-events: none !important;
+                }
+            `}</style>
             <div 
-                className={`transition-all duration-300 flex flex-col min-h-full overflow-hidden ${viewportWidths[viewport]}`}
+                className={`transition-all duration-300 flex flex-col min-h-full overflow-hidden builder-canvas-preview-mode ${viewportWidths[viewport]}`}
                 style={{
                     fontFamily: fontFamily || 'Inter, sans-serif',
                     backgroundColor: canvasBg,
@@ -77,7 +87,13 @@ export default function BuilderCanvas({
 
                  {/* 2. Builder Dynamic Header */}
                 <header 
-                    className="w-full border-b flex items-center justify-between px-6 z-10 sticky top-0 backdrop-blur-md transition-all"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onSelectSection('header');
+                    }}
+                    className={`w-full border-b flex items-center justify-between px-6 z-10 sticky top-0 backdrop-blur-md transition-all cursor-pointer group/header relative ${
+                        selectedId === 'header' ? 'ring-2 ring-[#008060] ring-offset-2' : 'hover:ring-1 hover:ring-zinc-400'
+                    }`}
                     style={{ 
                         height: themeSettings.headerConfig?.height || '70px',
                         backgroundColor: themeSettings.headerConfig?.transparent ? 'transparent' : (themeSettings.headerConfig?.backgroundColor || canvasBg),
@@ -85,6 +101,12 @@ export default function BuilderCanvas({
                         color: themeSettings.headerConfig?.textColor || canvasText
                     }}
                 >
+                    {/* Action Label Badge */}
+                    <div className={`absolute -bottom-6 left-4 px-2 py-0.5 rounded-full text-[7px] font-black uppercase tracking-widest z-25 transition-all shadow-sm bg-zinc-800 text-white opacity-0 group-hover/header:opacity-100 ${
+                        selectedId === 'header' ? 'opacity-100 bg-[#008060]' : ''
+                    }`}>
+                        Header Settings
+                    </div>
                     <div className="flex items-center gap-6">
                         {logoUrl ? (
                             <img 
@@ -158,7 +180,10 @@ export default function BuilderCanvas({
             )}
 
                 {/* 3. Sections Content Canvas */}
-                <div className="flex-1 py-4 px-2 space-y-6 min-h-[400px] bg-transparent">
+                <div className="flex-grow py-4 px-2 space-y-6 min-h-[400px] bg-transparent">
+                    {!sections.some(s => s.type === 'banners' || s.type === 'hero' || s.type === 'image-banner' || s.type === 'video-banner') && (
+                        <BannerSection storeId={localStorage.getItem('activeStoreId') || ''} />
+                    )}
                     {sections.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-20 text-center">
                             <span className="text-3xl mb-3">🎨</span>
@@ -208,13 +233,25 @@ export default function BuilderCanvas({
                 {/* 4. Builder Dynamic Footer */}
                 {themeSettings.footerConfig?.enabled !== false && (
                     <footer 
-                        className="w-full border-t p-8 space-y-6"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onSelectSection('footer');
+                        }}
+                        className={`w-full border-t p-8 space-y-6 cursor-pointer group/footer relative ${
+                            selectedId === 'footer' ? 'ring-2 ring-[#008060] ring-offset-2' : 'hover:ring-1 hover:ring-zinc-400'
+                        }`}
                         style={{
                             backgroundColor: canvasBg,
                             color: canvasText,
                             borderColor: isSecondaryDark ? '#27272a' : '#e4e4e7'
                         }}
                     >
+                        {/* Action Label Badge */}
+                        <div className={`absolute -top-3 left-4 px-2 py-0.5 rounded-full text-[7px] font-black uppercase tracking-widest z-25 transition-all shadow-sm bg-zinc-800 text-white opacity-0 group-hover/footer:opacity-100 ${
+                            selectedId === 'footer' ? 'opacity-100 bg-[#008060]' : ''
+                        }`}>
+                            Footer Settings
+                        </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {(themeSettings.footerConfig?.columns || []).map((col, idx) => (
                             <div key={idx} className="space-y-3">

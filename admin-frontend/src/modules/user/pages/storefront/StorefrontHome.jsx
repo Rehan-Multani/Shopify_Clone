@@ -59,9 +59,13 @@ const StorefrontHome = ({ cartCount, onAddToCart, customer, onLogout, storeInfo 
                 // Fetch page sections (passing previewThemeId/themeId if present in browser query string)
                 const searchParams = new URLSearchParams(window.location.search);
                 const previewThemeId = searchParams.get('previewThemeId') || searchParams.get('themeId') || '';
-                const url = previewThemeId
-                    ? `${GATEWAY_URL}/store-pages/home?storeId=${storeId}&previewThemeId=${previewThemeId}`
-                    : `${GATEWAY_URL}/store-pages/home?storeId=${storeId}`;
+                const cleanPreview = searchParams.get('cleanPreview') || '';
+                const folder = searchParams.get('folder') || '';
+
+                let url = `${GATEWAY_URL}/store-pages/home?storeId=${storeId}`;
+                if (previewThemeId) url += `&previewThemeId=${previewThemeId}`;
+                if (cleanPreview) url += `&cleanPreview=${cleanPreview}`;
+                if (folder) url += `&folder=${folder}`;
 
                 const res = await fetch(url);
                 const data = await res.json();
@@ -120,12 +124,12 @@ const StorefrontHome = ({ cartCount, onAddToCart, customer, onLogout, storeInfo 
         <StorefrontLayout cartCount={cartCount} customer={customer} onLogout={onLogout} storeInfo={storeInfo}>
             <div className="space-y-0 animate-fade-in">
                 {/* Render banners at the top of the homepage by default if not explicitly added in customized layout */}
-                {hasBanners && !pageSections.some(s => s.type === 'banners') && (
+                {hasBanners && !pageSections.some(s => s.type === 'banners' || s.type === 'hero' || s.type === 'image-banner' || s.type === 'video-banner') && (
                     <BannerSection storeId={storeId} />
                 )}
                 {pageSections.map((section, idx) => (
                     <div key={section.sectionId || section._id || idx} className="animate-fade-in-up" style={{ animationDelay: `${idx * 100}ms` }}>
-                        <SectionRenderer section={section} />
+                        <SectionRenderer section={section} storeId={storeId} onAddToCart={onAddToCart} />
                     </div>
                 ))}
             </div>

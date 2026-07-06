@@ -6,14 +6,19 @@ import {
     getFolderManifest, 
     registerTheme, 
     updateTheme, 
-    deleteTheme 
+    deleteTheme,
+    uploadThemeThumbnail
 } from '../controllers/themeController.js';
+import { uploadCategoryImageMiddleware } from '../../../shared/uploadMiddleware.js';
 
 const router = express.Router();
 
 // Folder helper endpoints
 router.get('/folders', getThemeFolders);
 router.get('/folders/:folder/manifest', getFolderManifest);
+
+// Upload endpoint
+router.post('/upload', uploadCategoryImageMiddleware, uploadThemeThumbnail);
 
 // CRUD endpoints
 router.route('/')

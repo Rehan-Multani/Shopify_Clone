@@ -9,6 +9,15 @@ dotenv.config();
 // Connect to database
 connectDB(mongoose);
 
+mongoose.connection.once('open', async () => {
+    try {
+        await mongoose.connection.db.collection('storepages').dropIndex('storeId_1_slug_1');
+        console.log('[Store Service] Successfully dropped old unique index storeId_1_slug_1');
+    } catch (err) {
+        console.log('[Store Service] Index drop info:', err.message);
+    }
+});
+
 const PORT = process.env.PORT || 5004;
 
 const server = app.listen(PORT, () => {

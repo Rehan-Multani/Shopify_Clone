@@ -2,6 +2,7 @@ import React from 'react';
 import HeroSection from './sections/HeroSection';
 import CategorySection from './sections/CategorySection';
 import FeaturedProductsSection from './sections/FeaturedProductsSection';
+import BestSellerSection from './sections/BestSellerSection';
 import TestimonialsSection from './sections/TestimonialsSection';
 import BannerSection from './sections/BannerSection';
 import {
@@ -15,6 +16,16 @@ import {
     SocialIconsSection,
     PricingTableSection
 } from './sections/NewSections';
+
+const GATEWAY_URL = import.meta.env.VITE_API_BASE_URL;
+const ASSETS_BASE_URL = GATEWAY_URL?.replace('/api', '') || '';
+
+const getImageUrl = (path) => {
+    if (!path) return '';
+    if (path.startsWith('http') || path.startsWith('data:')) return path;
+    const cleanPath = path.startsWith('/') ? path : `/${path}`;
+    return `${ASSETS_BASE_URL}${cleanPath}`;
+};
 
 const formatText = (text) => {
     if (!text || typeof text !== 'string') return text;
@@ -52,7 +63,7 @@ const NewsletterSection = ({ settings = {} }) => {
     );
 };
 
-const SectionRenderer = ({ section }) => {
+const SectionRenderer = ({ section, storeId, onAddToCart }) => {
     if (!section || !section.enabled) return null;
 
     const { type, settings = {}, blocks = [] } = section;
@@ -69,7 +80,7 @@ const SectionRenderer = ({ section }) => {
                 heroBg = settings.backgroundGradient || 'linear-gradient(to right, #008060, #047857, #064e3b)';
             } else {
                 heroBg = settings.backgroundImage && !isSplit
-                    ? `url(${settings.backgroundImage})` 
+                    ? `url(${getImageUrl(settings.backgroundImage)})` 
                     : 'linear-gradient(to right, #008060, #047857, #064e3b)';
             }
 
@@ -210,7 +221,7 @@ const SectionRenderer = ({ section }) => {
                                 >
                                     <div className="w-full h-full rounded-[22px] overflow-hidden bg-zinc-50 relative group">
                                         {settings.backgroundImage ? (
-                                            <img src={settings.backgroundImage} alt="Hero illustration" className="w-full h-full object-cover transition-transform duration-700 hover:scale-105" />
+                                            <img src={getImageUrl(settings.backgroundImage)} alt="Hero illustration" className="w-full h-full object-cover transition-transform duration-700 hover:scale-105" />
                                         ) : (
                                             <div className="w-full h-full flex flex-col items-center justify-center text-zinc-400 bg-zinc-50 font-bold text-sm">
                                                 <span>No image selected</span>
@@ -245,7 +256,7 @@ const SectionRenderer = ({ section }) => {
 
         case 'categories':
         case 'category-grid':
-            return <CategorySection settings={settings} />;
+            return <CategorySection settings={settings} storeId={storeId} />;
 
         case 'banners':
             return <BannerSection settings={settings} />;
@@ -370,10 +381,12 @@ const SectionRenderer = ({ section }) => {
         case 'pricing-table':
             return <PricingTableSection settings={settings} blocks={blocks} />;
 
+        case 'best-sellers':
+            return <BestSellerSection settings={settings} storeId={storeId} onAddToCart={onAddToCart} />;
+
         case 'featured-products':
         case 'product-slider':
-        case 'best-sellers':
-            return <FeaturedProductsSection settings={settings} />;
+            return <FeaturedProductsSection settings={settings} storeId={storeId} onAddToCart={onAddToCart} />;
 
         case 'testimonials':
             // Render Testimonials based on blocks
@@ -502,7 +515,7 @@ const SectionRenderer = ({ section }) => {
             return (
                 <div className="py-3 px-4 max-w-7xl mx-auto w-full flex justify-center">
                     <img
-                        src={settings.imageUrl || 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=600'}
+                        src={getImageUrl(settings.imageUrl) || 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=600'}
                         alt="Customizable"
                         className="max-w-full"
                         style={{

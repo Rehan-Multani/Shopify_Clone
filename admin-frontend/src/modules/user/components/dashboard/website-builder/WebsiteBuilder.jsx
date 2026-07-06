@@ -8,6 +8,7 @@ import HeaderBuilder from './HeaderBuilder';
 import FooterBuilder from './FooterBuilder';
 import ThemeSettingsPanel from './ThemeSettingsPanel';
 import useBuilderHistory from './useBuilderHistory';
+import SectionRenderer from '../../storefront/SectionRenderer';
 
 const STORE_API_URL = import.meta.env.VITE_STORE_API_URL;
 
@@ -42,6 +43,7 @@ export default function WebsiteBuilder() {
     const [pages, setPages] = useState([]);
     const [activePage, setActivePage] = useState({ slug: 'home', title: 'Home Page', sections: [] });
     const [themeSettings, setThemeSettings] = useState({});
+    const [schema, setSchema] = useState({ settings: [] });
 
     // Undo/Redo History Manager
     const {
@@ -75,9 +77,7 @@ export default function WebsiteBuilder() {
             // Fetch theme settings
             const searchParams = new URLSearchParams(location.search);
             const themeId = searchParams.get('themeId') || '';
-            const themeUrl = themeId 
-                ? `${STORE_API_URL}/themes?themeId=${themeId}`
-                : `${STORE_API_URL}/themes`;
+            const themeUrl = `${STORE_API_URL}/themes/settings?themeId=${themeId}`;
 
             const themeRes = await fetch(themeUrl, {
                 headers: {
@@ -88,8 +88,11 @@ export default function WebsiteBuilder() {
             const themeData = await themeRes.json();
             let loadedTheme = {};
             if (themeRes.ok && themeData.success && themeData.theme) {
-                loadedTheme = themeData.theme;
-                setThemeSettings(themeData.theme);
+                loadedTheme = themeData.theme.draftThemeSettings || themeData.theme.publishedThemeSettings || {};
+                setThemeSettings(loadedTheme);
+                if (themeData.schema) {
+                    setSchema(themeData.schema);
+                }
             }
 
             // Fetch page options
@@ -223,86 +226,87 @@ export default function WebsiteBuilder() {
         updateActivePageSections(sorted);
     };
 
+    // Helper to get section ID consistently
+    const getSectionId = (s, idx) => s.sectionId || s._id || `sec-${idx}`;
+
     const handleRemoveSection = (id) => {
-        const filtered = activePage.sections.filter((s, idx) => {
-            const sId = s.sectionId || s._id || `sec-${idx}`;
-            return sId !== id;
+        setActivePage(prev => {
+            const filtered = prev.sections.filter((s, idx) => getSectionId(s, idx) !== id);
+            pushState(filtered, themeSettings);
+            return { ...prev, sections: filtered };
         });
-        updateActivePageSections(filtered);
         if (selectedSectionId === id) setSelectedSectionId(null);
         showToast('Section removed');
     };
 
     const handleDuplicateSection = (id) => {
-        const target = activePage.sections.find((s, idx) => {
-            const sId = s.sectionId || s._id || `sec-${idx}`;
-            return sId === id;
+        setActivePage(prev => {
+            const target = prev.sections.find((s, idx) => getSectionId(s, idx) === id);
+            if (!target) return prev;
+
+            const duplicated = {
+                ...JSON.parse(JSON.stringify(target)),
+                sectionId: Math.random().toString(36).substr(2, 9),
+                _id: undefined,
+                order: prev.sections.length + 1
+            };
+
+            const newSections = [...prev.sections, duplicated];
+            pushState(newSections, themeSettings);
+            return { ...prev, sections: newSections };
         });
-        if (!target) return;
-
-        const duplicated = {
-            ...JSON.parse(JSON.stringify(target)),
-            sectionId: Math.random().toString(36).substr(2, 9),
-            _id: undefined, // Clear MongoDB ID
-            order: activePage.sections.length + 1
-        };
-
-        updateActivePageSections([...activePage.sections, duplicated]);
         showToast('Section duplicated');
     };
 
     const handleToggleVisibility = (id) => {
-        const updated = activePage.sections.map((s, idx) => {
-            const sId = s.sectionId || s._id || `sec-${idx}`;
-            if (sId === id) {
-                return { ...s, enabled: !s.enabled };
-            }
-            return s;
+        setActivePage(prev => {
+            const updated = prev.sections.map((s, idx) => {
+                if (getSectionId(s, idx) === id) {
+                    return { ...s, enabled: !s.enabled };
+                }
+                return s;
+            });
+            pushState(updated, themeSettings);
+            return { ...prev, sections: updated };
         });
-        updateActivePageSections(updated);
     };
 
     const handleToggleLock = (id) => {
-        const updated = activePage.sections.map((s, idx) => {
-            const sId = s.sectionId || s._id || `sec-${idx}`;
-            if (sId === id) {
-                return { ...s, locked: !s.locked };
-            }
-            return s;
+        setActivePage(prev => {
+            const updated = prev.sections.map((s, idx) => {
+                if (getSectionId(s, idx) === id) {
+                    return { ...s, locked: !s.locked };
+                }
+                return s;
+            });
+            pushState(updated, themeSettings);
+            return { ...prev, sections: updated };
         });
-        updateActivePageSections(updated);
     };
 
     // 4. Element Specific Setting Updates
     const handleUpdateSectionSettings = (key, value) => {
-        const updated = activePage.sections.map((s, idx) => {
-            const sId = s.sectionId || s._id || `sec-${idx}`;
-            if (sId === selectedSectionId) {
-                if (s.locked) {
-                    showToast('Section is locked. Unlock it to edit settings.', 'error');
-                    return s;
-                }
-                return {
-                    ...s,
-                    settings: {
-                        ...s.settings,
-                        [key]: value
+        setActivePage(prev => {
+            const updated = prev.sections.map((s, idx) => {
+                if (getSectionId(s, idx) === selectedSectionId) {
+                    if (s.locked) {
+                        showToast('Section is locked. Unlock it to edit settings.', 'error');
+                        return s;
                     }
-                };
-            }
-            return s;
+                    return {
+                        ...s,
+                        settings: { ...s.settings, [key]: value }
+                    };
+                }
+                return s;
+            });
+            pushState(updated, themeSettings);
+            return { ...prev, sections: updated };
         });
-        updateActivePageSections(updated);
     };
 
     // Block-level updates (inside sections like hero)
     const handleAddBlock = (secId, blockType) => {
-        const target = activePage.sections.find((s, idx) => {
-            const sId = s.sectionId || s._id || `sec-${idx}`;
-            return sId === secId;
-        });
-        if (!target || target.locked) return;
-
         const newBlock = {
             blockId: Math.random().toString(36).substr(2, 9),
             type: blockType,
@@ -311,58 +315,58 @@ export default function WebsiteBuilder() {
                     : { text: 'New block item' }
         };
 
-        const updated = activePage.sections.map((s, idx) => {
-            const sId = s.sectionId || s._id || `sec-${idx}`;
-            if (sId === secId) {
-                return {
-                    ...s,
-                    blocks: [...(s.blocks || []), newBlock]
-                };
-            }
-            return s;
+        setActivePage(prev => {
+            const target = prev.sections.find((s, idx) => getSectionId(s, idx) === secId);
+            if (!target || target.locked) return prev;
+
+            const updated = prev.sections.map((s, idx) => {
+                if (getSectionId(s, idx) === secId) {
+                    return { ...s, blocks: [...(s.blocks || []), newBlock] };
+                }
+                return s;
+            });
+            pushState(updated, themeSettings);
+            return { ...prev, sections: updated };
         });
-        updateActivePageSections(updated);
     };
 
     const handleUpdateBlockSetting = (secId, blockId, key, value) => {
-        const updated = activePage.sections.map((s, idx) => {
-            const sId = s.sectionId || s._id || `sec-${idx}`;
-            if (sId === secId) {
-                if (s.locked) return s;
-                return {
-                    ...s,
-                    blocks: (s.blocks || []).map(b => {
-                        if (b.blockId === blockId) {
-                            return {
-                                ...b,
-                                settings: {
-                                    ...b.settings,
-                                    [key]: value
-                                }
-                            };
-                        }
-                        return b;
-                    })
-                };
-            }
-            return s;
+        setActivePage(prev => {
+            const updated = prev.sections.map((s, idx) => {
+                if (getSectionId(s, idx) === secId) {
+                    if (s.locked) return s;
+                    return {
+                        ...s,
+                        blocks: (s.blocks || []).map(b => {
+                            if (b.blockId === blockId) {
+                                return { ...b, settings: { ...b.settings, [key]: value } };
+                            }
+                            return b;
+                        })
+                    };
+                }
+                return s;
+            });
+            pushState(updated, themeSettings);
+            return { ...prev, sections: updated };
         });
-        updateActivePageSections(updated);
     };
 
     const handleRemoveBlock = (secId, blockId) => {
-        const updated = activePage.sections.map((s, idx) => {
-            const sId = s.sectionId || s._id || `sec-${idx}`;
-            if (sId === secId) {
-                if (s.locked) return s;
-                return {
-                    ...s,
-                    blocks: (s.blocks || []).filter(b => b.blockId !== blockId)
-                };
-            }
-            return s;
+        setActivePage(prev => {
+            const updated = prev.sections.map((s, idx) => {
+                if (getSectionId(s, idx) === secId) {
+                    if (s.locked) return s;
+                    return {
+                        ...s,
+                        blocks: (s.blocks || []).filter(b => b.blockId !== blockId)
+                    };
+                }
+                return s;
+            });
+            pushState(updated, themeSettings);
+            return { ...prev, sections: updated };
         });
-        updateActivePageSections(updated);
     };
 
     // 5. Page Management & Creation
@@ -433,51 +437,52 @@ export default function WebsiteBuilder() {
         }));
     };
 
-    // 6. DB Persistence Save Button
+    const saveCurrentState = async () => {
+        const searchParams = new URLSearchParams(location.search);
+        const themeId = searchParams.get('themeId') || '';
+        const themeSaveUrl = `${STORE_API_URL}/themes/settings?themeId=${themeId}`;
+
+        const themeRes = await fetch(themeSaveUrl, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'x-store-id': storeId
+            },
+            body: JSON.stringify(themeSettings)
+        });
+
+        const pageSaveUrl = themeId 
+            ? `${STORE_API_URL}/store-pages/${activePage.slug}?themeId=${themeId}`
+            : `${STORE_API_URL}/store-pages/${activePage.slug}`;
+
+        const pageRes = await fetch(pageSaveUrl, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'x-store-id': storeId
+            },
+            body: JSON.stringify({
+                title: activePage.title,
+                sections: activePage.sections,
+                seo: activePage.seo || {},
+                visibility: activePage.visibility || 'published',
+                publishDate: activePage.publishDate || new Date(),
+                password: activePage.password || ''
+            })
+        });
+
+        return themeRes.ok && pageRes.ok;
+    };
+
+    // 6. DB Persistence Save Button (Saves to Draft)
     const handleSaveBuilder = async () => {
         setSaving(true);
         try {
-            // A. Save Global Theme
-            const searchParams = new URLSearchParams(location.search);
-            const themeId = searchParams.get('themeId') || '';
-            const themeSaveUrl = themeId 
-                ? `${STORE_API_URL}/themes?themeId=${themeId}`
-                : `${STORE_API_URL}/themes`;
-
-            const themeRes = await fetch(themeSaveUrl, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                    'x-store-id': storeId
-                },
-                body: JSON.stringify(themeSettings)
-            });
-
-            // B. Save Active Page settings & sections
-            const pageSaveUrl = themeId 
-                ? `${STORE_API_URL}/store-pages/${activePage.slug}?themeId=${themeId}`
-                : `${STORE_API_URL}/store-pages/${activePage.slug}`;
-
-            const pageRes = await fetch(pageSaveUrl, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                    'x-store-id': storeId
-                },
-                body: JSON.stringify({
-                    title: activePage.title,
-                    sections: activePage.sections,
-                    seo: activePage.seo || {},
-                    visibility: activePage.visibility || 'published',
-                    publishDate: activePage.publishDate || new Date(),
-                    password: activePage.password || ''
-                })
-            });
-
-            if (themeRes.ok && pageRes.ok) {
-                showToast('All customizer changes saved to live storefront!', 'success');
+            const success = await saveCurrentState();
+            if (success) {
+                showToast('Draft changes saved successfully!', 'success');
             } else {
                 showToast('Failed to save builder changes.', 'error');
             }
@@ -489,9 +494,45 @@ export default function WebsiteBuilder() {
         }
     };
 
+    // 6b. DB Persistence Publish Button (Copies Draft -> Published Settings)
+    const handlePublishBuilder = async () => {
+        setSaving(true);
+        try {
+            const saveSuccess = await saveCurrentState();
+            if (!saveSuccess) {
+                showToast('Failed to save changes before publishing.', 'error');
+                setSaving(false);
+                return;
+            }
+
+            const searchParams = new URLSearchParams(location.search);
+            const themeId = searchParams.get('themeId') || '';
+            const publishUrl = `${STORE_API_URL}/themes/publish?themeId=${themeId}`;
+
+            const res = await fetch(publishUrl, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'x-store-id': storeId
+                }
+            });
+
+            if (res.ok) {
+                showToast('All customizer changes published to live storefront!', 'success');
+            } else {
+                showToast('Publish failed.', 'error');
+            }
+        } catch (err) {
+            console.error('Error publishing theme settings:', err);
+            showToast('Connection error. Failed to publish.', 'error');
+        } finally {
+            setSaving(false);
+        }
+    };
+
     // Viewport section renderer callback helper
     const renderSectionContent = (sec) => {
-        // Basic placeholder text inside canvas for clean visualization
+        return <SectionRenderer section={sec} storeId={storeId} onAddToCart={() => {}} />;
         const alignmentStyles = {
             left: 'text-left items-start',
             center: 'text-center items-center',
@@ -1061,13 +1102,22 @@ export default function WebsiteBuilder() {
                         </button>
                     </div>
 
-                    <button
-                        onClick={handleSaveBuilder}
-                        disabled={saving}
-                        className="px-5 py-1.5 bg-[#008060] hover:bg-[#006e52] disabled:opacity-50 text-white rounded-lg text-xs font-black uppercase tracking-wider shadow transition-all flex items-center gap-2"
-                    >
-                        {saving ? 'Saving...' : 'Save & Publish'}
-                    </button>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={handleSaveBuilder}
+                            disabled={saving}
+                            className="px-4 py-1.5 bg-zinc-700 hover:bg-zinc-800 disabled:opacity-50 text-white rounded-lg text-xs font-bold shadow transition-all"
+                        >
+                            {saving ? 'Saving...' : 'Save Draft'}
+                        </button>
+                        <button
+                            onClick={handlePublishBuilder}
+                            disabled={saving}
+                            className="px-5 py-1.5 bg-[#008060] hover:bg-[#006e52] disabled:opacity-50 text-white rounded-lg text-xs font-black uppercase tracking-wider shadow transition-all flex items-center gap-2"
+                        >
+                            {saving ? 'Publishing...' : 'Publish Live'}
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -1079,7 +1129,15 @@ export default function WebsiteBuilder() {
                         sections={activePage.sections}
                         selectedId={selectedSectionId}
                         onSelectSection={(id) => {
-                            setSelectedSectionId(id);
+                            if (id === 'header') {
+                                setActiveTab('header');
+                                setSelectedSectionId(null);
+                            } else if (id === 'footer') {
+                                setActiveTab('footer');
+                                setSelectedSectionId(null);
+                            } else {
+                                setSelectedSectionId(id);
+                            }
                         }}
                         viewport={viewport}
                         themeSettings={themeSettings}
@@ -1202,7 +1260,7 @@ export default function WebsiteBuilder() {
                                     )}
                                     {activeTab === 'settings' && (
                                         <div className="h-full overflow-y-auto p-4 storefront-scrollbar bg-white">
-                                            <ThemeSettingsPanel themeSettings={themeSettings} onChange={updateThemeSettings} />
+                                            <ThemeSettingsPanel themeSettings={themeSettings} onChange={updateThemeSettings} schema={schema} />
                                         </div>
                                     )}
                                     {activeTab === 'page-seo' && (

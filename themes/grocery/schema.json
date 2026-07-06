@@ -1,3 +1,80 @@
 {
-  "sections": []
+  "name": "Grocery Theme Settings",
+  "settings": [
+    {
+      "name": "Colors",
+      "settings": [
+        {
+          "id": "primaryColor",
+          "type": "color",
+          "label": "Primary Accent Color",
+          "default": "#16a34a"
+        },
+        {
+          "id": "secondaryColor",
+          "type": "color",
+          "label": "Secondary Background Color",
+          "default": "#f0fdf4"
+        },
+        {
+          "id": "accentColor",
+          "type": "color",
+          "label": "Link & Highlights Color",
+          "default": "#15803d"
+        }
+      ]
+    },
+    {
+      "name": "Typography & Border",
+      "settings": [
+        {
+          "id": "fontFamily",
+          "type": "select",
+          "label": "Primary Font Family",
+          "options": [
+            { "value": "Inter", "label": "Inter" },
+            { "value": "Outfit", "label": "Outfit" },
+            { "value": "Playfair Display", "label": "Playfair Display" },
+            { "value": "Roboto", "label": "Roboto" }
+          ],
+          "default": "Inter"
+        },
+        {
+          "id": "borderRadius",
+          "type": "select",
+          "label": "Border Radius Style",
+          "options": [
+            { "value": "0px", "label": "Sharp (0px)" },
+            { "value": "4px", "label": "Soft (4px)" },
+            { "value": "8px", "label": "Rounded (8px)" },
+            { "value": "12px", "label": "Rounded XL (12px)" }
+          ],
+          "default": "12px"
+        }
+      ]
+    },
+    {
+      "name": "Header Settings",
+      "settings": [
+        {
+          "id": "headerConfig.sticky",
+          "type": "toggle",
+          "label": "Sticky Header",
+          "default": true
+        },
+        {
+          "id": "headerConfig.announcementBar.enabled",
+          "type": "toggle",
+          "label": "Show Announcement Bar",
+          "default": true
+        },
+        {
+          "id": "headerConfig.announcementBar.text",
+          "type": "text",
+          "label": "Announcement Text",
+          "default": "🥦 Fresh & Organic: Get 100% Organic Products delivered inside 2 hours!"
+        }
+      ]
+    }
+  ]
 }
