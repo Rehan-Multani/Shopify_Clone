@@ -1,0 +1,57 @@
+{
+  "name": "Our Services",
+  "type": "features-grid",
+  "settings": {
+    "title": "The Deco Living Difference",
+    "subtitle": "Handcrafted from durable solid wood, backed by lifetime guarantees.",
+    "features": [
+      {
+        "settings": {
+          "icon": "shield-check",
+          "title": "Lifetime Frame Warranty",
+          "text": "We guarantee the solid timber structure of our sofas for life."
+        }
+      },
+      {
+        "settings": {
+          "icon": "truck",
+          "title": "White-Glove Delivery",
+          "text": "We unbox, assemble, and position your furniture in the room of choice."
+        }
+      },
+      {
+        "settings": {
+          "icon": "rotate-ccw",
+          "title": "Comfort Trial",
+          "text": "Take 100 days to decide. If you don't love it, we'll collect it free."
+        }
+      }
+    ]
+  },
+  "blocks": [
+    {
+      "type": "feature",
+      "settings": {
+        "icon": "shield-check",
+        "title": "Lifetime Frame Warranty",
+        "text": "We guarantee the solid timber structure of our sofas for life."
+      }
+    },
+    {
+      "type": "feature",
+      "settings": {
+        "icon": "truck",
+        "title": "White-Glove Delivery",
+        "text": "We unbox, assemble, and position your furniture in the room of choice."
+      }
+    },
+    {
+      "type": "feature",
+      "settings": {
+        "icon": "rotate-ccw",
+        "title": "Comfort Trial",
+        "text": "Take 100 days to decide. If you don't love it, we'll collect it free."
+      }
+    }
+  ]
+}

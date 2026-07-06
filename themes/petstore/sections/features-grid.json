@@ -1,0 +1,34 @@
+{
+  "name": "Pawsome Trust Badges",
+  "type": "features-grid",
+  "settings": {
+    "title": "Why Pets Love Pawsome",
+    "subtitle": "We provide veterinary certified organic products, express delivery, and easy pet trials."
+  },
+  "blocks": [
+    {
+      "type": "feature",
+      "settings": {
+        "title": "Express Fresh Delivery",
+        "text": "Same-day food dispatch to keep kibble fresh & delicious.",
+        "icon": "truck"
+      }
+    },
+    {
+      "type": "feature",
+      "settings": {
+        "title": "100% Vet Approved",
+        "text": "Every recipe & toy is reviewed and certified by registered veterinarians.",
+        "icon": "shield-check"
+      }
+    },
+    {
+      "type": "feature",
+      "settings": {
+        "title": "Hassle-Free Exchange",
+        "text": "Not right? Exchange any bed or harness within 30 days.",
+        "icon": "rotate-ccw"
+      }
+    }
+  ]
+}

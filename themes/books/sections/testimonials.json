@@ -1,0 +1,23 @@
+{
+  "name": "Inkwell Reader Reviews",
+  "type": "testimonials",
+  "settings": {
+    "title": "What Readers Say"
+  },
+  "blocks": [
+    {
+      "type": "testimonial",
+      "settings": {
+        "author": "Arthur P.",
+        "text": "Inkwell is my absolute favorite online find. The curated editions are beautiful, and they ship books in custom protective wrapping so they arrive pristine."
+      }
+    },
+    {
+      "type": "testimonial",
+      "settings": {
+        "author": "Evelyn L.",
+        "text": "Fabulous stationery paper. The parchment pages feel amazing to write on, and ink doesn't bleed. Very high quality products."
+      }
+    }
+  ]
+}

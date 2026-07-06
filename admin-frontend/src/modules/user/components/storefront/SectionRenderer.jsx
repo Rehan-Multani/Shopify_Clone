@@ -105,7 +105,7 @@ const SectionRenderer = ({ section, storeId, onAddToCart }) => {
                                     className="leading-tight tracking-tight drop-shadow-sm animate-fade-in-up font-black"
                                     style={{ 
                                         animationDelay: '0ms',
-                                        fontSize: style.fontSize ? `${style.fontSize}px` : (isSplit ? '42px' : '48px'),
+                                        fontSize: style.fontSize ? `clamp(${Math.max(20, Math.round(Number(style.fontSize) * 0.6))}px, 5vw, ${style.fontSize}px)` : (isSplit ? 'clamp(24px, 5vw, 42px)' : 'clamp(28px, 6vw, 48px)'),
                                         color: isSplit ? 'var(--color-primary)' : (style.color || '#ffffff'),
                                         fontWeight: style.fontWeight || '900',
                                         lineHeight: style.lineHeight || undefined,
@@ -128,7 +128,7 @@ const SectionRenderer = ({ section, storeId, onAddToCart }) => {
                                     className="leading-relaxed drop-shadow animate-fade-in-up font-semibold"
                                     style={{ 
                                         animationDelay: '100ms',
-                                        fontSize: style.fontSize ? `${style.fontSize}px` : '15px',
+                                        fontSize: style.fontSize ? `clamp(${Math.max(13, Math.round(Number(style.fontSize) * 0.8))}px, 3.5vw, ${style.fontSize}px)` : 'clamp(13px, 3.5vw, 15px)',
                                         color: isSplit ? '#4b5563' : (style.color || '#ffffff'),
                                         fontWeight: style.fontWeight || '500',
                                         lineHeight: style.lineHeight || undefined,
@@ -439,7 +439,7 @@ const SectionRenderer = ({ section, storeId, onAddToCart }) => {
                     <HeadingTag
                         className="leading-tight tracking-tight uppercase"
                         style={{
-                            fontSize: style.fontSize ? `${style.fontSize}px` : '28px',
+                            fontSize: style.fontSize ? `clamp(${Math.max(18, Math.round(Number(style.fontSize) * 0.75))}px, 4vw, ${style.fontSize}px)` : 'clamp(20px, 4vw, 28px)',
                             color: style.color || '#18181b',
                             fontWeight: style.fontWeight || '700',
                             textAlign: style.textAlign || 'center',
@@ -463,7 +463,7 @@ const SectionRenderer = ({ section, storeId, onAddToCart }) => {
                     <p
                         className="leading-relaxed"
                         style={{
-                            fontSize: style.fontSize ? `${style.fontSize}px` : '14px',
+                            fontSize: style.fontSize ? `clamp(${Math.max(12, Math.round(Number(style.fontSize) * 0.85))}px, 3.5vw, ${style.fontSize}px)` : 'clamp(13px, 3.5vw, 14px)',
                             color: style.color || '#3f3f46',
                             fontWeight: style.fontWeight || '400',
                             textAlign: style.textAlign || 'left',
@@ -500,7 +500,7 @@ const SectionRenderer = ({ section, storeId, onAddToCart }) => {
                             borderStyle: style.borderWidth ? 'solid' : 'none',
                             borderRadius: style.borderRadius || '8px',
                             padding: `${style.paddingY !== undefined ? style.paddingY : 10}px ${style.paddingX !== undefined ? style.paddingX : 20}px`,
-                            fontSize: style.fontSize ? `${style.fontSize}px` : '13px',
+                            fontSize: style.fontSize ? `clamp(${Math.max(11, Math.round(Number(style.fontSize) * 0.85))}px, 3vw, ${style.fontSize}px)` : 'clamp(11px, 3vw, 13px)',
                             boxShadow: style.shadow === 'lg' ? '0 10px 15px -3px rgba(0,0,0,0.1)' : style.shadow === 'md' ? '0 4px 6px -1px rgba(0,0,0,0.1)' : style.shadow === 'sm' ? '0 1px 2px 0 rgba(0,0,0,0.05)' : 'none'
                         }}
                     >

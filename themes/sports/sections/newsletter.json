@@ -1,0 +1,8 @@
+{
+  "name": "Newsletter Signup",
+  "type": "newsletter",
+  "settings": {
+    "title": "Join Velocity Insiders",
+    "subtitle": "Subscribe to get early access to athlete training plans, priority gear releases, and exclusive member discounts."
+  }
+}

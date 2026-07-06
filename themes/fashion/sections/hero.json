@@ -1,9 +1,57 @@
 {
   "name": "Hero Banner",
+  "type": "hero",
   "settings": {
-    "heading": "Discover Our Premium Collection",
-    "subheading": "Curated premium products just for you.",
-    "button_label": "Shop Collection",
-    "background_image": "hero.webp"
-  }
+    "backgroundImage": "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600",
+    "alignment": "center",
+    "overlayOpacity": "0.2",
+    "height": "700px",
+    "showTrustBadges": true,
+    "badge1Text": "Prestige Shipping",
+    "badge2Text": "Curated Selection",
+    "badge3Text": "Bespoke Service"
+  },
+  "blocks": [
+    {
+      "type": "heading",
+      "settings": {
+        "text": "THE NEW STANDARD OF COUTURE",
+        "style": {
+          "tag": "h1",
+          "fontSize": 56,
+          "color": "#ffffff",
+          "fontWeight": "900",
+          "textAlign": "center"
+        }
+      }
+    },
+    {
+      "type": "subheading",
+      "settings": {
+        "text": "Explore the curated Autumn-Winter collection, tailored for the contemporary avant-garde aesthetic.",
+        "style": {
+          "fontSize": 16,
+          "color": "#ffffff",
+          "fontWeight": "400",
+          "textAlign": "center"
+        }
+      }
+    },
+    {
+      "type": "button",
+      "settings": {
+        "label": "Explore The Collection",
+        "link": "/catalog",
+        "style": {
+          "backgroundColor": "#111111",
+          "textColor": "#ffffff",
+          "borderRadius": "0px",
+          "paddingY": 14,
+          "paddingX": 32,
+          "fontSize": 12,
+          "shadow": "lg"
+        }
+      }
+    }
+  ]
 }

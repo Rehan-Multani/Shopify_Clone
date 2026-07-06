@@ -8,19 +8,19 @@
           "id": "primaryColor",
           "type": "color",
           "label": "Primary Accent Color",
-          "default": "#78350f"
+          "default": "#92400e"
         },
         {
           "id": "secondaryColor",
           "type": "color",
           "label": "Secondary Background Color",
-          "default": "#fdf8f6"
+          "default": "#fef7ed"
         },
         {
           "id": "accentColor",
           "type": "color",
           "label": "Link & Highlights Color",
-          "default": "#b45309"
+          "default": "#d97706"
         }
       ]
     },
@@ -35,9 +35,11 @@
             { "value": "Inter", "label": "Inter" },
             { "value": "Outfit", "label": "Outfit" },
             { "value": "Playfair Display", "label": "Playfair Display" },
+            { "value": "Cormorant Garamond", "label": "Cormorant Garamond" },
+            { "value": "DM Serif Display", "label": "DM Serif Display" },
             { "value": "Roboto", "label": "Roboto" }
           ],
-          "default": "Inter"
+          "default": "DM Serif Display"
         },
         {
           "id": "borderRadius",
@@ -47,7 +49,8 @@
             { "value": "0px", "label": "Sharp (0px)" },
             { "value": "4px", "label": "Soft (4px)" },
             { "value": "8px", "label": "Rounded (8px)" },
-            { "value": "16px", "label": "Circular (16px)" }
+            { "value": "16px", "label": "Circular (16px)" },
+            { "value": "24px", "label": "Pill (24px)" }
           ],
           "default": "6px"
         }
@@ -72,7 +75,7 @@
           "id": "headerConfig.announcementBar.text",
           "type": "text",
           "label": "Announcement Text",
-          "default": "🏡 Revamp your living space with 15% OFF on Minimalist Sofas!"
+          "default": "🏡 REVAMP YOUR SPACE: Enjoy 15% OFF on handcrafted wood furniture!"
         }
       ]
     }

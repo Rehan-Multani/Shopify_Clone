@@ -1,0 +1,23 @@
+{
+  "name": "Lumière Reviews",
+  "type": "testimonials",
+  "settings": {
+    "title": "Patron Testimonials"
+  },
+  "blocks": [
+    {
+      "type": "testimonial",
+      "settings": {
+        "author": "Isabella V.",
+        "text": "The custom solitaire engagement ring is beyond breathtaking. The diamond's fire and brilliance is unmatched. Outstanding bespoke service."
+      }
+    },
+    {
+      "type": "testimonial",
+      "settings": {
+        "author": "Charles M.",
+        "text": "Exceptional craftsmanship. The gold detail on the cufflinks shows absolute mastery of the art. Truly timeless creations."
+      }
+    }
+  ]
+}

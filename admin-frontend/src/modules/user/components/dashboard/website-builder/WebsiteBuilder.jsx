@@ -858,6 +858,10 @@ export default function WebsiteBuilder() {
                                      : sec.settings?.cardShape === 'circle' ? 'rounded-full'
                                      : sec.settings?.cardShape === 'pill' ? 'rounded-3xl'
                                      : 'rounded-2xl'; // default curved
+                const outerCardShapeClass = sec.settings?.cardShape === 'square' ? 'rounded-none'
+                                          : sec.settings?.cardShape === 'circle' ? 'rounded-2xl'
+                                          : sec.settings?.cardShape === 'pill' ? 'rounded-3xl'
+                                          : 'rounded-2xl';
                 return (
                     <div className="p-5 space-y-4 bg-white border border-zinc-100 rounded-3xl">
                         <div className="flex justify-between items-center border-b border-zinc-100 pb-2">
@@ -868,7 +872,7 @@ export default function WebsiteBuilder() {
                         </div>
                         <div className="grid grid-cols-4 gap-3.5">
                             {sampleProducts.map((p, n) => (
-                                <div key={n} className={`bg-white border border-zinc-200/60 p-2.5 text-left space-y-2 group shadow-sm hover:shadow transition-all h-fit ${cardShapeClass}`}>
+                                <div key={n} className={`bg-white border border-zinc-200/60 p-2.5 text-left space-y-2 group shadow-sm hover:shadow transition-all h-fit ${outerCardShapeClass}`}>
                                     <div className={`aspect-square bg-zinc-50 overflow-hidden relative ${cardShapeClass}`}>
                                         <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
                                         <span className="absolute top-1.5 left-1.5 bg-[#008060] text-white text-[7px] font-black uppercase px-1.5 py-0.5 rounded-md">Save 20%</span>
@@ -1013,24 +1017,172 @@ export default function WebsiteBuilder() {
     });
 
     return (
-        <div className="h-screen w-screen flex flex-col bg-[#f6f6f7] overflow-hidden">
+        <div className="h-screen w-screen flex flex-col bg-[#f8fafc] overflow-hidden text-slate-800">
+            <style>{`
+                /* Modern high-end theme customizer stylesheet */
+                .premium-builder-header {
+                    background: rgba(15, 17, 23, 0.94);
+                    backdrop-filter: blur(16px);
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+                }
+                .premium-builder-sidebar {
+                    background: #ffffff;
+                    border-left: 1px solid #e2e8f0;
+                    box-shadow: -4px 0 30px -10px rgba(0, 0, 0, 0.04);
+                }
+                .premium-input {
+                    background: #f1f5f9;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 10px;
+                    font-size: 11px;
+                    font-weight: 600;
+                    padding: 8px 12px;
+                    transition: all 0.2s ease;
+                }
+                .premium-input:focus {
+                    background: #ffffff;
+                    border-color: #008060;
+                    box-shadow: 0 0 0 3px rgba(0, 128, 96, 0.12);
+                }
+                .premium-select {
+                    background: #1e293b;
+                    border: 1px solid #334155;
+                    border-radius: 10px;
+                    font-size: 11px;
+                    font-weight: 700;
+                    padding: 6px 12px;
+                    color: #f1f5f9;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                }
+                .premium-select:hover {
+                    background: #334155;
+                    border-color: #475569;
+                }
+                /* Tabs controls */
+                .premium-tab-nav {
+                    background: #f1f5f9;
+                    padding: 4px;
+                    border-radius: 12px;
+                    gap: 3px;
+                }
+                .premium-tab-btn {
+                    font-size: 9px;
+                    font-weight: 800;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                    border-radius: 8px;
+                    padding: 6px 10px;
+                    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+                    color: #64748b;
+                }
+                .premium-tab-btn.active {
+                    background: #ffffff;
+                    color: #0f172a;
+                    box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.08), 0 2px 4px -1px rgba(15, 23, 42, 0.04);
+                }
+                .premium-tab-btn:hover:not(.active) {
+                    color: #0f172a;
+                    background: rgba(255, 255, 255, 0.4);
+                }
+                /* Action buttons */
+                .premium-btn-primary {
+                    background: linear-gradient(135deg, #009670 0%, #008060 100%);
+                    color: #ffffff;
+                    font-weight: 850;
+                    text-transform: uppercase;
+                    font-size: 10px;
+                    letter-spacing: 0.06em;
+                    padding: 8px 16px;
+                    border-radius: 10px;
+                    box-shadow: 0 4px 12px rgba(0, 128, 96, 0.22);
+                    transition: all 0.25s ease;
+                }
+                .premium-btn-primary:hover {
+                    transform: translateY(-1px);
+                    box-shadow: 0 6px 16px rgba(0, 128, 96, 0.32);
+                    opacity: 0.95;
+                }
+                .premium-btn-primary:active {
+                    transform: translateY(0);
+                }
+                .premium-btn-secondary {
+                    background: rgba(255, 255, 255, 0.06);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    color: #e2e8f0;
+                    font-weight: 700;
+                    font-size: 11px;
+                    padding: 8px 16px;
+                    border-radius: 10px;
+                    transition: all 0.2s ease;
+                }
+                .premium-btn-secondary:hover {
+                    background: rgba(255, 255, 255, 0.12);
+                    border-color: rgba(255, 255, 255, 0.2);
+                    color: #ffffff;
+                }
+                /* Viewport selector */
+                .premium-viewport-nav {
+                    background: rgba(255, 255, 255, 0.06);
+                    border: 1px solid rgba(255, 255, 255, 0.08);
+                    border-radius: 12px;
+                    padding: 3px;
+                }
+                .premium-viewport-btn {
+                    padding: 6px 12px;
+                    border-radius: 8px;
+                    font-size: 10px;
+                    font-weight: 800;
+                    text-transform: uppercase;
+                    letter-spacing: 0.04em;
+                    transition: all 0.2s ease;
+                    color: #94a3b8;
+                }
+                .premium-viewport-btn.active {
+                    background: #ffffff;
+                    color: #0f172a;
+                    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+                }
+                .premium-viewport-btn:hover:not(.active) {
+                    color: #ffffff;
+                    background: rgba(255, 255, 255, 0.04);
+                }
+                /* Scrollbar overrides */
+                .storefront-scrollbar::-webkit-scrollbar {
+                    width: 6px;
+                    height: 6px;
+                }
+                .storefront-scrollbar::-webkit-scrollbar-track {
+                    background: transparent;
+                }
+                .storefront-scrollbar::-webkit-scrollbar-thumb {
+                    background: #cbd5e1;
+                    border-radius: 10px;
+                }
+                .storefront-scrollbar::-webkit-scrollbar-thumb:hover {
+                    background: #94a3b8;
+                }
+            `}</style>
+
             {/* 1. Header Toolbar */}
-            <div className="h-14 bg-zinc-900 text-white flex items-center justify-between px-6 border-b border-zinc-800 z-30 select-none">
+            <div className="h-14 premium-builder-header text-white flex items-center justify-between px-6 z-30 select-none">
                 <div className="flex items-center gap-4">
                     <button 
                         onClick={() => navigate('/dashboard/websites')}
-                        className="p-1.5 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors"
+                        className="px-3 py-1.5 hover:bg-white/10 rounded-lg text-zinc-350 hover:text-white font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer"
                         title="Back to themes"
                     >
-                        ← Exit
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
+                        Exit Customizer
                     </button>
-                    <div className="h-4 w-[1px] bg-zinc-800"></div>
+                    <div className="h-5 w-[1px] bg-zinc-800/80"></div>
                     <div className="flex items-center gap-2">
                         {/* Page Selector dropdown */}
                         <select 
                             value={pageSlug}
                             onChange={(e) => handlePageChange(e.target.value)}
-                            className="bg-zinc-800 text-xs px-3 py-1.5 rounded-lg border border-zinc-700 font-bold outline-none cursor-pointer focus:ring-1 focus:ring-[#008060] text-white"
+                            className="premium-select"
                         >
                             {pages.map(p => (
                                 <option key={p.slug} value={p.slug}>{p.title} ({p.slug})</option>
@@ -1038,38 +1190,42 @@ export default function WebsiteBuilder() {
                         </select>
                         <button
                             onClick={() => setIsCreateModalOpen(true)}
-                            className="text-[10px] text-zinc-400 hover:text-white font-black uppercase px-2 py-1 hover:bg-zinc-800 rounded"
+                            className="text-[10px] text-teal-400 hover:text-teal-300 font-black uppercase tracking-wider px-2.5 py-1.5 hover:bg-teal-500/10 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
                         >
-                            + New Page
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                            Add Page
                         </button>
                     </div>
                 </div>
 
                 {/* Viewport frames toggle */}
-                <div className="flex items-center gap-1.5 bg-zinc-850 p-1 rounded-xl">
+                <div className="flex items-center gap-1 premium-viewport-nav">
                     <button 
                         onClick={() => setViewport('desktop')}
-                        className={`px-3 py-1 rounded-lg text-xs font-black uppercase transition-all ${viewport === 'desktop' ? 'bg-zinc-700 text-white' : 'text-zinc-400 hover:text-white'}`}
+                        className={`premium-viewport-btn flex items-center gap-1.5 cursor-pointer ${viewport === 'desktop' ? 'active' : ''}`}
                     >
-                        💻 Desktop
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0V12a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 12V5.25" /></svg>
+                        Desktop
                     </button>
                     <button 
                         onClick={() => setViewport('tablet')}
-                        className={`px-3 py-1 rounded-lg text-xs font-black uppercase transition-all ${viewport === 'tablet' ? 'bg-zinc-700 text-white' : 'text-zinc-400 hover:text-white'}`}
+                        className={`premium-viewport-btn flex items-center gap-1.5 cursor-pointer ${viewport === 'tablet' ? 'active' : ''}`}
                     >
-                        📱 Tablet
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 0 0 6 3.75v16.5a2.25 2.25 0 0 0 2.25 2.25h7.5A2.25 2.25 0 0 0 18 20.25V3.75a2.25 2.25 0 0 0-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3" /></svg>
+                        Tablet
                     </button>
                     <button 
                         onClick={() => setViewport('mobile')}
-                        className={`px-3 py-1 rounded-lg text-xs font-black uppercase transition-all ${viewport === 'mobile' ? 'bg-zinc-700 text-white' : 'text-zinc-400 hover:text-white'}`}
+                        className={`premium-viewport-btn flex items-center gap-1.5 cursor-pointer ${viewport === 'mobile' ? 'active' : ''}`}
                     >
-                        📞 Mobile
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 0 0 6 3.75v16.5a2.25 2.25 0 0 0 2.25 2.25h7.5A2.25 2.25 0 0 0 18 20.25V3.75a2.25 2.25 0 0 0-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3" /></svg>
+                        Mobile
                     </button>
                 </div>
 
                 <div className="flex items-center gap-3">
                     {/* Undo/Redo Buttons */}
-                    <div className="flex items-center gap-1 bg-zinc-800 rounded-xl p-1">
+                    <div className="flex items-center gap-1 bg-zinc-950 border border-zinc-800 rounded-xl p-1">
                         <button 
                             disabled={!canUndo}
                             onClick={() => {
@@ -1080,10 +1236,11 @@ export default function WebsiteBuilder() {
                                     showToast('Undo action');
                                 }
                             }}
-                            className={`p-1.5 rounded-lg text-xs disabled:opacity-30 ${canUndo ? 'hover:bg-zinc-700 text-white' : 'text-zinc-550'}`}
+                            className={`p-1.5 rounded-lg text-xs disabled:opacity-20 flex items-center gap-1 cursor-pointer transition-all ${canUndo ? 'hover:bg-zinc-800 text-white' : 'text-zinc-550'}`}
                             title="Undo (Ctrl+Z)"
                         >
-                            ↩️ Undo
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 0 1 0 12h-3" /></svg>
+                            Undo
                         </button>
                         <button 
                             disabled={!canRedo}
@@ -1095,10 +1252,11 @@ export default function WebsiteBuilder() {
                                     showToast('Redo action');
                                 }
                             }}
-                            className={`p-1.5 rounded-lg text-xs disabled:opacity-30 ${canRedo ? 'hover:bg-zinc-700 text-white' : 'text-zinc-550'}`}
+                            className={`p-1.5 rounded-lg text-xs disabled:opacity-20 flex items-center gap-1 cursor-pointer transition-all ${canRedo ? 'hover:bg-zinc-800 text-white' : 'text-zinc-550'}`}
                             title="Redo (Ctrl+Shift+Z)"
                         >
-                            ↪️ Redo
+                            Redo
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 15l6-6m0 0l-6-6m6 6H9a6 6 0 0 0 0 12h3" /></svg>
                         </button>
                     </div>
 
@@ -1106,16 +1264,17 @@ export default function WebsiteBuilder() {
                         <button
                             onClick={handleSaveBuilder}
                             disabled={saving}
-                            className="px-4 py-1.5 bg-zinc-700 hover:bg-zinc-800 disabled:opacity-50 text-white rounded-lg text-xs font-bold shadow transition-all"
+                            className="premium-btn-secondary"
                         >
                             {saving ? 'Saving...' : 'Save Draft'}
                         </button>
                         <button
                             onClick={handlePublishBuilder}
                             disabled={saving}
-                            className="px-5 py-1.5 bg-[#008060] hover:bg-[#006e52] disabled:opacity-50 text-white rounded-lg text-xs font-black uppercase tracking-wider shadow transition-all flex items-center gap-2"
+                            className="premium-btn-primary flex items-center gap-1.5 cursor-pointer"
                         >
-                            {saving ? 'Publishing...' : 'Publish Live'}
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                            {saving ? 'Publishing...' : 'Publish'}
                         </button>
                     </div>
                 </div>
@@ -1146,7 +1305,7 @@ export default function WebsiteBuilder() {
                 </div>
 
                 {/* B. Right Sidebar Controls with Open/Close Toggle Button */}
-                <div className={`relative flex flex-col bg-white border-l border-zinc-200 transition-all duration-300 ${isSidebarOpen ? 'w-80' : 'w-0 border-l-0'}`}>
+                <div className={`relative flex flex-col premium-builder-sidebar transition-all duration-300 ${isSidebarOpen ? 'w-80' : 'w-0 border-l-0'}`}>
                     {/* Toggle Button on the vertical border edge */}
                     <button
                         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -1174,9 +1333,10 @@ export default function WebsiteBuilder() {
                                 <div className="p-3 bg-zinc-50 border-b border-zinc-150 flex items-center">
                                     <button 
                                         onClick={() => setSelectedSectionId(null)}
-                                        className="text-xs font-black uppercase text-zinc-600 hover:text-zinc-950 flex items-center gap-1.5 cursor-pointer"
+                                        className="text-xs font-black uppercase text-zinc-650 hover:text-zinc-950 flex items-center gap-1.5 cursor-pointer"
                                     >
-                                        ← Back to sections
+                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
+                                        Back to components
                                     </button>
                                 </div>
                                 <div className="flex-grow overflow-y-auto">
@@ -1193,40 +1353,40 @@ export default function WebsiteBuilder() {
                             // Normal tabs
                             <>
                                 {/* Sidebar sub navigation */}
-                                <div className="flex bg-zinc-50 border-b border-zinc-150 p-1 gap-1 select-none">
+                                <div className="flex premium-tab-nav p-1 select-none">
                                     <button 
                                         onClick={() => { setActiveTab('library'); setSelectedSectionId(null); }}
-                                        className={`flex-grow py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all ${activeTab === 'library' ? 'bg-white text-zinc-900 shadow-sm border border-zinc-200' : 'text-zinc-500 hover:text-zinc-800'}`}
+                                        className={`flex-grow premium-tab-btn cursor-pointer ${activeTab === 'library' ? 'active' : ''}`}
                                     >
                                         Palette
                                     </button>
                                     <button 
                                         onClick={() => { setActiveTab('sections'); setSelectedSectionId(null); }}
-                                        className={`flex-grow py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all ${activeTab === 'sections' ? 'bg-white text-zinc-900 shadow-sm border border-zinc-200' : 'text-zinc-500 hover:text-zinc-800'}`}
+                                        className={`flex-grow premium-tab-btn cursor-pointer ${activeTab === 'sections' ? 'active' : ''}`}
                                     >
                                         Layers
                                     </button>
                                     <button 
                                         onClick={() => { setActiveTab('header'); setSelectedSectionId(null); }}
-                                        className={`flex-grow py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all ${activeTab === 'header' ? 'bg-white text-zinc-900 shadow-sm border border-zinc-200' : 'text-zinc-500 hover:text-zinc-800'}`}
+                                        className={`flex-grow premium-tab-btn cursor-pointer ${activeTab === 'header' ? 'active' : ''}`}
                                     >
                                         Header
                                     </button>
                                     <button 
                                         onClick={() => { setActiveTab('footer'); setSelectedSectionId(null); }}
-                                        className={`flex-grow py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all ${activeTab === 'footer' ? 'bg-white text-zinc-900 shadow-sm border border-zinc-200' : 'text-zinc-500 hover:text-zinc-800'}`}
+                                        className={`flex-grow premium-tab-btn cursor-pointer ${activeTab === 'footer' ? 'active' : ''}`}
                                     >
                                         Footer
                                     </button>
                                     <button 
                                         onClick={() => { setActiveTab('settings'); setSelectedSectionId(null); }}
-                                        className={`flex-grow py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all ${activeTab === 'settings' ? 'bg-white text-zinc-900 shadow-sm border border-zinc-200' : 'text-zinc-500 hover:text-zinc-800'}`}
+                                        className={`flex-grow premium-tab-btn cursor-pointer ${activeTab === 'settings' ? 'active' : ''}`}
                                     >
                                         Theme
                                     </button>
                                     <button 
                                         onClick={() => { setActiveTab('page-seo'); setSelectedSectionId(null); }}
-                                        className={`flex-grow py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all ${activeTab === 'page-seo' ? 'bg-white text-zinc-900 shadow-sm border border-zinc-200' : 'text-zinc-500 hover:text-zinc-800'}`}
+                                        className={`flex-grow premium-tab-btn cursor-pointer ${activeTab === 'page-seo' ? 'active' : ''}`}
                                     >
                                         SEO
                                     </button>

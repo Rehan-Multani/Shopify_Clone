@@ -1,0 +1,23 @@
+{
+  "name": "Velocity Team Reviews",
+  "type": "testimonials",
+  "settings": {
+    "title": "What Athletes Say"
+  },
+  "blocks": [
+    {
+      "type": "testimonial",
+      "settings": {
+        "author": "Mark R.",
+        "text": "The custom resistance bands are thick and extremely durable. They haven't lost tension after months of daily heavy squats. Velocity is the real deal."
+      }
+    },
+    {
+      "type": "testimonial",
+      "settings": {
+        "author": "Sarah K.",
+        "text": "Best athletic compression gear I've ever worn. Keeps muscles warm, reduces lactic acid buildup, and dries super fast. Love it!"
+      }
+    }
+  ]
+}

@@ -87,7 +87,7 @@ const StorefrontWishlist = ({ cartCount, onAddToCart, customer, onLogout, storeI
                 </div>
 
                 {likedProducts.length > 0 ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5 sm:gap-6">
                         {likedProducts.map((product) => {
                             const imageUrl = product.images && product.images.length > 0 
                                 ? (product.images[0].startsWith('http') || product.images[0].startsWith('data:') ? product.images[0] : `${ASSETS_BASE_URL}${product.images[0]}`)

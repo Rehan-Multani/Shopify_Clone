@@ -1,8 +1,9 @@
 {
   "primaryColor": "#2563eb",
-  "secondaryColor": "#f0fdf4",
-  "accentColor": "#3b82f6",
-  "borderRadius": "8px",
+  "secondaryColor": "#0f172a",
+  "accentColor": "#06b6d4",
+  "borderRadius": "0px",
+  "fontFamily": "Outfit",
   "headerConfig": {
     "enabled": true,
     "sticky": true,
@@ -13,13 +14,13 @@
     "logoHeight": "36px",
     "announcementBar": {
       "enabled": true,
-      "text": "⚡ High Tech Deal: Up to 40% OFF on all smart accessories!",
+      "text": "⚡ PRIORITY DROP: Mechanical keyboards, GPUs, and headsets restocked! Use code: QUANTUMTECH",
       "backgroundColor": "#2563eb",
       "textColor": "#ffffff"
     }
   },
   "footerConfig": {
     "backgroundColor": "#0f172a",
-    "textColor": "#e2e8f0"
+    "textColor": "#94a3b8"
   }
 }

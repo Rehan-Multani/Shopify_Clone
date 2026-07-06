@@ -223,10 +223,10 @@ const StorefrontAccount = ({ cartCount, customer, onLogout, storeInfo }) => {
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                     {/* Navigation Sidebar */}
-                    <div className="lg:col-span-3 bg-white border border-zinc-200/60 p-4 rounded-3xl shadow-sm space-y-1">
+                    <div className="lg:col-span-3 bg-white border border-zinc-200/60 p-3 sm:p-4 rounded-3xl shadow-sm flex flex-row lg:flex-col gap-2.5 overflow-x-auto select-none">
                         <button 
                             onClick={() => { setActiveTab('orders'); setShowAddressForm(false); }}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
+                            className={`flex-shrink-0 flex items-center justify-center lg:justify-start gap-3 px-4 py-3 rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex-1 lg:flex-none ${
                                 activeTab === 'orders' 
                                     ? 'text-white' 
                                     : 'text-zinc-550 hover:bg-zinc-50'
@@ -240,7 +240,7 @@ const StorefrontAccount = ({ cartCount, customer, onLogout, storeInfo }) => {
                         </button>
                         <button 
                             onClick={() => { setActiveTab('addresses'); }}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
+                            className={`flex-shrink-0 flex items-center justify-center lg:justify-start gap-3 px-4 py-3 rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex-1 lg:flex-none ${
                                 activeTab === 'addresses' 
                                     ? 'text-white' 
                                     : 'text-zinc-550 hover:bg-zinc-50'

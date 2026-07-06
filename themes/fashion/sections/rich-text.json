@@ -1,0 +1,9 @@
+{
+  "name": "Brand Story",
+  "type": "rich-text",
+  "settings": {
+    "title": "Our Heritage",
+    "content": "Crafted by hand, sourced with integrity. We believe in designing garments that transcend trends, focusing on minimal waste and maximum durability.",
+    "alignment": "center"
+  }
+}

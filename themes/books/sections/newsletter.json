@@ -1,0 +1,8 @@
+{
+  "name": "Inkwell Newsletter",
+  "type": "newsletter",
+  "settings": {
+    "title": "Join the Book Club",
+    "subtitle": "Subscribe for monthly book recommendations, new release announcements, and author interviews."
+  }
+}

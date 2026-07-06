@@ -1,0 +1,8 @@
+{
+  "name": "Shop by Activity",
+  "type": "category-grid",
+  "settings": {
+    "title": "Shop by Sport",
+    "cardShape": "square"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "Featured Products",
+  "type": "featured-products",
+  "settings": {
+    "title": "Featured Gear",
+    "limit": 8,
+    "columns": 4,
+    "cardShape": "square"
+  }
+}

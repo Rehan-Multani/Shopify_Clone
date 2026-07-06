@@ -1,0 +1,9 @@
+{
+  "id": "petstore",
+  "name": "Pet Store Theme",
+  "version": "1.0.0",
+  "industry": "Pet Store",
+  "type": "free",
+  "thumbnail": "thumbnail.webp",
+  "schema": "schema.json"
+}

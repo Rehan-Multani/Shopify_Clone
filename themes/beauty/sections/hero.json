@@ -1,9 +1,57 @@
 {
   "name": "Hero Banner",
+  "type": "hero",
   "settings": {
-    "heading": "Discover Our Premium Collection",
-    "subheading": "Curated premium products just for you.",
-    "button_label": "Shop Collection",
-    "background_image": "hero.webp"
-  }
+    "backgroundImage": "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=1600",
+    "alignment": "center",
+    "overlayOpacity": "0.25",
+    "height": "600px",
+    "showTrustBadges": true,
+    "badge1Text": "100% Vegan & Clean",
+    "badge2Text": "Dermatologist Tested",
+    "badge3Text": "Cruelty Free Certified"
+  },
+  "blocks": [
+    {
+      "type": "heading",
+      "settings": {
+        "text": "PURE BOTANICAL SKINCARE",
+        "style": {
+          "tag": "h1",
+          "fontSize": 52,
+          "color": "#ffffff",
+          "fontWeight": "900",
+          "textAlign": "center"
+        }
+      }
+    },
+    {
+      "type": "subheading",
+      "settings": {
+        "text": "Transform your skin with organic ingredients, cold-pressed active botanical serums, and dermatologically tested luxury care.",
+        "style": {
+          "fontSize": 15,
+          "color": "#ffffff",
+          "fontWeight": "500",
+          "textAlign": "center"
+        }
+      }
+    },
+    {
+      "type": "button",
+      "settings": {
+        "label": "Discover Your Glow",
+        "link": "/catalog",
+        "style": {
+          "backgroundColor": "#be185d",
+          "textColor": "#ffffff",
+          "borderRadius": "24px",
+          "paddingY": 12,
+          "paddingX": 28,
+          "fontSize": 11,
+          "shadow": "md"
+        }
+      }
+    }
+  ]
 }

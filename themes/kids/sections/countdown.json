@@ -1,0 +1,11 @@
+{
+  "name": "Toy Flash Sale",
+  "type": "countdown",
+  "settings": {
+    "title": "Weekend Toy Carnival",
+    "subtitle": "Get up to 35% off on creative block sets, science labs, and wooden puzzle games. Premium quality toys for safe playtime.",
+    "endTime": "2028-12-31T23:59:59",
+    "discountCode": "PLAYTIME35",
+    "backgroundImage": "https://images.unsplash.com/photo-1500990708675-4389f9d26223?w=1600"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "Featured Creations",
+  "type": "featured-products",
+  "settings": {
+    "title": "New Arrivals",
+    "limit": 8,
+    "columns": 4,
+    "cardShape": "square"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "id": "kids",
+  "name": "Kids Store",
+  "version": "1.0.0",
+  "industry": "Kids & Toys",
+  "type": "free",
+  "thumbnail": "thumbnail.webp",
+  "schema": "schema.json"
+}

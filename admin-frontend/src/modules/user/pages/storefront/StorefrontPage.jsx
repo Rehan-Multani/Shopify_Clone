@@ -116,7 +116,7 @@ const StorefrontPage = ({ cartCount, customer, onLogout, storeInfo }) => {
                 <div className="space-y-0 animate-fade-in">
                     {page.sections.map((section, idx) => (
                         <div key={section.sectionId || section._id || idx} className="animate-fade-in-up" style={{ animationDelay: `${idx * 100}ms` }}>
-                            <SectionRenderer section={section} />
+                            <SectionRenderer section={section} storeId={storeId} />
                         </div>
                     ))}
                 </div>

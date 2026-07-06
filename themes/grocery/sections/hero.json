@@ -1,9 +1,57 @@
 {
   "name": "Hero Banner",
+  "type": "hero",
   "settings": {
-    "heading": "Discover Our Premium Collection",
-    "subheading": "Curated premium products just for you.",
-    "button_label": "Shop Collection",
-    "background_image": "hero.webp"
-  }
+    "backgroundImage": "https://images.unsplash.com/photo-1542838132-92c53300491e?w=1600",
+    "alignment": "left",
+    "overlayOpacity": "0.25",
+    "height": "520px",
+    "showTrustBadges": true,
+    "badge1Text": "2-Hour Delivery",
+    "badge2Text": "100% Organic Farm",
+    "badge3Text": "Harvest Guarantee"
+  },
+  "blocks": [
+    {
+      "type": "heading",
+      "settings": {
+        "text": "Fresh & Organic <br/>Delivered Daily",
+        "style": {
+          "tag": "h1",
+          "fontSize": 52,
+          "color": "#ffffff",
+          "fontWeight": "900",
+          "textAlign": "left"
+        }
+      }
+    },
+    {
+      "type": "subheading",
+      "settings": {
+        "text": "Get pesticide-free vegetables, fresh seasonal fruits, and premium dairy essentials straight to your home.",
+        "style": {
+          "fontSize": 16,
+          "color": "#ffffff",
+          "fontWeight": "500",
+          "textAlign": "left"
+        }
+      }
+    },
+    {
+      "type": "button",
+      "settings": {
+        "label": "Order Fresh Food Now",
+        "link": "/catalog",
+        "style": {
+          "backgroundColor": "#f97316",
+          "textColor": "#ffffff",
+          "borderRadius": "16px",
+          "paddingY": 12,
+          "paddingX": 28,
+          "fontSize": 11,
+          "shadow": "md"
+        }
+      }
+    }
+  ]
 }

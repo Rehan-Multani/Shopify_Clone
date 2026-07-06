@@ -1,0 +1,34 @@
+{
+  "name": "Playbox Advantages",
+  "type": "features-grid",
+  "settings": {
+    "title": "Why Parents Choose Playbox",
+    "subtitle": "Safe materials, early learning focus, and child-safe certification."
+  },
+  "blocks": [
+    {
+      "type": "feature",
+      "settings": {
+        "title": "Child-Safe Certified",
+        "text": "100% non-toxic materials, certified safe for children of all ages.",
+        "icon": "shield-check"
+      }
+    },
+    {
+      "type": "feature",
+      "settings": {
+        "title": "Express Shipping",
+        "text": "Express delivery straight to your doorstep in secure boxes.",
+        "icon": "truck"
+      }
+    },
+    {
+      "type": "feature",
+      "settings": {
+        "title": "Play & Learn Trial",
+        "text": "30-day play and learn trial. Love the toy or return it.",
+        "icon": "rotate-ccw"
+      }
+    }
+  ]
+}

@@ -348,7 +348,7 @@ const StorefrontCheckout = ({ cart, cartCount, onClearCart, customer, onLogout, 
                         {/* Form Steps */}
                         <div className="lg:col-span-8 space-y-6">
                             {/* Step Indicators */}
-                            <div className="flex items-center gap-4 bg-white border border-zinc-200/60 p-4 rounded-2xl shadow-sm text-xs font-black uppercase tracking-wider">
+                            <div className="flex flex-wrap items-center gap-3 sm:gap-4 bg-white border border-zinc-200/60 p-4 rounded-2xl shadow-sm text-[10px] sm:text-xs font-black uppercase tracking-wider">
                                 <span className={`flex items-center gap-1.5 ${step === 1 ? 'text-[var(--color-primary)]' : 'text-zinc-400'}`}>
                                     <span className={`w-5 h-5 rounded-full flex items-center justify-center border text-[10px] font-black ${
                                         step === 1 ? 'border-[var(--color-primary)] bg-[var(--color-primary-light)]' : 'border-zinc-300'

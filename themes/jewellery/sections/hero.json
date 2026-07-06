@@ -1,0 +1,57 @@
+{
+  "name": "Luxury Hero Banner",
+  "type": "hero",
+  "settings": {
+    "backgroundImage": "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=1600",
+    "alignment": "center",
+    "overlayOpacity": "0.35",
+    "height": "750px",
+    "showTrustBadges": true,
+    "badge1Text": "Insured Shipping",
+    "badge2Text": "Certified Diamonds",
+    "badge3Text": "Lifetime Warranty"
+  },
+  "blocks": [
+    {
+      "type": "heading",
+      "settings": {
+        "text": "ETERNAL BRILLIANCE",
+        "style": {
+          "tag": "h1",
+          "fontSize": 56,
+          "color": "#ffffff",
+          "fontWeight": "700",
+          "textAlign": "center"
+        }
+      }
+    },
+    {
+      "type": "subheading",
+      "settings": {
+        "text": "Handcrafted diamond settings, bespoke heirlooms, and fine jewelry designed to celebrate life's most precious milestones.",
+        "style": {
+          "fontSize": 18,
+          "color": "#ffffff",
+          "fontWeight": "400",
+          "textAlign": "center"
+        }
+      }
+    },
+    {
+      "type": "button",
+      "settings": {
+        "label": "Discover Lumière",
+        "link": "/catalog",
+        "style": {
+          "backgroundColor": "#d4a574",
+          "textColor": "#ffffff",
+          "borderRadius": "4px",
+          "paddingY": 14,
+          "paddingX": 36,
+          "fontSize": 12,
+          "shadow": "lg"
+        }
+      }
+    }
+  ]
+}

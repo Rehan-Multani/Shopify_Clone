@@ -1,0 +1,57 @@
+{
+  "name": "Cozy Book Hero",
+  "type": "hero",
+  "settings": {
+    "backgroundImage": "https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=1600",
+    "alignment": "center",
+    "overlayOpacity": "0.3",
+    "height": "650px",
+    "showTrustBadges": true,
+    "badge1Text": "Free Bookmarks",
+    "badge2Text": "Curated Editions",
+    "badge3Text": "Fast Shipping"
+  },
+  "blocks": [
+    {
+      "type": "heading",
+      "settings": {
+        "text": "YOUR NEXT LITERARY JOURNEY",
+        "style": {
+          "tag": "h1",
+          "fontSize": 52,
+          "color": "#ffffff",
+          "fontWeight": "700",
+          "textAlign": "center"
+        }
+      }
+    },
+    {
+      "type": "subheading",
+      "settings": {
+        "text": "Browse our curated shelves of award-winning fiction, fine journals, and premium stationery accessories.",
+        "style": {
+          "fontSize": 18,
+          "color": "#ffffff",
+          "fontWeight": "500",
+          "textAlign": "center"
+        }
+      }
+    },
+    {
+      "type": "button",
+      "settings": {
+        "label": "Browse Shelves",
+        "link": "/catalog",
+        "style": {
+          "backgroundColor": "#115e59",
+          "textColor": "#ffffff",
+          "borderRadius": "4px",
+          "paddingY": 14,
+          "paddingX": 30,
+          "fontSize": 12,
+          "shadow": "lg"
+        }
+      }
+    }
+  ]
+}

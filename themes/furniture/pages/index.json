@@ -2,8 +2,12 @@
   "title": "Home Page",
   "sections": [
     "header",
-    "hero",
+    "image-banner",
+    "category-grid",
     "featured-products",
+    "testimonials",
+    "features-grid",
+    "newsletter",
     "footer"
   ]
 }

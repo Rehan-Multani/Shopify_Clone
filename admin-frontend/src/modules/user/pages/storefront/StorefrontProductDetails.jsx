@@ -156,12 +156,12 @@ const StorefrontProductDetails = ({ cartCount, onAddToCart, customer, onLogout, 
         <StorefrontLayout cartCount={cartCount} customer={customer} onLogout={onLogout} storeInfo={storeInfo}>
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 animate-fade-in relative">
                 {/* Breadcrumbs */}
-                <div className="text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-6 flex items-center gap-1.5 pl-0.5">
+                <div className="text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-6 flex flex-wrap items-center gap-1.5 pl-0.5">
                     <Link to={getStorePath(storeId, '/')} className="hover:text-[var(--color-primary)] transition-colors">Home</Link>
                     <span className="text-zinc-300">/</span>
                     <Link to={getStorePath(storeId, '/catalog')} className="hover:text-[var(--color-primary)] transition-colors">Catalog</Link>
                     <span className="text-zinc-300">/</span>
-                    <span className="text-zinc-650 truncate max-w-xs">{product.name}</span>
+                    <span className="text-zinc-650 truncate max-w-[120px] sm:max-w-xs">{product.name}</span>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 bg-white p-5 sm:p-8 rounded-3xl border border-zinc-200/60 shadow-sm relative">

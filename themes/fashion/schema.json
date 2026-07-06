@@ -8,19 +8,19 @@
           "id": "primaryColor",
           "type": "color",
           "label": "Primary Accent Color",
-          "default": "#111827"
+          "default": "#111111"
         },
         {
           "id": "secondaryColor",
           "type": "color",
           "label": "Secondary Background Color",
-          "default": "#f9fafb"
+          "default": "#fafaf9"
         },
         {
           "id": "accentColor",
           "type": "color",
           "label": "Link & Highlights Color",
-          "default": "#b45309"
+          "default": "#c8a96e"
         }
       ]
     },
@@ -35,9 +35,11 @@
             { "value": "Inter", "label": "Inter" },
             { "value": "Outfit", "label": "Outfit" },
             { "value": "Playfair Display", "label": "Playfair Display" },
+            { "value": "Cormorant Garamond", "label": "Cormorant Garamond" },
+            { "value": "DM Serif Display", "label": "DM Serif Display" },
             { "value": "Roboto", "label": "Roboto" }
           ],
-          "default": "Inter"
+          "default": "Playfair Display"
         },
         {
           "id": "borderRadius",
@@ -47,7 +49,8 @@
             { "value": "0px", "label": "Sharp (0px)" },
             { "value": "4px", "label": "Soft (4px)" },
             { "value": "8px", "label": "Rounded (8px)" },
-            { "value": "16px", "label": "Circular (16px)" }
+            { "value": "16px", "label": "Circular (16px)" },
+            { "value": "24px", "label": "Pill (24px)" }
           ],
           "default": "4px"
         }
@@ -72,7 +75,7 @@
           "id": "headerConfig.announcementBar.text",
           "type": "text",
           "label": "Announcement Text",
-          "default": "🕶️ End of Season Sale: Get Free Delivery on all premium orders!"
+          "default": "✨ ELEGANT LUXURY: Enjoy Free Shipping on all orders above $200"
         }
       ]
     }

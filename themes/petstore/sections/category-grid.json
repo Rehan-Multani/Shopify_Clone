@@ -1,0 +1,8 @@
+{
+  "name": "Shop by Pet",
+  "type": "category-grid",
+  "settings": {
+    "title": "Shop by Pet Type",
+    "cardShape": "square"
+  }
+}

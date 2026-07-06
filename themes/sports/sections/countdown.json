@@ -1,0 +1,11 @@
+{
+  "name": "Endurance Countdown",
+  "type": "countdown",
+  "settings": {
+    "title": "Weekend Flash Sale",
+    "subtitle": "Get up to 40% off on all pro trainers, athletic compression wear, and dynamic strength gear. Limited stock available.",
+    "endTime": "2028-12-31T23:59:59",
+    "discountCode": "SHRED40",
+    "backgroundImage": "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=1600"
+  }
+}

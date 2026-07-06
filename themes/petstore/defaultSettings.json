@@ -1,0 +1,26 @@
+{
+  "primaryColor": "#ea580c",
+  "secondaryColor": "#fffbeb",
+  "accentColor": "#0d9488",
+  "borderRadius": "16px",
+  "fontFamily": "Outfit",
+  "headerConfig": {
+    "enabled": true,
+    "sticky": true,
+    "transparent": false,
+    "backgroundColor": "#ffffff",
+    "textColor": "#ea580c",
+    "logoWidth": "auto",
+    "logoHeight": "36px",
+    "announcementBar": {
+      "enabled": true,
+      "text": "🐶 PET CARE PROMISE: Premium nutrition, cozy bedding, and fun toys. Free shipping on orders above ₹799",
+      "backgroundColor": "#ea580c",
+      "textColor": "#ffffff"
+    }
+  },
+  "footerConfig": {
+    "backgroundColor": "#ea580c",
+    "textColor": "#fffbeb"
+  }
+}

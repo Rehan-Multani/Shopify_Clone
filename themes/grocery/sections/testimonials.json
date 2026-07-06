@@ -1,0 +1,50 @@
+{
+  "name": "Testimonials",
+  "type": "testimonials",
+  "settings": {
+    "title": "What Our Farm Community Says",
+    "testimonials": [
+      {
+        "settings": {
+          "author": "Victoria R.",
+          "text": "The organic apples are so sweet, my kids love them! Delivery was within 90 minutes."
+        }
+      },
+      {
+        "settings": {
+          "author": "Alexander M.",
+          "text": "Exceptional quality. Real organic milk and farm-fresh butter, exactly what we needed."
+        }
+      },
+      {
+        "settings": {
+          "author": "Helena K.",
+          "text": "The local pesticide-free veggies look and taste amazing. Outstanding service!"
+        }
+      }
+    ]
+  },
+  "blocks": [
+    {
+      "type": "testimonial",
+      "settings": {
+        "author": "Victoria R.",
+        "text": "The organic apples are so sweet, my kids love them! Delivery was within 90 minutes."
+      }
+    },
+    {
+      "type": "testimonial",
+      "settings": {
+        "author": "Alexander M.",
+        "text": "Exceptional quality. Real organic milk and farm-fresh butter, exactly what we needed."
+      }
+    },
+    {
+      "type": "testimonial",
+      "settings": {
+        "author": "Helena K.",
+        "text": "The local pesticide-free veggies look and taste amazing. Outstanding service!"
+      }
+    }
+  ]
+}

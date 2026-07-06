@@ -1,0 +1,26 @@
+{
+  "primaryColor": "#115e59",
+  "secondaryColor": "#fefce8",
+  "accentColor": "#f59e0b",
+  "borderRadius": "4px",
+  "fontFamily": "Playfair Display",
+  "headerConfig": {
+    "enabled": true,
+    "sticky": true,
+    "transparent": false,
+    "backgroundColor": "#ffffff",
+    "textColor": "#115e59",
+    "logoWidth": "auto",
+    "logoHeight": "36px",
+    "announcementBar": {
+      "enabled": true,
+      "text": "📖 LITERARY HAVEN: Free shipping on orders of award-winning bestsellers above ₹999",
+      "backgroundColor": "#115e59",
+      "textColor": "#fefce8"
+    }
+  },
+  "footerConfig": {
+    "backgroundColor": "#115e59",
+    "textColor": "#fefce8"
+  }
+}

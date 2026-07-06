@@ -1,0 +1,9 @@
+{
+  "name": "Bestsellers",
+  "type": "best-sellers",
+  "settings": {
+    "title": "Bestselling Titles",
+    "limit": 4,
+    "columns": 4
+  }
+}

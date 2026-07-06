@@ -1,0 +1,8 @@
+{
+  "name": "Categories Grid",
+  "type": "category-grid",
+  "settings": {
+    "title": "Shop by Concern",
+    "cardShape": "pill"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "Featured Carousel",
+  "type": "carousel",
+  "settings": {
+    "title": "Quantum Tech Showroom",
+    "height": "500px"
+  },
+  "blocks": [
+    {
+      "type": "slide",
+      "settings": {
+        "imageUrl": "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1600",
+        "title": "PRO-GAMING MONITORS",
+        "link": "/catalog"
+      }
+    },
+    {
+      "type": "slide",
+      "settings": {
+        "imageUrl": "https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?w=1600",
+        "title": "MECHANICAL BATTLESTATIONS",
+        "link": "/catalog"
+      }
+    }
+  ]
+}

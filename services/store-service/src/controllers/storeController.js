@@ -108,7 +108,10 @@ export const getStoreById = async (req, res) => {
 
         if (req.query.cleanPreview === 'true' && req.query.folder) {
             const folder = req.query.folder;
-            const themesDir = path.resolve(process.cwd(), '..', 'themes');
+            let themesDir = path.resolve(process.cwd(), '..', 'themes');
+            if (!fs.existsSync(themesDir)) {
+                themesDir = path.resolve(process.cwd(), '..', '..', 'themes');
+            }
             const defaultSettingsPath = path.join(themesDir, folder, 'defaultSettings.json');
             
             let defaultSettings = {};

@@ -44,7 +44,7 @@ const ProductCard = ({ product, storeId, onAddToCart, cardShape }) => {
         : 0;
 
     const shapeStyle = cardShape === 'square' ? { borderRadius: '0px' }
-                     : cardShape === 'circle' ? { borderRadius: '50%' }
+                     : cardShape === 'circle' ? { borderRadius: 'var(--border-radius)' }
                      : cardShape === 'pill' ? { borderRadius: '24px' }
                      : cardShape === 'curved' ? { borderRadius: '12px' }
                      : { borderRadius: 'var(--border-radius)' };
@@ -202,7 +202,7 @@ const FeaturedProductsSection = ({ settings = {}, storeId: propStoreId, onAddToC
                 <div className="space-y-3 flex flex-col items-center">
                     <div className="w-36 h-6 animate-shimmer rounded-xl"></div>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5 sm:gap-6">
                     {[...Array(4)].map((_, i) => (
                         <div key={i} className="space-y-4 p-4 bg-white border border-zinc-100 rounded-2xl shadow-sm">
                             <div className="w-full aspect-square animate-shimmer rounded-xl"></div>
@@ -241,7 +241,7 @@ const FeaturedProductsSection = ({ settings = {}, storeId: propStoreId, onAddToC
                 </Link>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5 sm:gap-6">
                 {products.map((product) => (
                     <ProductCard key={product._id} product={product} storeId={storeId} onAddToCart={onAddToCart} cardShape={settings.cardShape} />
                 ))}

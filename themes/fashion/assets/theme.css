@@ -1,12 +1,153 @@
-/* Base Theme Styles */
+/* Base Theme Styles - Fashion (Luxury/Premium Couture) */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap');
+
 body {
-    font-family: 'Inter', sans-serif;
-    color: #333333;
+    font-family: 'Montserrat', sans-serif;
+    color: #111111;
+    background-color: #fafaf9;
     margin: 0;
     padding: 0;
+    -webkit-font-smoothing: antialiased;
 }
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', serif;
+    letter-spacing: -0.01em;
+}
+
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 15px;
+    padding: 0 24px;
 }
+
+/* Luxury button styling - Minimal, elegant borders and sharp corners */
+.btn-premium {
+    font-family: 'Montserrat', sans-serif;
+    letter-spacing: 0.2em;
+    font-weight: 600;
+    text-transform: uppercase;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    border: 1px solid #111111 !important;
+    background-color: #111111 !important;
+    color: #ffffff !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-premium:hover {
+    background-color: transparent !important;
+    color: #111111 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Minimal Input Fields */
+input, textarea, select {
+    font-family: 'Montserrat', sans-serif;
+    border: 1px solid #e5e5e4 !important;
+    background-color: #ffffff !important;
+    color: #111111 !important;
+    padding: 12px 18px !important;
+    border-radius: 0px !important;
+    transition: all 0.3s ease !important;
+}
+
+input:focus, textarea:focus, select:focus {
+    border-color: #c8a96e !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Premium Card hover effects */
+.card-premium {
+    background-color: #ffffff !important;
+    border: 1px solid #eaeaea !important;
+    border-radius: 0px !important;
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.card-premium:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 30px 60px -20px rgba(17, 17, 17, 0.08) !important;
+    border-color: #c8a96e !important;
+}
+
+/* Add custom aesthetic details for categories & elements */
+.category-card {
+    border-radius: 0px !important;
+    overflow: hidden;
+}
+
+.category-card img {
+    border-radius: 0px !important;
+    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+
+/* Mobile Responsiveness for Fashion */
+@media (max-width: 1024px) {
+    .container {
+        padding: 0 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 16px;
+    }
+    section.relative.flex.items-center {
+        min-height: 400px !important;
+        padding: 48px 16px !important;
+    }
+    section h1, section .text-3xl, section .text-4xl {
+        font-size: 28px !important;
+        line-height: 1.2 !important;
+    }
+    section h2 {
+        font-size: 22px !important;
+        line-height: 1.25 !important;
+    }
+    section p, section .text-xs, section .text-sm {
+        font-size: 13px !important;
+        line-height: 1.5 !important;
+    }
+    .btn-premium {
+        padding: 10px 20px !important;
+        font-size: 10px !important;
+        letter-spacing: 0.1em !important;
+    }
+}
+
+@media (max-width: 480px) {
+    section.relative.flex.items-center {
+        min-height: 320px !important;
+        padding: 36px 12px !important;
+    }
+    section h1, section .text-3xl, section .text-4xl {
+        font-size: 24px !important;
+    }
+    section h2 {
+        font-size: 18px !important;
+    }
+    section p, section .text-xs, section .text-sm {
+        font-size: 12px !important;
+    }
+    .btn-premium {
+        padding: 8px 16px !important;
+        font-size: 9px !important;
+    }
+    input, textarea, select {
+        padding: 8px 14px !important;
+        font-size: 12px !important;
+    }
+}
+
+@media (max-width: 320px) {
+    section h1, section .text-3xl, section .text-4xl {
+        font-size: 18px !important;
+    }
+}
+
+
+

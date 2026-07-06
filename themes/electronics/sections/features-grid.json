@@ -1,0 +1,57 @@
+{
+  "name": "Our Services",
+  "type": "features-grid",
+  "settings": {
+    "title": "Quantum Tech Direct Guarantees",
+    "subtitle": "Enjoy enterprise-grade shopping support.",
+    "features": [
+      {
+        "settings": {
+          "icon": "truck",
+          "title": "Express Shipping",
+          "text": "Same-day delivery for all gaming setups and hardware components."
+        }
+      },
+      {
+        "settings": {
+          "icon": "shield-check",
+          "title": "2-Year Warranty",
+          "text": "Hassle-free hardware replacement guarantee on all accessories."
+        }
+      },
+      {
+        "settings": {
+          "icon": "phone",
+          "title": "24/7 Tech Support",
+          "text": "Reach our engineering hotline for setup assistance anytime."
+        }
+      }
+    ]
+  },
+  "blocks": [
+    {
+      "type": "feature",
+      "settings": {
+        "icon": "truck",
+        "title": "Express Shipping",
+        "text": "Same-day delivery for all gaming setups and hardware components."
+      }
+    },
+    {
+      "type": "feature",
+      "settings": {
+        "icon": "shield-check",
+        "title": "2-Year Warranty",
+        "text": "Hassle-free hardware replacement guarantee on all accessories."
+      }
+    },
+    {
+      "type": "feature",
+      "settings": {
+        "icon": "phone",
+        "title": "24/7 Tech Support",
+        "text": "Reach our engineering hotline for setup assistance anytime."
+      }
+    }
+  ]
+}

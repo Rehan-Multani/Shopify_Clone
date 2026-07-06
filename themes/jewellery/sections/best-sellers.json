@@ -1,0 +1,9 @@
+{
+  "name": "Best Sellers",
+  "type": "best-sellers",
+  "settings": {
+    "title": "The Masterpieces",
+    "limit": 4,
+    "columns": 4
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "id": "books",
+  "name": "Books Store",
+  "version": "1.0.0",
+  "industry": "Books",
+  "type": "free",
+  "thumbnail": "thumbnail.webp",
+  "schema": "schema.json"
+}

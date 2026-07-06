@@ -1,25 +1,26 @@
 {
   "primaryColor": "#16a34a",
-  "secondaryColor": "#f0fdf4",
-  "accentColor": "#15803d",
-  "borderRadius": "12px",
+  "secondaryColor": "#fafdf5",
+  "accentColor": "#ea580c",
+  "borderRadius": "16px",
+  "fontFamily": "Plus Jakarta Sans",
   "headerConfig": {
     "enabled": true,
     "sticky": true,
     "transparent": false,
     "backgroundColor": "#ffffff",
-    "textColor": "#14532d",
+    "textColor": "#16a34a",
     "logoWidth": "auto",
     "logoHeight": "36px",
     "announcementBar": {
       "enabled": true,
-      "text": "🥦 Fresh & Organic: Get 100% Organic Products delivered inside 2 hours!",
+      "text": "🚜 FARM TO FORK: Organic vegetables & fresh fruits harvested daily. Free 2-hour shipping on orders above ₹499",
       "backgroundColor": "#16a34a",
       "textColor": "#ffffff"
     }
   },
   "footerConfig": {
-    "backgroundColor": "#14532d",
-    "textColor": "#f0fdf4"
+    "backgroundColor": "#16a34a",
+    "textColor": "#fafdf5"
   }
 }

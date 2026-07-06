@@ -204,25 +204,50 @@ const StorefrontOrderTrack = ({ cartCount, customer, onLogout, storeInfo }) => {
                     <div className="bg-white border border-zinc-200/60 rounded-3xl p-6 sm:p-8 shadow-sm space-y-8">
                         <h3 className="text-xs font-black text-zinc-900 uppercase tracking-widest border-b border-zinc-100 pb-3">Delivery Status</h3>
 
-                        {/* Progress Tracker Horizontal Pipeline */}
-                        <div className="relative flex justify-between items-center max-w-xl mx-auto px-4">
+                        {/* Progress Tracker Pipeline */}
+                        <div className="relative flex flex-col md:flex-row justify-between gap-6 md:gap-0 md:items-center max-w-xl mx-auto px-4">
+                            <style>{`
+                                .tracker-bg-line {
+                                    width: 2px;
+                                    height: calc(100% - 32px);
+                                    left: 29px;
+                                    top: 16px;
+                                }
+                                .tracker-active-line {
+                                    width: 2px;
+                                    height: ${(currentStepIndex / (steps.length - 1)) * 88}%;
+                                    left: 29px;
+                                    top: 16px;
+                                }
+                                @media (min-width: 768px) {
+                                    .tracker-bg-line {
+                                        width: calc(100% - 80px);
+                                        height: 2px;
+                                        left: 40px;
+                                        top: 16px;
+                                    }
+                                    .tracker-active-line {
+                                        width: ${(currentStepIndex / (steps.length - 1)) * 82}%;
+                                        height: 2px;
+                                        left: 40px;
+                                        top: 16px;
+                                    }
+                                }
+                            `}</style>
                             {/* Background line */}
-                            <div className="absolute top-4 left-10 right-10 h-0.5 bg-zinc-150 -z-10" />
+                            <div className="absolute bg-zinc-150 -z-10 tracker-bg-line" />
                             {/* Foreground colored line */}
                             {currentStepIndex >= 0 && (
-                                <div 
-                                    className="absolute top-4 left-10 h-0.5 bg-[var(--color-primary)] transition-all duration-500 -z-10"
-                                    style={{ width: `${(currentStepIndex / (steps.length - 1)) * 82}%` }}
-                                />
+                                <div className="absolute bg-[var(--color-primary)] transition-all duration-500 -z-10 tracker-active-line" />
                             )}
 
                             {steps.map((step, idx) => {
                                 const isCompleted = idx <= currentStepIndex;
                                 const isActive = idx === currentStepIndex;
                                 return (
-                                    <div key={step.key} className="flex flex-col items-center space-y-2">
+                                    <div key={step.key} className="flex flex-row md:flex-col items-center gap-4 md:gap-2 text-left md:text-center w-full md:w-auto">
                                         <div 
-                                            className={`w-8.5 h-8.5 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${
+                                            className={`w-8.5 h-8.5 rounded-full flex items-center justify-center border-2 transition-all duration-300 flex-shrink-0 z-10 ${
                                                 isCompleted 
                                                     ? 'border-[var(--color-primary)] bg-[var(--color-primary)] text-white shadow-md' 
                                                     : 'border-zinc-200 bg-white text-zinc-400'
@@ -230,7 +255,7 @@ const StorefrontOrderTrack = ({ cartCount, customer, onLogout, storeInfo }) => {
                                         >
                                             <span className="text-xs">{step.icon}</span>
                                         </div>
-                                        <span className={`text-[9px] font-black uppercase tracking-wider text-center ${
+                                        <span className={`text-[10px] font-black uppercase tracking-wider ${
                                             isActive 
                                                 ? 'text-[var(--color-primary)]' 
                                                 : isCompleted 

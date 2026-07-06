@@ -75,6 +75,76 @@ const themesData = [
         status: "published",
         visibility: "visible",
         version: "1.0.0"
+    },
+    {
+        folder: "jewellery",
+        themeName: "Jewellery Store",
+        displayName: "Lumière Jewelry",
+        type: "free",
+        price: 0,
+        industry: "Jewellery",
+        thumbnail: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=600&auto=format&fit=crop",
+        shortDescription: "An exquisite, high-end theme designed for luxury jewelry stores, diamond boutiques, and bespoke accessory brands.",
+        features: ["Mega Menu", "Zoom Effect", "Sticky Header", "Responsive", "Testimonials"],
+        status: "published",
+        visibility: "visible",
+        version: "1.0.0"
+    },
+    {
+        folder: "sports",
+        themeName: "Sports Store",
+        displayName: "Velocity Fitness",
+        type: "free",
+        price: 0,
+        industry: "Sports",
+        thumbnail: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=600&auto=format&fit=crop",
+        shortDescription: "A high-performance, dynamic theme optimized for sports equipment, gym apparel, and outdoor fitness gear stores.",
+        features: ["Sticky Header", "Countdown Sale", "Responsive", "Newsletter", "Product Zoom"],
+        status: "published",
+        visibility: "visible",
+        version: "1.0.0"
+    },
+    {
+        folder: "books",
+        themeName: "Books Store",
+        displayName: "Inkwell Bookstore",
+        type: "free",
+        price: 0,
+        industry: "Books",
+        thumbnail: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=600&auto=format&fit=crop",
+        shortDescription: "A cozy, literary-focused theme crafted for online bookstores, stationery shops, and independent publishers.",
+        features: ["Responsive", "Custom Story Section", "Newsletter", "Testimonials", "Mega Menu"],
+        status: "published",
+        visibility: "visible",
+        version: "1.0.0"
+    },
+    {
+        folder: "petstore",
+        themeName: "Pet Store",
+        displayName: "Pawsome Pet Supplies",
+        type: "free",
+        price: 0,
+        industry: "Pet Store",
+        thumbnail: "https://images.unsplash.com/photo-1450778869180-41d0601e046e?q=80&w=600&auto=format&fit=crop",
+        shortDescription: "A warm, pet-friendly theme designed for pet food shops, organic treats, accessories, and grooming services.",
+        features: ["Responsive", "Sticky Header", "Newsletter", "Wishlist", "Features Grid"],
+        status: "published",
+        visibility: "visible",
+        version: "1.0.0"
+    },
+    {
+        folder: "kids",
+        themeName: "Kids Store",
+        displayName: "Playbox Kids & Toys",
+        type: "free",
+        price: 0,
+        industry: "Kids & Toys",
+        thumbnail: "https://images.unsplash.com/photo-1515488042361-404e9250afef?q=80&w=600&auto=format&fit=crop",
+        shortDescription: "A colorful, highly engaging theme built for educational toys, children clothing, games, and creative nursery items.",
+        features: ["Bubbly Animations", "Countdown Banner", "Features Grid", "Responsive", "Mega Menu"],
+        status: "published",
+        visibility: "visible",
+        version: "1.0.0"
     }
 ];
 
@@ -89,7 +159,7 @@ const seed = async () => {
         console.log('Inserting themes...');
         await Theme.insertMany(themesData);
         
-        console.log('Successfully seeded 5 themes!');
+        console.log(`Successfully seeded ${themesData.length} themes!`);
         process.exit(0);
     } catch (err) {
         console.error('Error seeding themes:', err);

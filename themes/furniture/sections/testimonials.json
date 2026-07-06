@@ -1,0 +1,50 @@
+{
+  "name": "Testimonials",
+  "type": "testimonials",
+  "settings": {
+    "title": "Designed for Living",
+    "testimonials": [
+      {
+        "settings": {
+          "author": "Marc A.",
+          "text": "The solid walnut coffee table is the center of our living room. Truly premium craftsmanship."
+        }
+      },
+      {
+        "settings": {
+          "author": "Sarah K.",
+          "text": "Delivery was seamless and the packaging was excellent. The sofa is incredibly comfortable."
+        }
+      },
+      {
+        "settings": {
+          "author": "Chloe T.",
+          "text": "Love the minimalist Scandinavian aesthetic of the chairs. Worth every penny."
+        }
+      }
+    ]
+  },
+  "blocks": [
+    {
+      "type": "testimonial",
+      "settings": {
+        "author": "Marc A.",
+        "text": "The solid walnut coffee table is the center of our living room. Truly premium craftsmanship."
+      }
+    },
+    {
+      "type": "testimonial",
+      "settings": {
+        "author": "Sarah K.",
+        "text": "Delivery was seamless and the packaging was excellent. The sofa is incredibly comfortable."
+      }
+    },
+    {
+      "type": "testimonial",
+      "settings": {
+        "author": "Chloe T.",
+        "text": "Love the minimalist Scandinavian aesthetic of the chairs. Worth every penny."
+      }
+    }
+  ]
+}

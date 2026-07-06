@@ -1,0 +1,9 @@
+{
+  "name": "Top Sellers",
+  "type": "best-sellers",
+  "settings": {
+    "title": "Trending Now",
+    "limit": 4,
+    "columns": 4
+  }
+}

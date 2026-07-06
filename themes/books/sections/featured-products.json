@@ -1,0 +1,10 @@
+{
+  "name": "New Releases",
+  "type": "featured-products",
+  "settings": {
+    "title": "New on the Shelf",
+    "limit": 8,
+    "columns": 4,
+    "cardShape": "square"
+  }
+}

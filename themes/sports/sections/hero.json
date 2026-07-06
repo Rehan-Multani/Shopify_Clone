@@ -1,0 +1,57 @@
+{
+  "name": "Athletic Hero Banner",
+  "type": "hero",
+  "settings": {
+    "backgroundImage": "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=1600",
+    "alignment": "center",
+    "overlayOpacity": "0.4",
+    "height": "700px",
+    "showTrustBadges": true,
+    "badge1Text": "Free Delivery",
+    "badge2Text": "Premium Quality",
+    "badge3Text": "Secure Payment"
+  },
+  "blocks": [
+    {
+      "type": "heading",
+      "settings": {
+        "text": "PUSH YOUR LIMITS",
+        "style": {
+          "tag": "h1",
+          "fontSize": 60,
+          "color": "#ffffff",
+          "fontWeight": "900",
+          "textAlign": "center"
+        }
+      }
+    },
+    {
+      "type": "subheading",
+      "settings": {
+        "text": "Premium performance wear, advanced athletic tech, and professional strength gear engineered for maximum endurance.",
+        "style": {
+          "fontSize": 18,
+          "color": "#ffffff",
+          "fontWeight": "600",
+          "textAlign": "center"
+        }
+      }
+    },
+    {
+      "type": "button",
+      "settings": {
+        "label": "Gear Up Now",
+        "link": "/catalog",
+        "style": {
+          "backgroundColor": "#ea580c",
+          "textColor": "#ffffff",
+          "borderRadius": "8px",
+          "paddingY": 14,
+          "paddingX": 32,
+          "fontSize": 12,
+          "shadow": "lg"
+        }
+      }
+    }
+  ]
+}

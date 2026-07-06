@@ -1,12 +1,157 @@
-/* Base Theme Styles */
+/* Base Theme Styles - Beauty (Luxury Cosmetic & Skincare) */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600&display=swap');
+
 body {
-    font-family: 'Inter', sans-serif;
-    color: #333333;
+    font-family: 'Montserrat', sans-serif;
+    color: #4c0519;
+    background-color: #fffafb;
     margin: 0;
     padding: 0;
+    -webkit-font-smoothing: antialiased;
 }
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Cormorant Garamond', serif;
+    color: #831843;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 15px;
+    padding: 0 24px;
+}
+
+/* Elegant Pill-Shaped Rose Button */
+.btn-premium {
+    font-family: 'Cormorant Garamond', serif !important;
+    font-size: 15px !important;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, #db2777 0%, #c026d3 100%) !important;
+    border: none !important;
+    border-radius: 9999px !important;
+    box-shadow: 0 6px 16px rgba(219, 39, 119, 0.25) !important;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    color: #ffffff !important;
+}
+
+.btn-premium:hover {
+    box-shadow: 0 12px 28px rgba(219, 39, 119, 0.4) !important;
+    transform: translateY(-2px) scale(1.02);
+}
+
+/* Beauty Cosmetics Inputs */
+input, textarea, select {
+    font-family: 'Montserrat', sans-serif;
+    background-color: #ffffff !important;
+    border: 1px solid #fce7f3 !important;
+    color: #4c0519 !important;
+    border-radius: 9999px !important; /* Pill style inputs */
+    padding: 12px 24px !important;
+    transition: all 0.3s ease !important;
+}
+
+input:focus, textarea:focus, select:focus {
+    border-color: #db2777 !important;
+    box-shadow: 0 0 10px rgba(219, 39, 119, 0.15) !important;
+    outline: none !important;
+}
+
+/* Glassy Glowing Cosmetics Cards */
+.card-premium {
+    background-color: #ffffff !important;
+    border: 1px solid rgba(219, 39, 119, 0.05) !important;
+    border-radius: 24px !important;
+    box-shadow: 0 10px 30px rgba(219, 39, 119, 0.02) !important;
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.card-premium:hover {
+    border-color: #db2777 !important;
+    box-shadow: 0 20px 40px rgba(219, 39, 119, 0.08) !important;
+    transform: translateY(-6px);
+}
+
+.category-card {
+    border-radius: 20px !important;
+    overflow: hidden;
+}
+
+.category-card img {
+    border-radius: 20px !important;
+    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+
+/* Mobile Responsiveness for Beauty */
+@media (max-width: 1024px) {
+    .container {
+        padding: 0 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 16px;
+    }
+    section.relative.flex.items-center {
+        min-height: 400px !important;
+        padding: 48px 16px !important;
+    }
+    section h1, section .text-3xl, section .text-4xl {
+        font-size: 30px !important;
+        line-height: 1.2 !important;
+    }
+    section h2 {
+        font-size: 22px !important;
+        line-height: 1.25 !important;
+    }
+    section p, section .text-xs, section .text-sm {
+        font-size: 13px !important;
+        line-height: 1.5 !important;
+    }
+    .btn-premium {
+        padding: 10px 22px !important;
+        font-size: 12px !important;
+    }
+    input, textarea, select {
+        padding: 10px 18px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    section.relative.flex.items-center {
+        min-height: 320px !important;
+        padding: 36px 12px !important;
+    }
+    section h1, section .text-3xl, section .text-4xl {
+        font-size: 24px !important;
+    }
+    section h2 {
+        font-size: 18px !important;
+    }
+    section p, section .text-xs, section .text-sm {
+        font-size: 12px !important;
+    }
+    .btn-premium {
+        padding: 8px 16px !important;
+        font-size: 11px !important;
+    }
+    input, textarea, select {
+        padding: 8px 14px !important;
+        font-size: 12px !important;
+    }
+}
+
+@media (max-width: 320px) {
+    section h1, section .text-3xl, section .text-4xl {
+        font-size: 20px !important;
+    }
+    .btn-premium {
+        padding: 6px 12px !important;
+        font-size: 10px !important;
+    }
 }

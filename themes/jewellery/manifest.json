@@ -1,0 +1,9 @@
+{
+  "id": "jewellery",
+  "name": "Jewellery Store",
+  "version": "1.0.0",
+  "industry": "Jewellery",
+  "type": "free",
+  "thumbnail": "thumbnail.webp",
+  "schema": "schema.json"
+}

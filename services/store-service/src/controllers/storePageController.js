@@ -33,7 +33,10 @@ const getThemeDefaultSections = async (storeId, themeId, folderName = '') => {
             folder = themeInfo.folder;
         }
 
-        const themesDir = path.resolve(process.cwd(), '..', 'themes');
+        let themesDir = path.resolve(process.cwd(), '..', 'themes');
+        if (!fs.existsSync(themesDir)) {
+            themesDir = path.resolve(process.cwd(), '..', '..', 'themes');
+        }
         const indexPagePath = path.join(themesDir, folder, 'pages', 'index.json');
         const indexPage = readJsonFile(indexPagePath);
 
@@ -64,7 +67,13 @@ const getThemeDefaultSections = async (storeId, themeId, folderName = '') => {
                     }
 
                     let sectionBlocks = [];
-                    if (sectionName === 'hero') {
+                    if (sectionData.blocks && Array.isArray(sectionData.blocks) && sectionData.blocks.length > 0) {
+                        sectionBlocks = sectionData.blocks.map(b => ({
+                            blockId: b.blockId || Math.random().toString(36).substr(2, 9),
+                            type: b.type,
+                            settings: b.settings || {}
+                        }));
+                    } else if (sectionName === 'hero') {
                         if (settingsObj.heading) {
                             sectionBlocks.push({
                                 blockId: Math.random().toString(36).substr(2, 9),
@@ -110,6 +119,250 @@ const getThemeDefaultSections = async (storeId, themeId, folderName = '') => {
     return DEFAULT_HOME_SECTIONS.map((s, i) => ({ ...s, sectionId: `fallback-${i}`, order: i + 1 }));
 };
 
+const getDefaultPageSections = async (slug, storeId, themeId, folderName = '') => {
+    if (slug === 'home') {
+        return await getThemeDefaultSections(storeId, themeId, folderName);
+    }
+    
+    const timestamp = Date.now();
+    
+    if (slug === 'about-us') {
+        return [
+            {
+                sectionId: `about-h-${timestamp}`,
+                type: 'heading',
+                enabled: true,
+                settings: {
+                    text: 'About Our Brand',
+                    style: { tag: 'h1', fontSize: 36, color: '#18181b', fontWeight: '900', textAlign: 'center', marginTop: 15, marginBottom: 20 }
+                },
+                blocks: [],
+                order: 1
+            },
+            {
+                sectionId: `about-rt-${timestamp}`,
+                type: 'rich-text',
+                enabled: true,
+                settings: {
+                    title: 'Our Story & Vision',
+                    content: 'Founded with a dedication to fine craftsmanship and sustainable organic sourcing, we design apparel that elevates everyday life. Our mission is simple: merge top-tier comfort with timeless aesthetic integrity.',
+                    alignment: 'center'
+                },
+                blocks: [],
+                order: 2
+            },
+            {
+                sectionId: `about-fg-${timestamp}`,
+                type: 'features-grid',
+                enabled: true,
+                settings: {
+                    title: 'Our Key Brand Principles',
+                    subtitle: 'Crafted with intention and responsibility.'
+                },
+                blocks: [
+                    { blockId: 'b1', type: 'feature', settings: { icon: 'shield-check', title: '100% Organic Sourcing', text: 'All garments are certified organic and clean.' } },
+                    { blockId: 'b2', type: 'feature', settings: { icon: 'truck', title: 'Express Delivery', text: 'Secured global shipping directly to your door.' } },
+                    { blockId: 'b3', type: 'feature', settings: { icon: 'rotate-ccw', title: 'Easy Returns', text: 'Stress-free returns within 30 days.' } }
+                ],
+                order: 3
+            },
+            {
+                sectionId: `about-nl-${timestamp}`,
+                type: 'newsletter',
+                enabled: true,
+                settings: {
+                    title: 'Subscribe to Our Journey',
+                    subtitle: 'Receive early collection releases and exclusive promotions.'
+                },
+                blocks: [],
+                order: 4
+            }
+        ];
+    }
+
+    if (slug === 'contact-us') {
+        return [
+            {
+                sectionId: `contact-h-${timestamp}`,
+                type: 'heading',
+                enabled: true,
+                settings: {
+                    text: 'Get in Touch',
+                    style: { tag: 'h1', fontSize: 36, color: '#18181b', fontWeight: '900', textAlign: 'center', marginTop: 15, marginBottom: 20 }
+                },
+                blocks: [],
+                order: 1
+            },
+            {
+                sectionId: `contact-rt-${timestamp}`,
+                type: 'rich-text',
+                enabled: true,
+                settings: {
+                    title: "We'd Love to Hear from You",
+                    content: "Whether you have questions about sizing, shipping, or returns, our support team is here to help you. Send us a message and we'll reply within 24 hours.",
+                    alignment: 'center'
+                },
+                blocks: [],
+                order: 2
+            },
+            {
+                sectionId: `contact-f-${timestamp}`,
+                type: 'contact-form',
+                enabled: true,
+                settings: {
+                    title: 'Send Us a Message',
+                    subtitle: 'Submit your inquiry and our team will get back to you shortly.'
+                },
+                blocks: [],
+                order: 3
+            },
+            {
+                sectionId: `contact-fg-${timestamp}`,
+                type: 'features-grid',
+                enabled: true,
+                settings: {
+                    title: 'Customer Support Channels',
+                    subtitle: 'Find help through our dedicated support routes.'
+                },
+                blocks: [
+                    { blockId: 'c1', type: 'feature', settings: { icon: 'phone', title: 'Help Hotline', text: '+91 98765 43210 (Mon-Sat, 9AM-6PM)' } },
+                    { blockId: 'c2', type: 'feature', settings: { icon: 'shield-check', title: 'Secure Ticketing', text: 'support@brandstore.com' } }
+                ],
+                order: 4
+            }
+        ];
+    }
+
+    if (slug === 'privacy-policy') {
+        return [
+            {
+                sectionId: `privacy-h-${timestamp}`,
+                type: 'heading',
+                enabled: true,
+                settings: {
+                    text: 'Privacy Policy',
+                    style: { tag: 'h1', fontSize: 32, color: '#18181b', fontWeight: '900', textAlign: 'left', marginTop: 10, marginBottom: 15 }
+                },
+                blocks: [],
+                order: 1
+            },
+            {
+                sectionId: `privacy-rt-${timestamp}`,
+                type: 'rich-text',
+                enabled: true,
+                settings: {
+                    title: 'Your Trust is Our Priority',
+                    content: 'This privacy statement describes how we collect, use, protect, and manage your personal data when you visit or make a purchase from our store. We are committed to ensuring security and transparency.',
+                    alignment: 'left'
+                },
+                blocks: [],
+                order: 2
+            },
+            {
+                sectionId: `privacy-ac-${timestamp}`,
+                type: 'accordion',
+                enabled: true,
+                settings: {
+                    title: 'Detailed Policy Sections'
+                },
+                blocks: [
+                    { blockId: 'p1', type: 'accordion-item', settings: { title: 'What Data We Collect', content: 'We collect order processing details, device logs, IP addresses, and email communications for support.' } },
+                    { blockId: 'p2', type: 'accordion-item', settings: { title: 'How We Use Your Data', content: 'Your data is solely used to deliver products, send transaction updates, prevent fraud, and run security compliance checks.' } },
+                    { blockId: 'p3', type: 'accordion-item', settings: { title: 'Your Rights & Controls', content: 'You can request deletion, export, or correction of your personal data at any time by contacting our support team.' } }
+                ],
+                order: 3
+            }
+        ];
+    }
+
+    if (slug === 'terms-and-conditions') {
+        return [
+            {
+                sectionId: `terms-h-${timestamp}`,
+                type: 'heading',
+                enabled: true,
+                settings: {
+                    text: 'Terms and Conditions',
+                    style: { tag: 'h1', fontSize: 32, color: '#18181b', fontWeight: '900', textAlign: 'left', marginTop: 10, marginBottom: 15 }
+                },
+                blocks: [],
+                order: 1
+            },
+            {
+                sectionId: `terms-rt-${timestamp}`,
+                type: 'rich-text',
+                enabled: true,
+                settings: {
+                    title: 'Usage Agreement',
+                    content: 'By accessing this store, you agree to comply with the terms and conditions outlined below. Please read these terms carefully before placing orders.',
+                    alignment: 'left'
+                },
+                blocks: [],
+                order: 2
+            },
+            {
+                sectionId: `terms-ac-${timestamp}`,
+                type: 'accordion',
+                enabled: true,
+                settings: {
+                    title: 'Key Agreement Areas'
+                },
+                blocks: [
+                    { blockId: 't1', type: 'accordion-item', settings: { title: 'Store Purchases & Pricing', content: 'All pricing details are dynamic and subject to change. Order completion is finalized only after successful transaction verification.' } },
+                    { blockId: 't2', type: 'accordion-item', settings: { title: 'Intellectual Property Rights', content: 'All trademarks, catalog graphics, design styles, and copy text registered on this store belong exclusively to the merchant.' } },
+                    { blockId: 't3', type: 'accordion-item', settings: { title: 'Account Conduct & Policy', content: 'User profiles engaged in fake transactions, spamming, or violating checkout security protocols will be suspended immediately.' } }
+                ],
+                order: 3
+            }
+        ];
+    }
+
+    if (slug === 'refund-policy') {
+        return [
+            {
+                sectionId: `refund-h-${timestamp}`,
+                type: 'heading',
+                enabled: true,
+                settings: {
+                    text: 'Refund Policy',
+                    style: { tag: 'h1', fontSize: 32, color: '#18181b', fontWeight: '900', textAlign: 'left', marginTop: 10, marginBottom: 15 }
+                },
+                blocks: [],
+                order: 1
+            },
+            {
+                sectionId: `refund-rt-${timestamp}`,
+                type: 'rich-text',
+                enabled: true,
+                settings: {
+                    title: 'Returns Made Simple',
+                    content: 'If you are not 100% satisfied with your purchase, we offer simple returns and exchange processing directly from your account portal.',
+                    alignment: 'left'
+                },
+                blocks: [],
+                order: 2
+            },
+            {
+                sectionId: `refund-fg-${timestamp}`,
+                type: 'features-grid',
+                enabled: true,
+                settings: {
+                    title: 'Our Refund Process',
+                    subtitle: 'Transparent return steps and timelines.'
+                },
+                blocks: [
+                    { blockId: 'r1', type: 'feature', settings: { icon: 'rotate-ccw', title: '30-Day Window', text: 'Request returns or exchanges within 30 days of receiving your package.' } },
+                    { blockId: 'r2', type: 'feature', settings: { icon: 'truck', title: 'Prepaid Shipping Labels', text: 'Download a prepaid returns label and drop off the package at any delivery hub.' } },
+                    { blockId: 'r3', type: 'feature', settings: { icon: 'heart-pulse', title: 'Quality Audits', text: 'Refunds are processed back to the original payment source within 3 business days of package inspection.' } }
+                ],
+                order: 3
+            }
+        ];
+    }
+
+    return [];
+};
+
 const DEFAULT_PAGES = [
     { slug: 'home', title: 'Home Page', isDefault: true, isHomePage: true },
     { slug: 'privacy-policy', title: 'Privacy Policy', isDefault: true },
@@ -139,8 +392,8 @@ export const getPages = async (req, res) => {
             const obj = p.toObject();
             const isDef = DEFAULT_PAGES.some(d => d.slug === obj.slug);
             let sectionsList = obj.sections || [];
-            if (obj.slug === 'home' && sectionsList.length === 0) {
-                sectionsList = await getThemeDefaultSections(storeId, themeId);
+            if (sectionsList.length === 0) {
+                sectionsList = await getDefaultPageSections(obj.slug, storeId, themeId);
             }
             return {
                 ...obj,
@@ -152,11 +405,7 @@ export const getPages = async (req, res) => {
         for (const defaultPage of DEFAULT_PAGES) {
             const exists = formattedPages.some(p => p.slug === defaultPage.slug);
             if (!exists) {
-                let themeSections = [];
-                if (defaultPage.slug === 'home') {
-                    themeSections = await getThemeDefaultSections(storeId, themeId);
-                }
-
+                const themeSections = await getDefaultPageSections(defaultPage.slug, storeId, themeId);
                 formattedPages.push({
                     ...defaultPage,
                     content: '',
@@ -203,10 +452,7 @@ export const getPageBySlug = async (req, res) => {
                 return res.status(404).json({ success: false, message: 'Page not found' });
             }
 
-            let themeSections = [];
-            if (slug === 'home') {
-                themeSections = await getThemeDefaultSections(storeId, themeId, req.query.folder);
-            }
+            const themeSections = await getDefaultPageSections(slug, storeId, themeId, req.query.folder);
 
             page = {
                 ...defaultPage,
@@ -218,8 +464,8 @@ export const getPageBySlug = async (req, res) => {
             const obj = page.toObject();
             const isDef = DEFAULT_PAGES.some(d => d.slug === obj.slug);
             let sectionsList = obj.sections || [];
-            if (obj.slug === 'home' && sectionsList.length === 0) {
-                sectionsList = await getThemeDefaultSections(storeId, themeId, req.query.folder);
+            if (sectionsList.length === 0) {
+                sectionsList = await getDefaultPageSections(obj.slug, storeId, themeId, req.query.folder);
             }
             page = {
                 ...obj,
@@ -227,6 +473,13 @@ export const getPageBySlug = async (req, res) => {
                 isDefault: isDef
             };
         }
+
+        const isFallback = !!(page && page.sections && page.sections.some(s => s.sectionId && String(s.sectionId).startsWith('fallback-')));
+        
+        page = {
+            ...page,
+            isFallback
+        };
 
         res.status(200).json({
             success: true,

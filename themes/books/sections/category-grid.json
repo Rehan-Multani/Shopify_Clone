@@ -1,0 +1,8 @@
+{
+  "name": "Shop genres",
+  "type": "category-grid",
+  "settings": {
+    "title": "Shop by Genre",
+    "cardShape": "square"
+  }
+}

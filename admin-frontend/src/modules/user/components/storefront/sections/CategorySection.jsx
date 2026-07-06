@@ -41,13 +41,13 @@ const CategoryCard = ({ category, storeId, cardShape }) => {
             className="group flex flex-col items-center space-y-3 cursor-pointer"
         >
             {!imageUrl || imageError ? (
-                <div className={`w-16 h-16 sm:w-18 sm:h-18 ${shapeClass} bg-gradient-to-br ${getGradientClass(category.name)} flex items-center justify-center relative overflow-hidden border border-zinc-200/50 group-hover:border-[var(--color-primary)] transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-[0_8px_20px_-8px_rgba(0,0,0,0.08)]`}>
+                <div className={`w-14 h-14 sm:w-16 sm:h-16 md:w-18 md:h-18 ${shapeClass} bg-gradient-to-br ${getGradientClass(category.name)} flex items-center justify-center relative overflow-hidden border border-zinc-200/50 group-hover:border-[var(--color-primary)] transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-[0_8px_20px_-8px_rgba(0,0,0,0.08)]`}>
                     <span className="text-[10px] font-black uppercase px-2 text-center truncate w-full tracking-widest">
                         {category.name.substring(0, 3)}
                     </span>
                 </div>
             ) : (
-                <div className={`w-16 h-16 sm:w-18 sm:h-18 ${shapeClass} overflow-hidden border border-zinc-250/70 group-hover:border-[var(--color-primary)] bg-white transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-[0_8px_20px_-8px_rgba(0,0,0,0.08)] relative`}>
+                <div className={`w-14 h-14 sm:w-16 sm:h-16 md:w-18 md:h-18 ${shapeClass} overflow-hidden border border-zinc-250/70 group-hover:border-[var(--color-primary)] bg-white transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-[0_8px_20px_-8px_rgba(0,0,0,0.08)] relative`}>
                     <img
                         src={imageUrl}
                         alt={category.name}
@@ -189,7 +189,7 @@ const CategorySection = ({ settings = {}, storeId: propStoreId }) => {
                     className="flex overflow-x-auto gap-7 pb-2 hide-scrollbar scroll-smooth"
                 >
                     {categories.map((category) => (
-                        <div key={category._id} className="flex-shrink-0 w-20 sm:w-24 flex flex-col items-center">
+                        <div key={category._id} className="flex-shrink-0 w-16 sm:w-20 md:w-24 flex flex-col items-center">
                             <CategoryCard category={category} storeId={storeId} cardShape={settings.cardShape} />
                         </div>
                     ))}

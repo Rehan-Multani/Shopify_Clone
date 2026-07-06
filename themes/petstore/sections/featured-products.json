@@ -1,0 +1,10 @@
+{
+  "name": "Popular Pet Products",
+  "type": "featured-products",
+  "settings": {
+    "title": "Dog & Cat Favorites",
+    "limit": 8,
+    "columns": 4,
+    "cardShape": "square"
+  }
+}

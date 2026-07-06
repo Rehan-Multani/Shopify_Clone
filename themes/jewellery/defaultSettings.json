@@ -1,0 +1,26 @@
+{
+  "primaryColor": "#4a044e",
+  "secondaryColor": "#fef9ef",
+  "accentColor": "#d4a574",
+  "borderRadius": "4px",
+  "fontFamily": "Cormorant Garamond",
+  "headerConfig": {
+    "enabled": true,
+    "sticky": true,
+    "transparent": false,
+    "backgroundColor": "#ffffff",
+    "textColor": "#4a044e",
+    "logoWidth": "auto",
+    "logoHeight": "36px",
+    "announcementBar": {
+      "enabled": true,
+      "text": "✨ THE GOLD STANDARD: Free Insured Shipping and Certificate of Authenticity on all Diamond jewelry",
+      "backgroundColor": "#4a044e",
+      "textColor": "#fef9ef"
+    }
+  },
+  "footerConfig": {
+    "backgroundColor": "#4a044e",
+    "textColor": "#fef9ef"
+  }
+}

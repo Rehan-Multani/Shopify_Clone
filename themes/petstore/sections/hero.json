@@ -1,0 +1,57 @@
+{
+  "name": "Playful Pet Hero",
+  "type": "hero",
+  "settings": {
+    "backgroundImage": "https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=1600",
+    "alignment": "center",
+    "overlayOpacity": "0.25",
+    "height": "650px",
+    "showTrustBadges": true,
+    "badge1Text": "Natural Ingredients",
+    "badge2Text": "Vet Approved",
+    "badge3Text": "Happy Tails Guarantee"
+  },
+  "blocks": [
+    {
+      "type": "heading",
+      "settings": {
+        "text": "FOR HAPPY, HEALTHY PETS",
+        "style": {
+          "tag": "h1",
+          "fontSize": 52,
+          "color": "#ffffff",
+          "fontWeight": "900",
+          "textAlign": "center"
+        }
+      }
+    },
+    {
+      "type": "subheading",
+      "settings": {
+        "text": "Explore premium organic kibble, veterinary supplies, cozy nesting beds, and interactive toys for your furry family members.",
+        "style": {
+          "fontSize": 18,
+          "color": "#ffffff",
+          "fontWeight": "500",
+          "textAlign": "center"
+        }
+      }
+    },
+    {
+      "type": "button",
+      "settings": {
+        "label": "Shop Pawsome Deals",
+        "link": "/catalog",
+        "style": {
+          "backgroundColor": "#ea580c",
+          "textColor": "#ffffff",
+          "borderRadius": "16px",
+          "paddingY": 14,
+          "paddingX": 32,
+          "fontSize": 12,
+          "shadow": "lg"
+        }
+      }
+    }
+  ]
+}

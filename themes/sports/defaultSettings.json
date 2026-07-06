@@ -1,0 +1,26 @@
+{
+  "primaryColor": "#ea580c",
+  "secondaryColor": "#171717",
+  "accentColor": "#84cc16",
+  "borderRadius": "8px",
+  "fontFamily": "Outfit",
+  "headerConfig": {
+    "enabled": true,
+    "sticky": true,
+    "transparent": false,
+    "backgroundColor": "#171717",
+    "textColor": "#ffffff",
+    "logoWidth": "auto",
+    "logoHeight": "36px",
+    "announcementBar": {
+      "enabled": true,
+      "text": "⚡ FUEL YOUR PERFORMANCE: Free delivery on all premium fitness gear above ₹1,499 | Use Code: SHRED20",
+      "backgroundColor": "#ea580c",
+      "textColor": "#ffffff"
+    }
+  },
+  "footerConfig": {
+    "backgroundColor": "#171717",
+    "textColor": "#a3a3a3"
+  }
+}

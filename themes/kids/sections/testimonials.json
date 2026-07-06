@@ -1,0 +1,23 @@
+{
+  "name": "Playbox Family Reviews",
+  "type": "testimonials",
+  "settings": {
+    "title": "Happy Kids & Parents"
+  },
+  "blocks": [
+    {
+      "type": "testimonial",
+      "settings": {
+        "author": "Rohan's Dad",
+        "text": "The wooden building blocks are beautiful, smooth, and have no sharp edges. Rohan spends hours building castles. Highly recommended toy!"
+      }
+    },
+    {
+      "type": "testimonial",
+      "settings": {
+        "author": "Anjali S.",
+        "text": "Amazing educational puzzle kits! My daughter loves solving them. They are colorful, interactive, and keep her engaged. Great shipping too."
+      }
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "name": "Best Sellers",
+  "type": "best-sellers",
+  "settings": {
+    "title": "Quantum Tech Best Sellers",
+    "limit": 4,
+    "cardShape": "square"
+  }
+}

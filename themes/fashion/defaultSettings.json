@@ -1,25 +1,26 @@
 {
-  "primaryColor": "#111827",
-  "secondaryColor": "#f9fafb",
-  "accentColor": "#b45309",
-  "borderRadius": "4px",
+  "primaryColor": "#111111",
+  "secondaryColor": "#ffffff",
+  "accentColor": "#d4af37",
+  "borderRadius": "0px",
+  "fontFamily": "Playfair Display",
   "headerConfig": {
     "enabled": true,
     "sticky": true,
     "transparent": false,
     "backgroundColor": "#ffffff",
-    "textColor": "#111827",
+    "textColor": "#111111",
     "logoWidth": "auto",
     "logoHeight": "36px",
     "announcementBar": {
       "enabled": true,
-      "text": "🕶️ End of Season Sale: Get Free Delivery on all premium orders!",
-      "backgroundColor": "#111827",
+      "text": "✨ ELEGANT LUXURY: Enjoy Free Shipping on all orders above $200",
+      "backgroundColor": "#111111",
       "textColor": "#ffffff"
     }
   },
   "footerConfig": {
-    "backgroundColor": "#111827",
-    "textColor": "#f9fafb"
+    "backgroundColor": "#111111",
+    "textColor": "#ffffff"
   }
 }

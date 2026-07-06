@@ -3,7 +3,11 @@
   "sections": [
     "header",
     "hero",
+    "category-grid",
     "featured-products",
+    "best-sellers",
+    "testimonials",
+    "newsletter",
     "footer"
   ]
 }

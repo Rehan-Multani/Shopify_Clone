@@ -108,7 +108,7 @@ const StorefrontCart = ({ cart, cartCount, onUpdateCartQty, onRemoveFromCart, cu
                                         </div>
 
                                         {/* Item Total */}
-                                        <span className="text-xs font-black text-zinc-900 w-24 text-right">
+                                        <span className="text-xs font-black text-zinc-900 w-auto sm:w-24 text-right">
                                             ₹{(item.sellingPrice * item.qty).toLocaleString()}
                                         </span>
 

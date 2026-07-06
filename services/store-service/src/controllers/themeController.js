@@ -51,7 +51,10 @@ export const getThemeSettings = async (req, res) => {
         }
 
         // Load schema.json dynamically from theme folder
-        const themesDir = path.resolve(process.cwd(), '..', 'themes');
+        let themesDir = path.resolve(process.cwd(), '..', 'themes');
+        if (!fs.existsSync(themesDir)) {
+            themesDir = path.resolve(process.cwd(), '..', '..', 'themes');
+        }
         const schemaPath = path.join(themesDir, installed.folder || '', 'schema.json');
         const schema = readJsonFile(schemaPath) || { sections: [] };
 
@@ -188,7 +191,10 @@ export const installTheme = async (req, res) => {
         }
 
         // Read physical folder JSONs
-        const themesDir = path.resolve(process.cwd(), '..', 'themes');
+        let themesDir = path.resolve(process.cwd(), '..', 'themes');
+        if (!fs.existsSync(themesDir)) {
+            themesDir = path.resolve(process.cwd(), '..', '..', 'themes');
+        }
         const defaultSettingsPath = path.join(themesDir, folder, 'defaultSettings.json');
         
         const defaultSettings = readJsonFile(defaultSettingsPath) || {};
@@ -257,7 +263,13 @@ export const installTheme = async (req, res) => {
                     }
 
                     let sectionBlocks = [];
-                    if (sectionName === 'hero') {
+                    if (sectionData.blocks && Array.isArray(sectionData.blocks) && sectionData.blocks.length > 0) {
+                        sectionBlocks = sectionData.blocks.map(b => ({
+                            blockId: b.blockId || Math.random().toString(36).substr(2, 9),
+                            type: b.type,
+                            settings: b.settings || {}
+                        }));
+                    } else if (sectionName === 'hero') {
                         if (settingsObj.heading) {
                             sectionBlocks.push({
                                 blockId: Math.random().toString(36).substr(2, 9),

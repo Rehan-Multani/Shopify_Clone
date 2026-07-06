@@ -1,0 +1,23 @@
+{
+  "name": "Pawsome Customer Reviews",
+  "type": "testimonials",
+  "settings": {
+    "title": "Happy Pets & Owners"
+  },
+  "blocks": [
+    {
+      "type": "testimonial",
+      "settings": {
+        "author": "Leo's Mom",
+        "text": "Leo absolutely goes crazy for the salmon kibble. His coat is shiny, and his digestion has improved so much. Plus, the quick shipping is fantastic!"
+      }
+    },
+    {
+      "type": "testimonial",
+      "settings": {
+        "author": "Sophia P.",
+        "text": "The memory foam dog bed is so soft! My senior retriever sleeps soundly through the night now. Worth every rupee."
+      }
+    }
+  ]
+}

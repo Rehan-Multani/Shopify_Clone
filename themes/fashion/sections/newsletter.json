@@ -1,0 +1,8 @@
+{
+  "name": "Newsletter",
+  "type": "newsletter",
+  "settings": {
+    "title": "Subscribe to the Newsletter",
+    "subtitle": "Enter the world of modern luxury. Enjoy private sales, new collections, and weekly design inspirations."
+  }
+}

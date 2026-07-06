@@ -1,0 +1,9 @@
+{
+  "id": "sports",
+  "name": "Sports Store",
+  "version": "1.0.0",
+  "industry": "Sports",
+  "type": "free",
+  "thumbnail": "thumbnail.webp",
+  "schema": "schema.json"
+}

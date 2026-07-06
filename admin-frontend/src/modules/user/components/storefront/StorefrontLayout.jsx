@@ -120,7 +120,7 @@ const StorefrontLayout = ({ children, cartCount, customer, onLogout, storeInfo }
     return (
         <>
             <div 
-                className="flex flex-col min-h-screen bg-[var(--color-secondary)] selection:bg-[var(--color-primary-semi)] selection:text-[var(--color-primary-dark)] text-[var(--color-text)]"
+                className="flex flex-col min-h-screen w-full overflow-x-hidden bg-[var(--color-secondary)] selection:bg-[var(--color-primary-semi)] selection:text-[var(--color-primary-dark)] text-[var(--color-text)]"
                 style={{
                     '--color-primary': storeInfo?.themeSettings?.primaryColor || '#008060',
                     '--color-secondary': storeInfo?.themeSettings?.secondaryColor || '#ffffff',

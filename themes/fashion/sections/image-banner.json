@@ -1,0 +1,13 @@
+{
+  "name": "Image Banner",
+  "type": "image-banner",
+  "settings": {
+    "imageUrl": "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1600",
+    "title": "Autumn/Winter Silhouette",
+    "subtitle": "Effortless elegance designed for day-to-night transitions. Impeccable tailoring and luxurious organic fabrics.",
+    "buttonLabel": "Shop Now",
+    "buttonLink": "/catalog",
+    "layout": "overlay",
+    "height": "450px"
+  }
+}

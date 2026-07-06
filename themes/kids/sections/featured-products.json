@@ -1,0 +1,10 @@
+{
+  "name": "Featured Toys",
+  "type": "featured-products",
+  "settings": {
+    "title": "Bestselling Toys",
+    "limit": 8,
+    "columns": 4,
+    "cardShape": "square"
+  }
+}

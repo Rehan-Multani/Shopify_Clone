@@ -1,25 +1,26 @@
 {
-  "primaryColor": "#78350f",
-  "secondaryColor": "#fdf8f6",
-  "accentColor": "#b45309",
-  "borderRadius": "6px",
+  "primaryColor": "#7c2d12",
+  "secondaryColor": "#fafaf9",
+  "accentColor": "#d97706",
+  "borderRadius": "8px",
+  "fontFamily": "Cormorant Garamond",
   "headerConfig": {
     "enabled": true,
     "sticky": true,
-    "transparent": false,
+    "transparent": true,
     "backgroundColor": "#ffffff",
-    "textColor": "#1e293b",
+    "textColor": "#7c2d12",
     "logoWidth": "auto",
     "logoHeight": "36px",
     "announcementBar": {
       "enabled": true,
-      "text": "🏡 Revamp your living space with 15% OFF on Minimalist Sofas!",
-      "backgroundColor": "#78350f",
+      "text": "🍂 CLASSIC CRAFTSMANSHIP: Free white-glove home delivery and installation on all solid oak collections",
+      "backgroundColor": "#7c2d12",
       "textColor": "#ffffff"
     }
   },
   "footerConfig": {
-    "backgroundColor": "#334155",
-    "textColor": "#f8fafc"
+    "backgroundColor": "#7c2d12",
+    "textColor": "#fafaf9"
   }
 }

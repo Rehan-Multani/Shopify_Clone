@@ -1,0 +1,148 @@
+/* Base Theme Styles - Pet Store (Pawsome Friendly Pet Supplies) */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: #4b5563;
+    background-color: #fffdf9; /* Soft cream warm background */
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', sans-serif;
+    color: #c2410c; /* Friendly dark orange */
+    font-weight: 800;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+/* Rounded friendly orange button */
+.btn-premium {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    border-radius: 24px !important;
+    background-color: #ea580c !important;
+    border: none !important;
+    box-shadow: 0 6px 15px rgba(234, 88, 12, 0.25) !important;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.25) !important;
+    color: #ffffff !important;
+}
+
+.btn-premium:hover {
+    box-shadow: 0 10px 22px rgba(234, 88, 12, 0.4) !important;
+    transform: translateY(-2.5px) scale(1.02);
+}
+
+/* Soft friendly inputs */
+input, textarea, select {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: #ffffff !important;
+    border: 1px solid #fed7aa !important;
+    color: #4b5563 !important;
+    border-radius: 12px !important;
+    padding: 12px 18px !important;
+    transition: all 0.3s ease !important;
+}
+
+input:focus, textarea:focus, select:focus {
+    border-color: #ea580c !important;
+    box-shadow: 0 0 10px rgba(234, 88, 12, 0.15) !important;
+    outline: none !important;
+}
+
+/* Friendly rounded cards */
+.card-premium {
+    background-color: #ffffff !important;
+    border: 1px solid #ffedd5 !important;
+    border-radius: 16px !important;
+    box-shadow: 0 4px 15px rgba(234, 88, 12, 0.02) !important;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.25) !important;
+}
+
+.card-premium:hover {
+    border-color: #ea580c !important;
+    box-shadow: 0 15px 35px rgba(234, 88, 12, 0.08) !important;
+    transform: translateY(-6px);
+}
+
+.category-card {
+    border-radius: 16px !important;
+    overflow: hidden;
+}
+
+.category-card img {
+    border-radius: 16px !important;
+    transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.25) !important;
+}
+
+
+/* Mobile Responsiveness for Pet Store */
+@media (max-width: 1024px) {
+    .container {
+        padding: 0 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 16px;
+    }
+    section.relative.flex.items-center {
+        min-height: 380px !important;
+        padding: 40px 16px !important;
+    }
+    section h1, section .text-3xl, section .text-4xl {
+        font-size: 26px !important;
+        line-height: 1.25 !important;
+    }
+    section h2 {
+        font-size: 20px !important;
+        line-height: 1.3 !important;
+    }
+    section p, section .text-xs, section .text-sm {
+        font-size: 13px !important;
+        line-height: 1.5 !important;
+    }
+    .btn-premium {
+        padding: 10px 20px !important;
+        font-size: 11px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    section.relative.flex.items-center {
+        min-height: 300px !important;
+        padding: 30px 12px !important;
+    }
+    section h1, section .text-3xl, section .text-4xl {
+        font-size: 22px !important;
+    }
+    section h2 {
+        font-size: 18px !important;
+    }
+    section p, section .text-xs, section .text-sm {
+        font-size: 12px !important;
+    }
+    .btn-premium {
+        padding: 8px 16px !important;
+        font-size: 10px !important;
+    }
+    input, textarea, select {
+        padding: 8px 14px !important;
+        font-size: 12px !important;
+    }
+}
+
+@media (max-width: 320px) {
+    section h1, section .text-3xl, section .text-4xl {
+        font-size: 18px !important;
+    }
+}
+
+

@@ -1,0 +1,12 @@
+{
+  "name": "Featured Tech Video",
+  "type": "video-banner",
+  "settings": {
+    "videoUrl": "https://assets.mixkit.co/videos/preview/mixkit-keyboard-and-mouse-with-rgb-lights-in-the-dark-40149-large.mp4",
+    "title": "QUANTUM TECH GEAR",
+    "subtitle": "Equip your battle station with high-performance hardware, customizable RGB accessories, and lightning-fast speed.",
+    "buttonLabel": "Shop Gear",
+    "buttonLink": "/catalog",
+    "height": "550px"
+  }
+}

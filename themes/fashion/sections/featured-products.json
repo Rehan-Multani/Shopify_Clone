@@ -1,8 +1,10 @@
 {
   "name": "Featured Products Grid",
+  "type": "featured-products",
   "settings": {
-    "title": "Best Sellers",
-    "products_count": 8,
-    "columns": 4
+    "title": "New Arrivals",
+    "limit": 8,
+    "columns": 4,
+    "cardShape": "square"
   }
 }

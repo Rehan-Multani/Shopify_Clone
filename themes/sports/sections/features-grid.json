@@ -1,0 +1,34 @@
+{
+  "name": "Velocity Advantages",
+  "type": "features-grid",
+  "settings": {
+    "title": "Why Choose Velocity",
+    "subtitle": "Professional grade fitness accessories, high endurance materials, and round the clock support."
+  },
+  "blocks": [
+    {
+      "type": "feature",
+      "settings": {
+        "title": "Express Delivery",
+        "text": "Same day dispatch & real time transit tracking on all fitness accessories.",
+        "icon": "lightning"
+      }
+    },
+    {
+      "type": "feature",
+      "settings": {
+        "title": "Premium Durability",
+        "text": "All items are performance tested & engineered for peak athletic stress.",
+        "icon": "shield-check"
+      }
+    },
+    {
+      "type": "feature",
+      "settings": {
+        "title": "Hassle-Free Returns",
+        "text": "30-day trial period on all compression garments and trainers.",
+        "icon": "rotate-ccw"
+      }
+    }
+  ]
+}

@@ -183,7 +183,7 @@ const StorefrontCatalog = ({ cartCount, onAddToCart, customer, onLogout, storeIn
                     </div>
 
                     {/* Categories Tabs */}
-                    <div className="flex flex-wrap gap-2 overflow-x-auto pb-1 max-w-full storefront-scrollbar">
+                    <div className="flex flex-nowrap gap-2 overflow-x-auto pb-1.5 max-w-full storefront-scrollbar select-none whitespace-nowrap">
                         <button
                             onClick={() => handleCategoryChange('All')}
                             className={`px-3.5 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
@@ -220,7 +220,7 @@ const StorefrontCatalog = ({ cartCount, onAddToCart, customer, onLogout, storeIn
 
                 {/* Products Grid */}
                 {filteredProducts.length > 0 ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5 sm:gap-6">
                         {filteredProducts.map((product, idx) => {
                             const imageUrl = product.images && product.images.length > 0 
                                 ? (product.images[0].startsWith('http') || product.images[0].startsWith('data:') ? product.images[0] : `${ASSETS_BASE_URL}${product.images[0]}`)

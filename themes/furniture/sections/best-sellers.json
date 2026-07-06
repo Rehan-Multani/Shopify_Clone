@@ -1,0 +1,9 @@
+{
+  "name": "Best Sellers",
+  "type": "best-sellers",
+  "settings": {
+    "title": "Popular Deco Selections",
+    "limit": 4,
+    "cardShape": "curved"
+  }
+}

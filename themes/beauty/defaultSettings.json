@@ -1,25 +1,26 @@
 {
-  "primaryColor": "#ec4899",
-  "secondaryColor": "#fdf2f8",
-  "accentColor": "#db2777",
-  "borderRadius": "8px",
+  "primaryColor": "#be185d",
+  "secondaryColor": "#fff1f2",
+  "accentColor": "#701a75",
+  "borderRadius": "24px",
+  "fontFamily": "Cormorant Garamond",
   "headerConfig": {
     "enabled": true,
     "sticky": true,
     "transparent": false,
     "backgroundColor": "#ffffff",
-    "textColor": "#1f2937",
+    "textColor": "#701a75",
     "logoWidth": "auto",
     "logoHeight": "36px",
     "announcementBar": {
       "enabled": true,
-      "text": "✨ Extra 10% OFF on your first purchase! Code: BEAUTY10",
-      "backgroundColor": "#ec4899",
+      "text": "✨ GLOW EXCLUSIVE: Free Luxury Samples with all orders + Code: GLOWBEAUTY",
+      "backgroundColor": "#be185d",
       "textColor": "#ffffff"
     }
   },
   "footerConfig": {
-    "backgroundColor": "#1f2937",
-    "textColor": "#f3f4f6"
+    "backgroundColor": "#be185d",
+    "textColor": "#fff1f2"
   }
 }

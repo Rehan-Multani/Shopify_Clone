@@ -1,0 +1,13 @@
+{
+  "name": "Bespoke Creation Showcase",
+  "type": "image-banner",
+  "settings": {
+    "imageUrl": "https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?w=1600",
+    "title": "The Bridal Collection",
+    "subtitle": "Impeccable diamond solitaires, custom platinum bands, and exquisite necklaces handcrafted for your special day.",
+    "buttonLabel": "Explore Bridal",
+    "buttonLink": "/catalog",
+    "layout": "overlay",
+    "height": "450px"
+  }
+}

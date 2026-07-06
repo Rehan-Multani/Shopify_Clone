@@ -1,0 +1,9 @@
+{
+  "name": "Bookstore Heritage",
+  "type": "rich-text",
+  "settings": {
+    "title": "Preserving the Printed Word",
+    "content": "Inkwell began as a small independent bookshop. We believe in the tactile joy of physical books, fine craftsmanship of parchment stationery, and fostering local community discussion.",
+    "alignment": "center"
+  }
+}

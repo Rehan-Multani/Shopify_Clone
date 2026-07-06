@@ -1,0 +1,8 @@
+{
+  "title": "Cart Page",
+  "sections": [
+    "header",
+    "cart",
+    "footer"
+  ]
+}

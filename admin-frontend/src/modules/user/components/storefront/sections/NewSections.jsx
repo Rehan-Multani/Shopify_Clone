@@ -86,7 +86,7 @@ export const ImageBannerSection = ({ settings = {} }) => {
                         </div>
                     )}
                 </div>
-                <div className="flex-1 relative" style={{ minHeight: height }}>
+                <div className="flex-1 relative min-h-[260px] md:min-h-0" style={{ minHeight: 'clamp(260px, 40vw, 450px)' }}>
                     <img 
                         src={getImageUrl(imageUrl)} 
                         alt={title}
@@ -396,7 +396,7 @@ export const ContactFormSection = ({ settings = {} }) => {
                 </div>
             ) : (
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <input 
                             type="text" 
                             required 

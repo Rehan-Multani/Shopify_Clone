@@ -1,0 +1,23 @@
+{
+  "name": "Happy Customers",
+  "type": "testimonials",
+  "settings": {
+    "title": "Customer Reviews"
+  },
+  "blocks": [
+    {
+      "type": "testimonial",
+      "settings": {
+        "author": "Victoria A.",
+        "text": "The tailoring on the trench coat is absolutely impeccable. A timeless piece of minimal luxury."
+      }
+    },
+    {
+      "type": "testimonial",
+      "settings": {
+        "author": "Julian M.",
+        "text": "Flawless silhouettes, sustainable premium fabrics, and stellar service. Exactly what my wardrobe needed."
+      }
+    }
+  ]
+}

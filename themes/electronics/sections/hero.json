@@ -1,9 +1,60 @@
 {
   "name": "Hero Banner",
+  "type": "hero",
   "settings": {
-    "heading": "Discover Our Premium Collection",
-    "subheading": "Curated premium products just for you.",
-    "button_label": "Shop Collection",
-    "background_image": "hero.webp"
-  }
+    "layout": "split",
+    "backgroundType": "solid",
+    "backgroundColor": "#1e293b",
+    "backgroundImage": "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1200",
+    "alignment": "left",
+    "overlayOpacity": "0.3",
+    "height": "580px",
+    "showTrustBadges": true,
+    "badge1Text": "Same Day Dispatch",
+    "badge2Text": "2-Year Warranty",
+    "badge3Text": "Engineering Support"
+  },
+  "blocks": [
+    {
+      "type": "heading",
+      "settings": {
+        "text": "NEXT-GEN GAMING AND TECH GEAR",
+        "style": {
+          "tag": "h2",
+          "fontSize": 44,
+          "color": "#ffffff",
+          "fontWeight": "900",
+          "textAlign": "left"
+        }
+      }
+    },
+    {
+      "type": "subheading",
+      "settings": {
+        "text": "Equip your battlestation with our selection of elite mechanical keyboards, esports monitors, and enthusiast gaming rigs.",
+        "style": {
+          "fontSize": 14,
+          "color": "#94a3b8",
+          "fontWeight": "500",
+          "textAlign": "left"
+        }
+      }
+    },
+    {
+      "type": "button",
+      "settings": {
+        "label": "Build Your Setup →",
+        "link": "/catalog",
+        "style": {
+          "backgroundColor": "#2563eb",
+          "textColor": "#ffffff",
+          "borderRadius": "0px",
+          "paddingY": 12,
+          "paddingX": 28,
+          "fontSize": 11,
+          "shadow": "md"
+        }
+      }
+    }
+  ]
 }

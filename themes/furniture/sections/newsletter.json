@@ -1,0 +1,8 @@
+{
+  "name": "Newsletter",
+  "type": "newsletter",
+  "settings": {
+    "title": "Join the Showroom Circle",
+    "subtitle": "Subscribe for interior design inspiration, showroom collections release, and private furniture sales."
+  }
+}

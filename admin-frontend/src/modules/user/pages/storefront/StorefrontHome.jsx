@@ -15,6 +15,7 @@ const StorefrontHome = ({ cartCount, onAddToCart, customer, onLogout, storeInfo 
     const [pageSections, setPageSections] = useState([]);
     const [banners, setBanners] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [isFallback, setIsFallback] = useState(false);
 
     const [newsletterEmail, setNewsletterEmail] = useState('');
     const [subscribing, setSubscribing] = useState(false);
@@ -72,6 +73,7 @@ const StorefrontHome = ({ cartCount, onAddToCart, customer, onLogout, storeInfo 
                 if (data.success && data.page?.sections) {
                     const sorted = (data.page.sections || []).sort((a, b) => (a.order || 0) - (b.order || 0));
                     setPageSections(sorted.filter(s => s.enabled));
+                    setIsFallback(!!data.page.isFallback || sorted.some(s => s.sectionId && String(s.sectionId).startsWith('fallback-')));
                 }
 
                 // Fetch banners to check if we have any active ones
@@ -122,6 +124,11 @@ const StorefrontHome = ({ cartCount, onAddToCart, customer, onLogout, storeInfo 
 
     return (    
         <StorefrontLayout cartCount={cartCount} customer={customer} onLogout={onLogout} storeInfo={storeInfo}>
+            {isFallback && (
+                <div className="w-full bg-amber-500 text-black py-2.5 px-4 text-center font-black text-xs uppercase tracking-widest flex items-center justify-center gap-1.5 z-50 relative shadow-inner animate-pulse">
+                    <span>⚠️ Fallback Loaded (Please Activate/Install Theme in Merchant Dashboard)</span>
+                </div>
+            )}
             <div className="space-y-0 animate-fade-in">
                 {/* Render banners at the top of the homepage by default if not explicitly added in customized layout */}
                 {hasBanners && !pageSections.some(s => s.type === 'banners' || s.type === 'hero' || s.type === 'image-banner' || s.type === 'video-banner') && (
