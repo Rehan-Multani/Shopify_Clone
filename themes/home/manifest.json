@@ -1,0 +1,27 @@
+{
+  "id": "home",
+  "name": "Home",
+  "version": "1.0.0",
+  "industry": "Furniture",
+  "category": "Home & Living",
+  "type": "free",
+  "price": 0,
+  "thumbnail": "thumbnail.webp",
+  "schema": "schema.json",
+  "supports": {
+    "announcementBar": true,
+    "megaMenu": false,
+    "quickView": false,
+    "wishlist": true,
+    "productReviews": true,
+    "countdown": false
+  },
+  "templates": {
+    "404": true,
+    "home": true,
+    "product": true,
+    "collection": true,
+    "cart": true,
+    "search": true
+  }
+}

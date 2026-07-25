@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import StorefrontLayout from '../../components/storefront/StorefrontLayout';
 import { getStorePath } from '../../components/storefront/storeUrlHelper';
+import { useTheme } from '../../components/storefront/themeEngine/ThemeContext';
 
 const GATEWAY_URL = import.meta.env.VITE_API_BASE_URL;
 const ASSETS_BASE_URL = GATEWAY_URL.replace('/api', '');
@@ -9,6 +10,7 @@ const ASSETS_BASE_URL = GATEWAY_URL.replace('/api', '');
 const StorefrontCart = ({ cart, cartCount, onUpdateCartQty, onRemoveFromCart, customer, onLogout, storeInfo }) => {
     const { storeId: paramStoreId } = useParams();
     const storeId = storeInfo?._id || paramStoreId;
+    const theme = useTheme();
 
     const subtotal = cart.reduce((sum, item) => sum + (item.sellingPrice * item.qty), 0);
     const gstPercent = storeInfo?.gstPercent || 0;
@@ -25,7 +27,7 @@ const StorefrontCart = ({ cart, cartCount, onUpdateCartQty, onRemoveFromCart, cu
 
     return (
         <StorefrontLayout cartCount={cartCount} customer={customer} onLogout={onLogout} storeInfo={storeInfo}>
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 animate-fade-in">
+            <div data-cart-style={theme.cartStyle} className={`theme-cart max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 animate-fade-in ${theme.cartStyle === 'drawer' ? 'lg:max-w-5xl' : ''}`}>
                 <div className="space-y-1 mb-8">
                     <h1 className="text-lg font-black tracking-widest text-zinc-900 uppercase">Shopping Cart</h1>
                     <div className="w-8 h-0.5 rounded-full" style={{ backgroundColor: 'var(--color-primary)' }}></div>
@@ -192,6 +194,15 @@ const StorefrontCart = ({ cart, cartCount, onUpdateCartQty, onRemoveFromCart, cu
                     </div>
                 )}
             </div>
+            {cart.length > 0 && theme.cartStyle === 'sticky' && (
+                <div className="fixed md:hidden bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur-xl border-t border-zinc-200 p-3 pb-[max(12px,env(safe-area-inset-bottom))] flex items-center gap-3 shadow-2xl">
+                    <div className="flex-1">
+                        <span className="text-[9px] uppercase tracking-wider text-zinc-400 font-black">Cart total</span>
+                        <strong className="block text-base">₹{totalAmount.toLocaleString()}</strong>
+                    </div>
+                    <Link to={getStorePath(storeId, '/checkout')} className="px-6 py-3 text-white text-xs font-black uppercase tracking-wider" style={{ background: 'var(--color-primary)', borderRadius: 'var(--border-radius)' }}>Checkout</Link>
+                </div>
+            )}
         </StorefrontLayout>
     );
 };

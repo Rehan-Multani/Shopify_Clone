@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { resolveMediaUrl } from '../../utils/resolveMediaUrl';
 
 const CATALOG_API_URL = import.meta.env.VITE_CATALOG_API_URL;
 const API_URL = CATALOG_API_URL;
@@ -148,7 +149,7 @@ const SingleVendorProductsTab = ({ vendorId }) => {
     const handleOpenPreview = (product) => {
         setPreviewProduct(product);
         if (product.images && product.images.length > 0) {
-            setPreviewActiveImg(`${API_URL.replace('/api', '')}${product.images[0]}`);
+            setPreviewActiveImg(resolveMediaUrl(product.images[0], API_URL));
         } else {
             setPreviewActiveImg('');
         }
@@ -361,7 +362,7 @@ const SingleVendorProductsTab = ({ vendorId }) => {
                                                         <div className="flex items-center gap-3">
                                                             <div className="w-11 h-11 rounded-xl bg-gray-100 border border-gray-200 overflow-hidden flex-shrink-0">
                                                                 {product.images && product.images.length > 0 ? (
-                                                                    <img src={`${API_URL.replace('/api', '')}${product.images[0]}`} alt={product.name} className="w-full h-full object-contain p-0.5 bg-white" />
+                                                                    <img src={resolveMediaUrl(product.images[0], API_URL)} alt={product.name} className="w-full h-full object-contain p-0.5 bg-white" />
                                                                 ) : (
                                                                     <div className="w-full h-full flex items-center justify-center text-gray-400">
                                                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -493,7 +494,7 @@ const SingleVendorProductsTab = ({ vendorId }) => {
                                         {/* Image Container */}
                                         <div className="aspect-[4/3] bg-gray-50/50 relative overflow-hidden flex items-center justify-center p-3 border-b border-gray-100/50">
                                             {product.images && product.images.length > 0 ? (
-                                                <img src={`${API_URL.replace('/api', '')}${product.images[0]}`} alt={product.name} className="w-full h-full object-contain p-1 group-hover:scale-105 transition-transform duration-300" />
+                                                <img src={resolveMediaUrl(product.images[0], API_URL)} alt={product.name} className="w-full h-full object-contain p-1 group-hover:scale-105 transition-transform duration-300" />
                                             ) : (
                                                 <div className="text-gray-400">
                                                     <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -726,7 +727,7 @@ const SingleVendorProductsTab = ({ vendorId }) => {
                             {previewProduct.images && previewProduct.images.length > 1 && (
                                 <div className="flex gap-2 mt-4 overflow-x-auto max-w-full py-1">
                                     {previewProduct.images.map((img, idx) => {
-                                        const fullUrl = `${API_URL.replace('/api', '')}${img}`;
+                                        const fullUrl = resolveMediaUrl(img, API_URL);
                                         return (
                                             <button
                                                 key={idx}

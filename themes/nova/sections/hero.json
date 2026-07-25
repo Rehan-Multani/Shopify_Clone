@@ -1,0 +1,57 @@
+{
+  "name": "Hero Banner",
+  "type": "hero",
+  "settings": {
+    "backgroundImage": "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1600",
+    "alignment": "left",
+    "overlayOpacity": "0.4",
+    "height": "620px",
+    "layout": "split",
+    "showTrustBadges": true,
+    "badge1Text": "Free Ship",
+    "badge2Text": "Secure Pay",
+    "badge3Text": "Easy Returns"
+  },
+  "blocks": [
+    {
+      "type": "heading",
+      "settings": {
+        "text": "Build Faster. Sell Smarter.",
+        "style": {
+          "tag": "h1",
+          "fontSize": 48,
+          "color": "#fff",
+          "fontWeight": "900",
+          "textAlign": "left"
+        }
+      }
+    },
+    {
+      "type": "subheading",
+      "settings": {
+        "text": "A modern D2C storefront engineered to convert.",
+        "style": {
+          "fontSize": 16,
+          "color": "#fff",
+          "fontWeight": "400",
+          "textAlign": "left"
+        }
+      }
+    },
+    {
+      "type": "button",
+      "settings": {
+        "label": "Shop Now",
+        "link": "/catalog",
+        "style": {
+          "backgroundColor": "#fff",
+          "textColor": "#111",
+          "borderRadius": "8px",
+          "paddingY": 14,
+          "paddingX": 28,
+          "fontSize": 13
+        }
+      }
+    }
+  ]
+}

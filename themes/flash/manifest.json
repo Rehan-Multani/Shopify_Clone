@@ -1,0 +1,36 @@
+{
+  "id": "flash",
+  "name": "Flash",
+  "version": "2.0.0",
+  "industry": "Deals",
+  "category": "General Store",
+  "type": "free",
+  "price": 0,
+  "thumbnail": "thumbnail.webp",
+  "schema": "schema.json",
+  "engine": {
+    "headerStyle": "classic",
+    "productCardStyle": "sale",
+    "productPageLayout": "sticky",
+    "collectionLayout": "dense",
+    "cartStyle": "sticky",
+    "heroStyle": "promo",
+    "spacingScale": "tight",
+    "buttonStyle": "solid"
+  },
+  "supports": {
+    "announcementBar": true,
+    "megaMenu": false,
+    "quickView": true,
+    "wishlist": true,
+    "countdown": true,
+    "lookbook": false,
+    "shoppableVideo": true
+  },
+  "templates": {
+    "home": true,
+    "product": true,
+    "collection": true,
+    "cart": true
+  }
+}

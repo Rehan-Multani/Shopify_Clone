@@ -1,6 +1,6 @@
 {
   "primaryColor": "#111111",
-  "secondaryColor": "#ffffff",
+  "secondaryColor": "#fafaf9",
   "accentColor": "#d4af37",
   "borderRadius": "0px",
   "fontFamily": "Playfair Display",
@@ -8,19 +8,19 @@
     "enabled": true,
     "sticky": true,
     "transparent": false,
-    "backgroundColor": "#ffffff",
+    "backgroundColor": "#fafaf9",
     "textColor": "#111111",
     "logoWidth": "auto",
     "logoHeight": "36px",
     "announcementBar": {
       "enabled": true,
-      "text": "✨ ELEGANT LUXURY: Enjoy Free Shipping on all orders above $200",
+      "text": "AW Collection is live — Free shipping over ₹2000",
       "backgroundColor": "#111111",
-      "textColor": "#ffffff"
+      "textColor": "#fafaf9"
     }
   },
   "footerConfig": {
     "backgroundColor": "#111111",
-    "textColor": "#ffffff"
+    "textColor": "#fafaf9"
   }
 }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { resolveMediaUrl } from '../../utils/resolveMediaUrl';
 
 const CATALOG_API_URL = import.meta.env.VITE_CATALOG_API_URL;
 const API_URL = CATALOG_API_URL;
@@ -290,7 +291,7 @@ const CategoryTab = () => {
                                                 <td className="px-5 py-3">
                                                     <div className="w-12 h-12 rounded-xl bg-gray-100 border border-gray-200 overflow-hidden flex-shrink-0">
                                                         {cat.image ? (
-                                                            <img src={`${API_URL.replace('/api', '')}${cat.image}`} alt={cat.name} className="w-full h-full object-cover" />
+                                                            <img src={resolveMediaUrl(cat.image, API_URL)} alt={cat.name} className="w-full h-full object-cover" />
                                                         ) : (
                                                             <div className="w-full h-full flex items-center justify-center text-gray-400">
                                                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -391,7 +392,7 @@ const CategoryTab = () => {
                                         {/* Image Header */}
                                         <div className="aspect-video w-full bg-gray-50 border-b border-gray-100 overflow-hidden flex items-center justify-center relative">
                                             {cat.image ? (
-                                                <img src={`${API_URL.replace('/api', '')}${cat.image}`} alt={cat.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                                                <img src={resolveMediaUrl(cat.image, API_URL)} alt={cat.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                                             ) : (
                                                 <div className="text-gray-400">
                                                     <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">

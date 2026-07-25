@@ -4,21 +4,21 @@
   "settings": {
     "backgroundImage": "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=1600",
     "alignment": "center",
-    "overlayOpacity": "0.25",
-    "height": "600px",
+    "overlayOpacity": "0.35",
+    "height": "640px",
     "showTrustBadges": true,
-    "badge1Text": "100% Vegan & Clean",
+    "badge1Text": "Clean Beauty",
     "badge2Text": "Dermatologist Tested",
-    "badge3Text": "Cruelty Free Certified"
+    "badge3Text": "Cruelty Free"
   },
   "blocks": [
     {
       "type": "heading",
       "settings": {
-        "text": "PURE BOTANICAL SKINCARE",
+        "text": "Glow From Within",
         "style": {
           "tag": "h1",
-          "fontSize": 52,
+          "fontSize": 48,
           "color": "#ffffff",
           "fontWeight": "900",
           "textAlign": "center"
@@ -28,11 +28,11 @@
     {
       "type": "subheading",
       "settings": {
-        "text": "Transform your skin with organic ingredients, cold-pressed active botanical serums, and dermatologically tested luxury care.",
+        "text": "Skincare and beauty essentials for every routine.",
         "style": {
-          "fontSize": 15,
+          "fontSize": 16,
           "color": "#ffffff",
-          "fontWeight": "500",
+          "fontWeight": "400",
           "textAlign": "center"
         }
       }
@@ -40,16 +40,16 @@
     {
       "type": "button",
       "settings": {
-        "label": "Discover Your Glow",
+        "label": "Shop Beauty",
         "link": "/catalog",
         "style": {
-          "backgroundColor": "#be185d",
-          "textColor": "#ffffff",
-          "borderRadius": "24px",
-          "paddingY": 12,
+          "backgroundColor": "#ffffff",
+          "textColor": "#111111",
+          "borderRadius": "8px",
+          "paddingY": 14,
           "paddingX": 28,
-          "fontSize": 11,
-          "shadow": "md"
+          "fontSize": 13,
+          "shadow": "lg"
         }
       }
     }

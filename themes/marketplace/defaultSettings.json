@@ -1,0 +1,26 @@
+{
+  "primaryColor": "#b45309",
+  "secondaryColor": "#fffbeb",
+  "accentColor": "#dc2626",
+  "borderRadius": "8px",
+  "fontFamily": "Inter",
+  "headerConfig": {
+    "enabled": true,
+    "sticky": true,
+    "transparent": false,
+    "backgroundColor": "#fffbeb",
+    "textColor": "#b45309",
+    "logoWidth": "auto",
+    "logoHeight": "36px",
+    "announcementBar": {
+      "enabled": true,
+      "text": "Flash deals every hour — Shop across 100+ categories",
+      "backgroundColor": "#b45309",
+      "textColor": "#fffbeb"
+    }
+  },
+  "footerConfig": {
+    "backgroundColor": "#b45309",
+    "textColor": "#fffbeb"
+  }
+}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { resolveMediaUrl } from '../../utils/resolveMediaUrl';
 
 const CATALOG_API_URL = import.meta.env.VITE_CATALOG_API_URL;
 const API_URL = CATALOG_API_URL;
@@ -34,7 +35,7 @@ const ViewSingleVendorProduct = () => {
                 if (res.ok) {
                     setProduct(data);
                     if (data.images && data.images.length > 0) {
-                        setActiveImage(`${API_URL.replace('/api', '')}${data.images[0]}`);
+                        setActiveImage(resolveMediaUrl(data.images[0], API_URL));
                     }
                 } else {
                     setError(data.message || 'Failed to fetch product details');
@@ -139,7 +140,7 @@ const ViewSingleVendorProduct = () => {
                     {product.images && product.images.length > 1 && (
                         <div className="flex gap-2.5 overflow-x-auto py-1 custom-scrollbar">
                             {product.images.map((img, idx) => {
-                                const fullUrl = `${API_URL.replace('/api', '')}${img}`;
+                                const fullUrl = resolveMediaUrl(img, API_URL);
                                 return (
                                     <button
                                         key={idx}

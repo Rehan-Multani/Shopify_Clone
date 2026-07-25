@@ -1,9 +1,9 @@
 {
-  "name": "Bestsellers",
+  "name": "Best Sellers",
   "type": "best-sellers",
   "settings": {
-    "title": "Hot Toys",
+    "title": "Quantum Tech Best Sellers",
     "limit": 4,
-    "columns": 4
+    "cardShape": "square"
   }
 }

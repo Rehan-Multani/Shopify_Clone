@@ -1,0 +1,9 @@
+{
+  "name": "Shop Categories",
+  "type": "category-grid",
+  "settings": {
+    "title": "Our Collections",
+    "layout": "showcase",
+    "cardShape": "rounded"
+  }
+}

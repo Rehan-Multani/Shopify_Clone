@@ -1,22 +1,49 @@
 {
-  "name": "Happy Customers",
+  "name": "Testimonials",
   "type": "testimonials",
   "settings": {
-    "title": "Customer Reviews"
+    "title": "What Our Glowing Community Says",
+    "testimonials": [
+      {
+        "settings": {
+          "author": "Sofia R.",
+          "text": "The Rose Glow oil completely transformed my dry patches. My skin has never looked so dewy!"
+        }
+      },
+      {
+        "settings": {
+          "author": "Amelie V.",
+          "text": "Love the organic botanical ingredients. Zero irritation on my sensitive skin."
+        }
+      },
+      {
+        "settings": {
+          "author": "Celine L.",
+          "text": "The silk skin serum feels like water and hydrates all day. A holy grail product!"
+        }
+      }
+    ]
   },
   "blocks": [
     {
       "type": "testimonial",
       "settings": {
-        "author": "Victoria A.",
-        "text": "The tailoring on the trench coat is absolutely impeccable. A timeless piece of minimal luxury."
+        "author": "Sofia R.",
+        "text": "The Rose Glow oil completely transformed my dry patches. My skin has never looked so dewy!"
       }
     },
     {
       "type": "testimonial",
       "settings": {
-        "author": "Julian M.",
-        "text": "Flawless silhouettes, sustainable premium fabrics, and stellar service. Exactly what my wardrobe needed."
+        "author": "Amelie V.",
+        "text": "Love the organic botanical ingredients. Zero irritation on my sensitive skin."
+      }
+    },
+    {
+      "type": "testimonial",
+      "settings": {
+        "author": "Celine L.",
+        "text": "The silk skin serum feels like water and hydrates all day. A holy grail product!"
       }
     }
   ]

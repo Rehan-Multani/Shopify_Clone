@@ -1,0 +1,36 @@
+{
+  "id": "monarch",
+  "name": "Monarch",
+  "version": "2.0.0",
+  "industry": "Premium Brand",
+  "category": "Luxury",
+  "type": "paid",
+  "price": 6999,
+  "thumbnail": "thumbnail.webp",
+  "schema": "schema.json",
+  "engine": {
+    "headerStyle": "centered",
+    "productCardStyle": "large",
+    "productPageLayout": "luxury",
+    "collectionLayout": "editorial",
+    "cartStyle": "page",
+    "heroStyle": "full",
+    "spacingScale": "roomy",
+    "buttonStyle": "square"
+  },
+  "supports": {
+    "announcementBar": true,
+    "megaMenu": false,
+    "quickView": true,
+    "wishlist": true,
+    "countdown": false,
+    "lookbook": true,
+    "shoppableVideo": false
+  },
+  "templates": {
+    "home": true,
+    "product": true,
+    "collection": true,
+    "cart": true
+  }
+}

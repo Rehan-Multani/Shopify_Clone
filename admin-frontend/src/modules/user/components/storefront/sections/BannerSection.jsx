@@ -83,7 +83,7 @@ const BannerSection = ({ settings = {}, storeId: propStoreId }) => {
 
     return (
         <section 
-            className="relative overflow-hidden w-full group/banner animate-fade-in rounded-3xl" 
+            className="relative overflow-hidden w-full group/banner animate-fade-in" 
             style={{ height }}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}

@@ -1,8 +1,8 @@
 {
-  "name": "Shop by Age",
+  "name": "Shop Categories",
   "type": "category-grid",
   "settings": {
-    "title": "Shop by Age Group",
+    "title": "Shop Collections",
     "cardShape": "square"
   }
 }

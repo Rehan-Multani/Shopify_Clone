@@ -11,8 +11,15 @@ import StorefrontWishlist from '../../pages/storefront/StorefrontWishlist';
 import StorefrontAccount from '../../pages/storefront/StorefrontAccount';
 import StorefrontOrderTrack from '../../pages/storefront/StorefrontOrderTrack';
 import { getStorePath } from './storeUrlHelper';
+import { ThemeProvider } from './themeEngine/ThemeContext';
+import ThemeExperience from './themeEngine/ThemeExperience';
 
 const GATEWAY_URL = import.meta.env.VITE_API_BASE_URL;
+
+const PageSlugRedirect = () => {
+    const { storeId, slug } = useParams();
+    return <Navigate to={getStorePath(storeId, `/pages/${slug}`)} replace />;
+};
 
 const ProtectedRoute = ({ customer, storeId, redirect, children }) => {
     if (!customer) {
@@ -76,9 +83,21 @@ const StorefrontContainer = ({ resolvedStoreId }) => {
                         }
                     }
 
+                    const activeInstall = data.installedThemes?.find((t) =>
+                        t.themeId === (previewThemeId || data.activeTheme?.themeId)
+                    ) || data.installedThemes?.find((t) => t.themeId === data.activeTheme?.themeId);
+                    const themeFolder = activeInstall?.folder || data.activeTheme?.folder || activeSettings.themeFolder || '';
+                    const themeSlug = themeFolder || activeSettings.themeId || 'default';
+                    const catalogThemeId = previewThemeId || data.activeTheme?.themeId || activeSettings.themeId || 'default';
                     setStoreInfo({
                         ...data,
-                        themeSettings: activeSettings
+                        themeSettings: {
+                            ...activeSettings,
+                            themeId: themeSlug,
+                            themeFolder,
+                            themeCatalogId: catalogThemeId,
+                            designLanguage: activeSettings.designLanguage || themeSlug,
+                        }
                     });
                 }
             } catch (err) {
@@ -209,6 +228,14 @@ const StorefrontContainer = ({ resolvedStoreId }) => {
     }
 
     return (
+        <ThemeProvider settings={storeInfo?.themeSettings || {}}>
+        <ThemeExperience
+            storeId={storeId}
+            cart={cart}
+            cartCount={cartCount}
+            onUpdateCartQty={handleUpdateCartQty}
+            onRemoveFromCart={handleRemoveFromCart}
+        >
         <Routes>
             <Route path="/" element={
                 <StorefrontHome 
@@ -238,7 +265,6 @@ const StorefrontContainer = ({ resolvedStoreId }) => {
                 />
             } />
             <Route path="/cart" element={
-                <ProtectedRoute customer={customer} storeId={storeId} redirect="cart">
                     <StorefrontCart 
                         cart={cart}
                         cartCount={cartCount} 
@@ -248,7 +274,6 @@ const StorefrontContainer = ({ resolvedStoreId }) => {
                         onLogout={handleLogout}
                         storeInfo={storeInfo}
                     />
-                </ProtectedRoute>
             } />
             <Route path="/checkout" element={
                 <ProtectedRoute customer={customer} storeId={storeId} redirect="checkout">
@@ -271,6 +296,7 @@ const StorefrontContainer = ({ resolvedStoreId }) => {
                     storeInfo={storeInfo}
                 />
             } />
+            <Route path="/page/:slug" element={<PageSlugRedirect />} />
             <Route path="/pages/:slug" element={
                 <StorefrontPage 
                     cartCount={cartCount} 
@@ -309,6 +335,8 @@ const StorefrontContainer = ({ resolvedStoreId }) => {
                 </ProtectedRoute>
             } />
         </Routes>
+        </ThemeExperience>
+        </ThemeProvider>
     );
 };
 

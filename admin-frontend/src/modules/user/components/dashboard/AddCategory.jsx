@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { resolveMediaUrl, stripMediaBaseUrl } from '../../utils/resolveMediaUrl';
 
 const CATALOG_API_URL = import.meta.env.VITE_CATALOG_API_URL;
 const API_URL = CATALOG_API_URL;
@@ -45,7 +46,7 @@ const AddCategory = () => {
                             isActive: cat.isActive !== undefined ? cat.isActive : true
                         });
                         if (cat.image) {
-                            setImagePreview(`${API_URL.replace('/api', '')}${cat.image}`);
+                            setImagePreview(resolveMediaUrl(cat.image, API_URL));
                         }
                     } else {
                         setError('Category not found');
@@ -93,7 +94,7 @@ const AddCategory = () => {
         setError('');
 
         try {
-            let imageUrl = isEdit ? (imageFile ? '' : imagePreview.replace(API_URL.replace('/api', ''), '')) : '';
+            let imageUrl = isEdit ? (imageFile ? '' : stripMediaBaseUrl(imagePreview, API_URL)) : '';
 
             // Upload image first if selected
             if (imageFile) {

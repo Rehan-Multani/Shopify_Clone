@@ -1,0 +1,57 @@
+{
+  "name": "Hero Banner",
+  "type": "hero",
+  "settings": {
+    "backgroundImage": "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=1600",
+    "alignment": "center",
+    "overlayOpacity": "0.4",
+    "height": "740px",
+    "layout": "overlay",
+    "showTrustBadges": true,
+    "badge1Text": "Artistic",
+    "badge2Text": "Asymmetric",
+    "badge3Text": "Premium"
+  },
+  "blocks": [
+    {
+      "type": "heading",
+      "settings": {
+        "text": "WHERE DESIGN MEETS DESIRE",
+        "style": {
+          "tag": "h1",
+          "fontSize": 48,
+          "color": "#fff",
+          "fontWeight": "900",
+          "textAlign": "center"
+        }
+      }
+    },
+    {
+      "type": "subheading",
+      "settings": {
+        "text": "Creative D2C storytelling that feels editorial.",
+        "style": {
+          "fontSize": 16,
+          "color": "#fff",
+          "fontWeight": "400",
+          "textAlign": "center"
+        }
+      }
+    },
+    {
+      "type": "button",
+      "settings": {
+        "label": "Experience",
+        "link": "/catalog",
+        "style": {
+          "backgroundColor": "#fff",
+          "textColor": "#111",
+          "borderRadius": "8px",
+          "paddingY": 14,
+          "paddingX": 28,
+          "fontSize": 13
+        }
+      }
+    }
+  ]
+}

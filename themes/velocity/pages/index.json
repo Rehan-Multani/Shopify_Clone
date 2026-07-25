@@ -1,0 +1,15 @@
+{
+  "title": "Home Page",
+  "sections": [
+    "header",
+    "hero",
+    "countdown",
+    "featured-products",
+    "best-sellers",
+    "features-grid",
+    "testimonials",
+    "newsletter",
+    "shoppable-video",
+    "footer"
+  ]
+}

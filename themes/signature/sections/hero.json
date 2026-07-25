@@ -1,0 +1,57 @@
+{
+  "name": "Hero Banner",
+  "type": "hero",
+  "settings": {
+    "backgroundImage": "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=2000&q=80",
+    "alignment": "center",
+    "overlayOpacity": "0.35",
+    "height": "92vh",
+    "layout": "overlay",
+    "showTrustBadges": false,
+    "badge1Text": "Complete",
+    "badge2Text": "Premium",
+    "badge3Text": "Flexible"
+  },
+  "blocks": [
+    {
+      "type": "heading",
+      "settings": {
+        "text": "THE FLAGSHIP EXPERIENCE",
+        "style": {
+          "tag": "h1",
+          "fontSize": 72,
+          "color": "#fff",
+          "fontWeight": "500",
+          "textAlign": "center"
+        }
+      }
+    },
+    {
+      "type": "subheading",
+      "settings": {
+        "text": "One theme. Every capability. Signature.",
+        "style": {
+          "fontSize": 18,
+          "color": "#fff",
+          "fontWeight": "400",
+          "textAlign": "center"
+        }
+      }
+    },
+    {
+      "type": "button",
+      "settings": {
+        "label": "Shop Now",
+        "link": "/catalog",
+        "style": {
+          "backgroundColor": "#fff",
+          "textColor": "#111",
+          "borderRadius": "0px",
+          "paddingY": 16,
+          "paddingX": 36,
+          "fontSize": 12
+        }
+      }
+    }
+  ]
+}

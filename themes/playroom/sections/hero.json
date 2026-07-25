@@ -1,0 +1,57 @@
+{
+  "name": "Hero Banner",
+  "type": "hero",
+  "settings": {
+    "backgroundImage": "https://images.unsplash.com/photo-1515488042361-404e9250afef?w=1600",
+    "alignment": "center",
+    "overlayOpacity": "0.4",
+    "height": "600px",
+    "layout": "overlay",
+    "showTrustBadges": true,
+    "badge1Text": "Safe",
+    "badge2Text": "Age Guides",
+    "badge3Text": "Gift Wrap"
+  },
+  "blocks": [
+    {
+      "type": "heading",
+      "settings": {
+        "text": "Play Bigger. Dream Louder.",
+        "style": {
+          "tag": "h1",
+          "fontSize": 48,
+          "color": "#fff",
+          "fontWeight": "900",
+          "textAlign": "center"
+        }
+      }
+    },
+    {
+      "type": "subheading",
+      "settings": {
+        "text": "Toys and essentials that spark joy.",
+        "style": {
+          "fontSize": 16,
+          "color": "#fff",
+          "fontWeight": "400",
+          "textAlign": "center"
+        }
+      }
+    },
+    {
+      "type": "button",
+      "settings": {
+        "label": "Shop Kids",
+        "link": "/catalog",
+        "style": {
+          "backgroundColor": "#fff",
+          "textColor": "#111",
+          "borderRadius": "8px",
+          "paddingY": 14,
+          "paddingX": 28,
+          "fontSize": 13
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "id": "marketplace",
+  "name": "Marketplace",
+  "version": "1.0.0",
+  "industry": "Marketplace",
+  "category": "General Store",
+  "type": "free",
+  "price": 0,
+  "thumbnail": "thumbnail.webp",
+  "schema": "schema.json",
+  "supports": {
+    "announcementBar": true,
+    "megaMenu": true,
+    "quickView": false,
+    "wishlist": true,
+    "productReviews": true,
+    "countdown": true
+  },
+  "templates": {
+    "404": true,
+    "home": true,
+    "product": true,
+    "collection": true,
+    "cart": true,
+    "search": true
+  }
+}

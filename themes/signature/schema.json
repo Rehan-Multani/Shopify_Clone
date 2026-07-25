@@ -1,0 +1,325 @@
+{
+  "name": "Signature Theme Settings",
+  "settings": [
+    {
+      "name": "Colors",
+      "settings": [
+        {
+          "id": "primaryColor",
+          "type": "color",
+          "label": "Primary",
+          "default": "#111827"
+        },
+        {
+          "id": "secondaryColor",
+          "type": "color",
+          "label": "Background",
+          "default": "#ffffff"
+        },
+        {
+          "id": "accentColor",
+          "type": "color",
+          "label": "Accent",
+          "default": "#14b8a6"
+        }
+      ]
+    },
+    {
+      "name": "Layout Engine",
+      "settings": [
+        {
+          "id": "headerStyle",
+          "type": "select",
+          "label": "Header Style",
+          "default": "floating",
+          "options": [
+            {
+              "value": "classic",
+              "label": "classic"
+            },
+            {
+              "value": "centered",
+              "label": "centered"
+            },
+            {
+              "value": "floating",
+              "label": "floating"
+            },
+            {
+              "value": "transparent",
+              "label": "transparent"
+            },
+            {
+              "value": "minimal",
+              "label": "minimal"
+            },
+            {
+              "value": "mega",
+              "label": "mega"
+            },
+            {
+              "value": "dark",
+              "label": "dark"
+            }
+          ]
+        },
+        {
+          "id": "productCardStyle",
+          "type": "select",
+          "label": "Product Card",
+          "default": "hoverSwap",
+          "options": [
+            {
+              "value": "standard",
+              "label": "standard"
+            },
+            {
+              "value": "minimal",
+              "label": "minimal"
+            },
+            {
+              "value": "editorial",
+              "label": "editorial"
+            },
+            {
+              "value": "luxury",
+              "label": "luxury"
+            },
+            {
+              "value": "compact",
+              "label": "compact"
+            },
+            {
+              "value": "hoverSwap",
+              "label": "hoverSwap"
+            },
+            {
+              "value": "quickAdd",
+              "label": "quickAdd"
+            },
+            {
+              "value": "marketplace",
+              "label": "marketplace"
+            },
+            {
+              "value": "sale",
+              "label": "sale"
+            },
+            {
+              "value": "large",
+              "label": "large"
+            }
+          ]
+        },
+        {
+          "id": "productPageLayout",
+          "type": "select",
+          "label": "Product Page",
+          "default": "sticky",
+          "options": [
+            {
+              "value": "classic",
+              "label": "classic"
+            },
+            {
+              "value": "sticky",
+              "label": "sticky"
+            },
+            {
+              "value": "editorial",
+              "label": "editorial"
+            },
+            {
+              "value": "split",
+              "label": "split"
+            },
+            {
+              "value": "tech",
+              "label": "tech"
+            },
+            {
+              "value": "luxury",
+              "label": "luxury"
+            }
+          ]
+        },
+        {
+          "id": "collectionLayout",
+          "type": "select",
+          "label": "Collection Layout",
+          "default": "grid",
+          "options": [
+            {
+              "value": "grid",
+              "label": "grid"
+            },
+            {
+              "value": "dense",
+              "label": "dense"
+            },
+            {
+              "value": "editorial",
+              "label": "editorial"
+            },
+            {
+              "value": "masonry",
+              "label": "masonry"
+            },
+            {
+              "value": "sidebar",
+              "label": "sidebar"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Typography & Motion",
+      "settings": [
+        {
+          "id": "headingFont",
+          "type": "font",
+          "label": "Heading font",
+          "default": "Playfair Display"
+        },
+        {
+          "id": "bodyFont",
+          "type": "font",
+          "label": "Body font",
+          "default": "Manrope"
+        },
+        {
+          "id": "navigationFont",
+          "type": "font",
+          "label": "Navigation font",
+          "default": "Manrope"
+        },
+        {
+          "id": "priceFont",
+          "type": "font",
+          "label": "Price font",
+          "default": "DM Sans"
+        },
+        {
+          "id": "motionPreset",
+          "type": "select",
+          "label": "Animation language",
+          "default": "signature",
+          "options": [
+            {
+              "value": "quiet",
+              "label": "quiet"
+            },
+            {
+              "value": "gentle",
+              "label": "gentle"
+            },
+            {
+              "value": "editorial",
+              "label": "editorial"
+            },
+            {
+              "value": "cinematic",
+              "label": "cinematic"
+            },
+            {
+              "value": "fluid",
+              "label": "fluid"
+            },
+            {
+              "value": "snappy",
+              "label": "snappy"
+            },
+            {
+              "value": "kinetic",
+              "label": "kinetic"
+            },
+            {
+              "value": "playful",
+              "label": "playful"
+            },
+            {
+              "value": "functional",
+              "label": "functional"
+            }
+          ]
+        },
+        {
+          "id": "hoverPreset",
+          "type": "select",
+          "label": "Hover language",
+          "default": "magnetic",
+          "options": [
+            {
+              "value": "fade",
+              "label": "fade"
+            },
+            {
+              "value": "zoom",
+              "label": "zoom"
+            },
+            {
+              "value": "slow-zoom",
+              "label": "slow-zoom"
+            },
+            {
+              "value": "lift-swap",
+              "label": "lift-swap"
+            },
+            {
+              "value": "mask-reveal",
+              "label": "mask-reveal"
+            },
+            {
+              "value": "cta-rise",
+              "label": "cta-rise"
+            },
+            {
+              "value": "tilt",
+              "label": "tilt"
+            },
+            {
+              "value": "glitch",
+              "label": "glitch"
+            },
+            {
+              "value": "scan",
+              "label": "scan"
+            },
+            {
+              "value": "bounce",
+              "label": "bounce"
+            },
+            {
+              "value": "magnetic",
+              "label": "magnetic"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Header",
+      "settings": [
+        {
+          "id": "headerConfig.sticky",
+          "type": "toggle",
+          "label": "Sticky Header",
+          "default": true
+        },
+        {
+          "id": "headerConfig.announcementBar.enabled",
+          "type": "toggle",
+          "label": "Announcement Bar",
+          "default": true
+        },
+        {
+          "id": "headerConfig.announcementBar.text",
+          "type": "text",
+          "label": "Announcement Text",
+          "default": "Signature — the most advanced Storify theme"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "id": "atelier",
+  "name": "Atelier",
+  "version": "2.0.0",
+  "industry": "Editorial Fashion",
+  "category": "Fashion",
+  "type": "free",
+  "price": 0,
+  "thumbnail": "thumbnail.webp",
+  "schema": "schema.json",
+  "engine": {
+    "headerStyle": "centered",
+    "productCardStyle": "editorial",
+    "productPageLayout": "editorial",
+    "collectionLayout": "editorial",
+    "cartStyle": "page",
+    "heroStyle": "cinematic",
+    "spacingScale": "roomy",
+    "buttonStyle": "outline"
+  },
+  "supports": {
+    "announcementBar": true,
+    "megaMenu": false,
+    "quickView": true,
+    "wishlist": true,
+    "countdown": false,
+    "lookbook": true,
+    "shoppableVideo": false
+  },
+  "templates": {
+    "home": true,
+    "product": true,
+    "collection": true,
+    "cart": true
+  }
+}

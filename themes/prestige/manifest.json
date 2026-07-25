@@ -1,0 +1,36 @@
+{
+  "id": "prestige",
+  "name": "Prestige",
+  "version": "2.0.0",
+  "industry": "Luxury",
+  "category": "Luxury",
+  "type": "paid",
+  "price": 4999,
+  "thumbnail": "thumbnail.webp",
+  "schema": "schema.json",
+  "engine": {
+    "headerStyle": "transparent",
+    "productCardStyle": "luxury",
+    "productPageLayout": "luxury",
+    "collectionLayout": "editorial",
+    "cartStyle": "page",
+    "heroStyle": "cinematic",
+    "spacingScale": "roomy",
+    "buttonStyle": "square"
+  },
+  "supports": {
+    "announcementBar": true,
+    "megaMenu": false,
+    "quickView": true,
+    "wishlist": true,
+    "countdown": false,
+    "lookbook": false,
+    "shoppableVideo": true
+  },
+  "templates": {
+    "home": true,
+    "product": true,
+    "collection": true,
+    "cart": true
+  }
+}

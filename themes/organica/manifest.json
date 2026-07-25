@@ -1,0 +1,36 @@
+{
+  "id": "organica",
+  "name": "Organica",
+  "version": "2.0.0",
+  "industry": "Organic",
+  "category": "Food",
+  "type": "free",
+  "price": 0,
+  "thumbnail": "thumbnail.webp",
+  "schema": "schema.json",
+  "engine": {
+    "headerStyle": "classic",
+    "productCardStyle": "standard",
+    "productPageLayout": "classic",
+    "collectionLayout": "grid",
+    "cartStyle": "page",
+    "heroStyle": "full",
+    "spacingScale": "normal",
+    "buttonStyle": "solid"
+  },
+  "supports": {
+    "announcementBar": true,
+    "megaMenu": false,
+    "quickView": true,
+    "wishlist": true,
+    "countdown": false,
+    "lookbook": false,
+    "shoppableVideo": false
+  },
+  "templates": {
+    "home": true,
+    "product": true,
+    "collection": true,
+    "cart": true
+  }
+}

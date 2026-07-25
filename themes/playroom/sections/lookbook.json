@@ -1,0 +1,31 @@
+{
+  "name": "Shoppable Lookbook",
+  "type": "lookbook",
+  "settings": {
+    "title": "Shop the Look",
+    "subtitle": "Explore products directly from the story.",
+    "imageUrl": "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1600"
+  },
+  "blocks": [
+    {
+      "type": "hotspot",
+      "settings": {
+        "x": 34,
+        "y": 38,
+        "label": "Featured Style",
+        "price": "Explore",
+        "link": "/catalog"
+      }
+    },
+    {
+      "type": "hotspot",
+      "settings": {
+        "x": 66,
+        "y": 70,
+        "label": "Complete the Look",
+        "price": "Shop now",
+        "link": "/catalog"
+      }
+    }
+  ]
+}

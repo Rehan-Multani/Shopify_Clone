@@ -2,26 +2,23 @@
   "name": "Hero Banner",
   "type": "hero",
   "settings": {
-    "layout": "split",
-    "backgroundType": "solid",
-    "backgroundColor": "#1e293b",
-    "backgroundImage": "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1200",
+    "backgroundImage": "https://images.unsplash.com/photo-1468495244123-6c6c332eeece?w=1600",
     "alignment": "left",
-    "overlayOpacity": "0.3",
+    "overlayOpacity": "0.35",
     "height": "580px",
     "showTrustBadges": true,
-    "badge1Text": "Same Day Dispatch",
-    "badge2Text": "2-Year Warranty",
-    "badge3Text": "Engineering Support"
+    "badge1Text": "Best Price",
+    "badge2Text": "Official Warranty",
+    "badge3Text": "Easy EMI"
   },
   "blocks": [
     {
       "type": "heading",
       "settings": {
-        "text": "NEXT-GEN GAMING AND TECH GEAR",
+        "text": "Deals That Power Up",
         "style": {
-          "tag": "h2",
-          "fontSize": 44,
+          "tag": "h1",
+          "fontSize": 48,
           "color": "#ffffff",
           "fontWeight": "900",
           "textAlign": "left"
@@ -31,11 +28,11 @@
     {
       "type": "subheading",
       "settings": {
-        "text": "Equip your battlestation with our selection of elite mechanical keyboards, esports monitors, and enthusiast gaming rigs.",
+        "text": "Top gadgets at prices that convert.",
         "style": {
-          "fontSize": 14,
-          "color": "#94a3b8",
-          "fontWeight": "500",
+          "fontSize": 16,
+          "color": "#ffffff",
+          "fontWeight": "400",
           "textAlign": "left"
         }
       }
@@ -43,16 +40,16 @@
     {
       "type": "button",
       "settings": {
-        "label": "Build Your Setup →",
+        "label": "View Deals",
         "link": "/catalog",
         "style": {
-          "backgroundColor": "#2563eb",
-          "textColor": "#ffffff",
-          "borderRadius": "0px",
-          "paddingY": 12,
+          "backgroundColor": "#ffffff",
+          "textColor": "#111111",
+          "borderRadius": "8px",
+          "paddingY": 14,
           "paddingX": 28,
-          "fontSize": 11,
-          "shadow": "md"
+          "fontSize": 13,
+          "shadow": "lg"
         }
       }
     }

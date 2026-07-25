@@ -1,24 +1,24 @@
 {
-  "name": "Playful Kids Hero",
+  "name": "Hero Banner",
   "type": "hero",
   "settings": {
     "backgroundImage": "https://images.unsplash.com/photo-1515488042361-404e9250afef?w=1600",
     "alignment": "center",
-    "overlayOpacity": "0.2",
-    "height": "650px",
+    "overlayOpacity": "0.35",
+    "height": "600px",
     "showTrustBadges": true,
-    "badge1Text": "Safe & Non-Toxic",
-    "badge2Text": "Educational Certified",
-    "badge3Text": "Happy Kids Guarantee"
+    "badge1Text": "Safe Materials",
+    "badge2Text": "Age Guides",
+    "badge3Text": "Gift Wrap"
   },
   "blocks": [
     {
       "type": "heading",
       "settings": {
-        "text": "CREATIVE PLAYTIME AWAITING",
+        "text": "Play Bigger. Dream Louder.",
         "style": {
           "tag": "h1",
-          "fontSize": 54,
+          "fontSize": 48,
           "color": "#ffffff",
           "fontWeight": "900",
           "textAlign": "center"
@@ -28,11 +28,11 @@
     {
       "type": "subheading",
       "settings": {
-        "text": "Discover non-toxic educational toys, fun building blocks, soft cuddle plushies, and creative board games for children of all ages.",
+        "text": "Toys and essentials that spark joy.",
         "style": {
-          "fontSize": 18,
+          "fontSize": 16,
           "color": "#ffffff",
-          "fontWeight": "600",
+          "fontWeight": "400",
           "textAlign": "center"
         }
       }
@@ -40,15 +40,15 @@
     {
       "type": "button",
       "settings": {
-        "label": "Shop Toy Box",
+        "label": "Shop Kids",
         "link": "/catalog",
         "style": {
-          "backgroundColor": "#7c3aed",
-          "textColor": "#ffffff",
-          "borderRadius": "24px",
+          "backgroundColor": "#ffffff",
+          "textColor": "#111111",
+          "borderRadius": "8px",
           "paddingY": 14,
-          "paddingX": 32,
-          "fontSize": 12,
+          "paddingX": 28,
+          "fontSize": 13,
           "shadow": "lg"
         }
       }

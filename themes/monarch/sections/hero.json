@@ -1,0 +1,57 @@
+{
+  "name": "Hero Banner",
+  "type": "hero",
+  "settings": {
+    "backgroundImage": "https://images.unsplash.com/photo-1445205170230-053b83016050?w=1600",
+    "alignment": "center",
+    "overlayOpacity": "0.4",
+    "height": "760px",
+    "layout": "overlay",
+    "showTrustBadges": true,
+    "badge1Text": "Lookbook",
+    "badge2Text": "Brand",
+    "badge3Text": "Campaign"
+  },
+  "blocks": [
+    {
+      "type": "heading",
+      "settings": {
+        "text": "RULE YOUR BRAND",
+        "style": {
+          "tag": "h1",
+          "fontSize": 48,
+          "color": "#fff",
+          "fontWeight": "900",
+          "textAlign": "center"
+        }
+      }
+    },
+    {
+      "type": "subheading",
+      "settings": {
+        "text": "A powerful storefront for iconic labels.",
+        "style": {
+          "fontSize": 16,
+          "color": "#fff",
+          "fontWeight": "400",
+          "textAlign": "center"
+        }
+      }
+    },
+    {
+      "type": "button",
+      "settings": {
+        "label": "View Lookbook",
+        "link": "/catalog",
+        "style": {
+          "backgroundColor": "#fff",
+          "textColor": "#111",
+          "borderRadius": "8px",
+          "paddingY": 14,
+          "paddingX": 28,
+          "fontSize": 13
+        }
+      }
+    }
+  ]
+}

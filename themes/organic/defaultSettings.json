@@ -1,0 +1,26 @@
+{
+  "primaryColor": "#365314",
+  "secondaryColor": "#f7fee7",
+  "accentColor": "#84cc16",
+  "borderRadius": "8px",
+  "fontFamily": "Inter",
+  "headerConfig": {
+    "enabled": true,
+    "sticky": true,
+    "transparent": false,
+    "backgroundColor": "#f7fee7",
+    "textColor": "#365314",
+    "logoWidth": "auto",
+    "logoHeight": "36px",
+    "announcementBar": {
+      "enabled": true,
+      "text": "100% organic — From farm to you",
+      "backgroundColor": "#365314",
+      "textColor": "#f7fee7"
+    }
+  },
+  "footerConfig": {
+    "backgroundColor": "#365314",
+    "textColor": "#f7fee7"
+  }
+}

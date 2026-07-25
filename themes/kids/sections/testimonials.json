@@ -1,22 +1,49 @@
 {
-  "name": "Playbox Family Reviews",
+  "name": "Testimonials",
   "type": "testimonials",
   "settings": {
-    "title": "Happy Kids & Parents"
+    "title": "What Our Glowing Community Says",
+    "testimonials": [
+      {
+        "settings": {
+          "author": "Sofia R.",
+          "text": "The Rose Glow oil completely transformed my dry patches. My skin has never looked so dewy!"
+        }
+      },
+      {
+        "settings": {
+          "author": "Amelie V.",
+          "text": "Love the organic botanical ingredients. Zero irritation on my sensitive skin."
+        }
+      },
+      {
+        "settings": {
+          "author": "Celine L.",
+          "text": "The silk skin serum feels like water and hydrates all day. A holy grail product!"
+        }
+      }
+    ]
   },
   "blocks": [
     {
       "type": "testimonial",
       "settings": {
-        "author": "Rohan's Dad",
-        "text": "The wooden building blocks are beautiful, smooth, and have no sharp edges. Rohan spends hours building castles. Highly recommended toy!"
+        "author": "Sofia R.",
+        "text": "The Rose Glow oil completely transformed my dry patches. My skin has never looked so dewy!"
       }
     },
     {
       "type": "testimonial",
       "settings": {
-        "author": "Anjali S.",
-        "text": "Amazing educational puzzle kits! My daughter loves solving them. They are colorful, interactive, and keep her engaged. Great shipping too."
+        "author": "Amelie V.",
+        "text": "Love the organic botanical ingredients. Zero irritation on my sensitive skin."
+      }
+    },
+    {
+      "type": "testimonial",
+      "settings": {
+        "author": "Celine L.",
+        "text": "The silk skin serum feels like water and hydrates all day. A holy grail product!"
       }
     }
   ]

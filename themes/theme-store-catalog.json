@@ -1,0 +1,469 @@
+[
+  {
+    "folder": "nova",
+    "themeName": "Nova Theme",
+    "displayName": "Nova",
+    "type": "free",
+    "price": 0,
+    "industry": "General Store",
+    "thumbnail": "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=800&auto=format&fit=crop",
+    "previewImages": [
+      "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=800&auto=format&fit=crop"
+    ],
+    "shortDescription": "Modern conversion-focused D2C storefront with floating header and quick-add cards.",
+    "longDescription": "Modern conversion-focused D2C storefront with floating header and quick-add cards.",
+    "features": [
+      "Floating Header",
+      "Hover Image Swap",
+      "Quick Add",
+      "Product Carousel",
+      "Sticky Mobile Cart"
+    ],
+    "status": "published",
+    "visibility": "visible",
+    "version": "2.0.0"
+  },
+  {
+    "folder": "atelier",
+    "themeName": "Atelier Theme",
+    "displayName": "Atelier",
+    "type": "free",
+    "price": 0,
+    "industry": "Fashion",
+    "thumbnail": "https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=800&auto=format&fit=crop",
+    "previewImages": [
+      "https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=800&auto=format&fit=crop"
+    ],
+    "shortDescription": "Luxury fashion magazine layout with asymmetric editorial grids and image-first navigation.",
+    "longDescription": "Luxury fashion magazine layout with asymmetric editorial grids and image-first navigation.",
+    "features": [
+      "Editorial Typography",
+      "Asymmetric Layouts",
+      "Lookbook",
+      "Minimal UI",
+      "Large Photography"
+    ],
+    "status": "published",
+    "visibility": "visible",
+    "version": "2.0.0"
+  },
+  {
+    "folder": "prestige",
+    "themeName": "Prestige Theme",
+    "displayName": "Prestige",
+    "type": "paid",
+    "price": 4999,
+    "industry": "Luxury",
+    "thumbnail": "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=800&auto=format&fit=crop",
+    "previewImages": [
+      "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=800&auto=format&fit=crop"
+    ],
+    "shortDescription": "Cinematic luxury commerce for jewellery, watches, and premium brands.",
+    "longDescription": "Cinematic luxury commerce for jewellery, watches, and premium brands.",
+    "features": [
+      "Cinematic Hero",
+      "Luxury Cards",
+      "Craftsmanship Blocks",
+      "Premium Hover",
+      "Dark Mode Ready"
+    ],
+    "status": "published",
+    "visibility": "visible",
+    "version": "2.0.0"
+  },
+  {
+    "folder": "velocity",
+    "themeName": "Velocity Theme",
+    "displayName": "Velocity",
+    "type": "paid",
+    "price": 4499,
+    "industry": "General Store",
+    "thumbnail": "https://images.unsplash.com/photo-1556742111-a301076d9d18?q=80&w=800&auto=format&fit=crop",
+    "previewImages": [
+      "https://images.unsplash.com/photo-1556742111-a301076d9d18?q=80&w=800&auto=format&fit=crop"
+    ],
+    "shortDescription": "High-conversion theme with countdown, quick buy, and sticky purchase flows.",
+    "longDescription": "High-conversion theme with countdown, quick buy, and sticky purchase flows.",
+    "features": [
+      "Sticky ATC",
+      "Quick Buy",
+      "Countdown",
+      "Trust Badges",
+      "Cart Upsells"
+    ],
+    "status": "published",
+    "visibility": "visible",
+    "version": "2.0.0"
+  },
+  {
+    "folder": "empire",
+    "themeName": "Empire Theme",
+    "displayName": "Empire",
+    "type": "paid",
+    "price": 5999,
+    "industry": "General Store",
+    "thumbnail": "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=800&auto=format&fit=crop",
+    "previewImages": [
+      "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=800&auto=format&fit=crop"
+    ],
+    "shortDescription": "Enterprise catalog theme with mega navigation and dense product grids.",
+    "longDescription": "Enterprise catalog theme with mega navigation and dense product grids.",
+    "features": [
+      "Mega Menu",
+      "Dense Grid",
+      "Sidebar Filters",
+      "Multi Carousels",
+      "Brand Directory"
+    ],
+    "status": "published",
+    "visibility": "visible",
+    "version": "2.0.0"
+  },
+  {
+    "folder": "aurora",
+    "themeName": "Aurora Theme",
+    "displayName": "Aurora",
+    "type": "free",
+    "price": 0,
+    "industry": "Fashion",
+    "thumbnail": "https://images.unsplash.com/photo-1509631179647-0177331693ae?q=80&w=800&auto=format&fit=crop",
+    "previewImages": [
+      "https://images.unsplash.com/photo-1509631179647-0177331693ae?q=80&w=800&auto=format&fit=crop"
+    ],
+    "shortDescription": "Artistic asymmetric layouts with scroll-friendly storytelling sections.",
+    "longDescription": "Artistic asymmetric layouts with scroll-friendly storytelling sections.",
+    "features": [
+      "Asymmetric Grid",
+      "Floating Blocks",
+      "Editorial Cards",
+      "Motion-safe Animations"
+    ],
+    "status": "published",
+    "visibility": "visible",
+    "version": "2.0.0"
+  },
+  {
+    "folder": "monarch",
+    "themeName": "Monarch Theme",
+    "displayName": "Monarch",
+    "type": "paid",
+    "price": 6999,
+    "industry": "Luxury",
+    "thumbnail": "https://images.unsplash.com/photo-1445205170230-053b83016050?q=80&w=800&auto=format&fit=crop",
+    "previewImages": [
+      "https://images.unsplash.com/photo-1445205170230-053b83016050?q=80&w=800&auto=format&fit=crop"
+    ],
+    "shortDescription": "Flagship brand-first theme with campaign storytelling and lookbook sections.",
+    "longDescription": "Flagship brand-first theme with campaign storytelling and lookbook sections.",
+    "features": [
+      "Brand Hero",
+      "Lookbook",
+      "Campaign Sections",
+      "Premium Nav",
+      "Story Blocks"
+    ],
+    "status": "published",
+    "visibility": "visible",
+    "version": "2.0.0"
+  },
+  {
+    "folder": "street",
+    "themeName": "Street Theme",
+    "displayName": "Street",
+    "type": "free",
+    "price": 0,
+    "industry": "Fashion",
+    "thumbnail": "https://images.unsplash.com/photo-1552346154-21d32810aba3?q=80&w=800&auto=format&fit=crop",
+    "previewImages": [
+      "https://images.unsplash.com/photo-1552346154-21d32810aba3?q=80&w=800&auto=format&fit=crop"
+    ],
+    "shortDescription": "Bold streetwear theme for drops, sneakers, and youth culture brands.",
+    "longDescription": "Bold streetwear theme for drops, sneakers, and youth culture brands.",
+    "features": [
+      "Drop Announcement",
+      "Bold Type",
+      "Dark Theme",
+      "Horizontal Collections"
+    ],
+    "status": "published",
+    "visibility": "visible",
+    "version": "2.0.0"
+  },
+  {
+    "folder": "technova",
+    "themeName": "Technova Theme",
+    "displayName": "Technova",
+    "type": "free",
+    "price": 0,
+    "industry": "Electronics",
+    "thumbnail": "https://images.unsplash.com/photo-1498049794561-7780e7231661?q=80&w=800&auto=format&fit=crop",
+    "previewImages": [
+      "https://images.unsplash.com/photo-1498049794561-7780e7231661?q=80&w=800&auto=format&fit=crop"
+    ],
+    "shortDescription": "Tech-focused storefront with specs highlights and comparison-ready layouts.",
+    "longDescription": "Tech-focused storefront with specs highlights and comparison-ready layouts.",
+    "features": [
+      "Spec Highlights",
+      "Feature Icons",
+      "Video Banner",
+      "Product-first Hero"
+    ],
+    "status": "published",
+    "visibility": "visible",
+    "version": "2.0.0"
+  },
+  {
+    "folder": "horizon",
+    "themeName": "Horizon Theme",
+    "displayName": "Horizon",
+    "type": "free",
+    "price": 0,
+    "industry": "Luxury",
+    "thumbnail": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop",
+    "previewImages": [
+      "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop"
+    ],
+    "shortDescription": "Ultra-clean minimal premium theme with maximum whitespace and editorial type.",
+    "longDescription": "Ultra-clean minimal premium theme with maximum whitespace and editorial type.",
+    "features": [
+      "Max Whitespace",
+      "Minimal Nav",
+      "Editorial Type",
+      "Clean Cards"
+    ],
+    "status": "published",
+    "visibility": "visible",
+    "version": "2.0.0"
+  },
+  {
+    "folder": "haven",
+    "themeName": "Haven Theme",
+    "displayName": "Haven",
+    "type": "free",
+    "price": 0,
+    "industry": "Home & Living",
+    "thumbnail": "https://images.unsplash.com/photo-1524758631624-e2822e304c36?q=80&w=800&auto=format&fit=crop",
+    "previewImages": [
+      "https://images.unsplash.com/photo-1524758631624-e2822e304c36?q=80&w=800&auto=format&fit=crop"
+    ],
+    "shortDescription": "Warm lifestyle theme for furniture and interior products with room inspiration.",
+    "longDescription": "Warm lifestyle theme for furniture and interior products with room inspiration.",
+    "features": [
+      "Room Navigation",
+      "Lifestyle Cards",
+      "Warm Layout",
+      "Large Images"
+    ],
+    "status": "published",
+    "visibility": "visible",
+    "version": "2.0.0"
+  },
+  {
+    "folder": "bloom",
+    "themeName": "Bloom Theme",
+    "displayName": "Bloom",
+    "type": "free",
+    "price": 0,
+    "industry": "Beauty",
+    "thumbnail": "https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=800&auto=format&fit=crop",
+    "previewImages": [
+      "https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=800&auto=format&fit=crop"
+    ],
+    "shortDescription": "Soft premium beauty theme with concern-based shopping and routine sections.",
+    "longDescription": "Soft premium beauty theme with concern-based shopping and routine sections.",
+    "features": [
+      "Concern Nav",
+      "Ingredient Story",
+      "Routine Blocks",
+      "Soft Cards"
+    ],
+    "status": "published",
+    "visibility": "visible",
+    "version": "2.0.0"
+  },
+  {
+    "folder": "organica",
+    "themeName": "Organica Theme",
+    "displayName": "Organica",
+    "type": "free",
+    "price": 0,
+    "industry": "Food",
+    "thumbnail": "https://images.unsplash.com/photo-1540420773420-3366772f4999?q=80&w=800&auto=format&fit=crop",
+    "previewImages": [
+      "https://images.unsplash.com/photo-1540420773420-3366772f4999?q=80&w=800&auto=format&fit=crop"
+    ],
+    "shortDescription": "Earthy natural theme for organic, wellness, and sustainable products.",
+    "longDescription": "Earthy natural theme for organic, wellness, and sustainable products.",
+    "features": [
+      "Ingredient Blocks",
+      "Sustainability Badges",
+      "Farm Story"
+    ],
+    "status": "published",
+    "visibility": "visible",
+    "version": "2.0.0"
+  },
+  {
+    "folder": "playroom",
+    "themeName": "Playroom Theme",
+    "displayName": "Playroom",
+    "type": "free",
+    "price": 0,
+    "industry": "Kids",
+    "thumbnail": "https://images.unsplash.com/photo-1515488042361-404e9250afef?q=80&w=800&auto=format&fit=crop",
+    "previewImages": [
+      "https://images.unsplash.com/photo-1515488042361-404e9250afef?q=80&w=800&auto=format&fit=crop"
+    ],
+    "shortDescription": "Fun colorful theme for toys, kids fashion, and baby products.",
+    "longDescription": "Fun colorful theme for toys, kids fashion, and baby products.",
+    "features": [
+      "Age Navigation",
+      "Gift Finder",
+      "Fun Cards",
+      "Family UX"
+    ],
+    "status": "published",
+    "visibility": "visible",
+    "version": "2.0.0"
+  },
+  {
+    "folder": "motion",
+    "themeName": "Motion Theme",
+    "displayName": "Motion",
+    "type": "free",
+    "price": 0,
+    "industry": "Sports",
+    "thumbnail": "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=800&auto=format&fit=crop",
+    "previewImages": [
+      "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=800&auto=format&fit=crop"
+    ],
+    "shortDescription": "Energetic performance theme for sportswear and fitness equipment.",
+    "longDescription": "Energetic performance theme for sportswear and fitness equipment.",
+    "features": [
+      "Athlete Hero",
+      "Performance Metrics",
+      "Bold CTAs",
+      "Feature Highlights"
+    ],
+    "status": "published",
+    "visibility": "visible",
+    "version": "2.0.0"
+  },
+  {
+    "folder": "marketplace-pro",
+    "themeName": "Marketplace Pro Theme",
+    "displayName": "Marketplace Pro",
+    "type": "free",
+    "price": 0,
+    "industry": "General Store",
+    "thumbnail": "https://images.unsplash.com/photo-1472851294608-062f824d29cc?q=80&w=800&auto=format&fit=crop",
+    "previewImages": [
+      "https://images.unsplash.com/photo-1472851294608-062f824d29cc?q=80&w=800&auto=format&fit=crop"
+    ],
+    "shortDescription": "Dense multi-category marketplace with mega menu and flash deals.",
+    "longDescription": "Dense multi-category marketplace with mega menu and flash deals.",
+    "features": [
+      "Mega Menu",
+      "Flash Deals",
+      "Dense IA",
+      "Brand Strip",
+      "Filters"
+    ],
+    "status": "published",
+    "visibility": "visible",
+    "version": "2.0.0"
+  },
+  {
+    "folder": "craft",
+    "themeName": "Craft Theme",
+    "displayName": "Craft",
+    "type": "free",
+    "price": 0,
+    "industry": "Handmade",
+    "thumbnail": "https://images.unsplash.com/photo-1452860606245-08befc0ff44b?q=80&w=800&auto=format&fit=crop",
+    "previewImages": [
+      "https://images.unsplash.com/photo-1452860606245-08befc0ff44b?q=80&w=800&auto=format&fit=crop"
+    ],
+    "shortDescription": "Artisan storytelling theme for handmade products and makers.",
+    "longDescription": "Artisan storytelling theme for handmade products and makers.",
+    "features": [
+      "Maker Story",
+      "Process Section",
+      "Origin Blocks",
+      "Warm Cards"
+    ],
+    "status": "published",
+    "visibility": "visible",
+    "version": "2.0.0"
+  },
+  {
+    "folder": "flash",
+    "themeName": "Flash Theme",
+    "displayName": "Flash",
+    "type": "free",
+    "price": 0,
+    "industry": "General Store",
+    "thumbnail": "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=800&auto=format&fit=crop",
+    "previewImages": [
+      "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=800&auto=format&fit=crop"
+    ],
+    "shortDescription": "High-energy promotional theme with countdown and real stock urgency UI.",
+    "longDescription": "High-energy promotional theme with countdown and real stock urgency UI.",
+    "features": [
+      "Live Countdown",
+      "Discount Badges",
+      "Deal Bar",
+      "Sale Cards"
+    ],
+    "status": "published",
+    "visibility": "visible",
+    "version": "2.0.0"
+  },
+  {
+    "folder": "grid",
+    "themeName": "Grid Theme",
+    "displayName": "Grid",
+    "type": "free",
+    "price": 0,
+    "industry": "General Store",
+    "thumbnail": "https://images.unsplash.com/photo-1468495244123-6c6c332eeece?q=80&w=800&auto=format&fit=crop",
+    "previewImages": [
+      "https://images.unsplash.com/photo-1468495244123-6c6c332eeece?q=80&w=800&auto=format&fit=crop"
+    ],
+    "shortDescription": "Product-first organized catalog with multiple card densities and clean filters.",
+    "longDescription": "Product-first organized catalog with multiple card densities and clean filters.",
+    "features": [
+      "Advanced Grid",
+      "Multi Card Layouts",
+      "Powerful Filters",
+      "Clean Catalog"
+    ],
+    "status": "published",
+    "visibility": "visible",
+    "version": "2.0.0"
+  },
+  {
+    "folder": "signature",
+    "themeName": "Signature Theme",
+    "displayName": "Signature",
+    "type": "paid",
+    "price": 7999,
+    "industry": "Luxury",
+    "thumbnail": "https://images.unsplash.com/photo-1441984904996-e0b14ba4ad60?q=80&w=800&auto=format&fit=crop",
+    "previewImages": [
+      "https://images.unsplash.com/photo-1441984904996-e0b14ba4ad60?q=80&w=800&auto=format&fit=crop"
+    ],
+    "shortDescription": "Flagship all-purpose premium theme with the richest section library and layouts.",
+    "longDescription": "Flagship all-purpose premium theme with the richest section library and layouts.",
+    "features": [
+      "Max Customization",
+      "Multiple Heroes",
+      "Lookbooks",
+      "Advanced Mobile",
+      "Full Section Library"
+    ],
+    "status": "published",
+    "visibility": "visible",
+    "version": "2.0.0"
+  }
+]

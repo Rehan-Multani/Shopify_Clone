@@ -1,0 +1,36 @@
+{
+  "id": "technova",
+  "name": "Technova",
+  "version": "2.0.0",
+  "industry": "Electronics",
+  "category": "Electronics",
+  "type": "free",
+  "price": 0,
+  "thumbnail": "thumbnail.webp",
+  "schema": "schema.json",
+  "engine": {
+    "headerStyle": "mega",
+    "productCardStyle": "compact",
+    "productPageLayout": "tech",
+    "collectionLayout": "sidebar",
+    "cartStyle": "page",
+    "heroStyle": "split",
+    "spacingScale": "normal",
+    "buttonStyle": "solid"
+  },
+  "supports": {
+    "announcementBar": true,
+    "megaMenu": true,
+    "quickView": true,
+    "wishlist": true,
+    "countdown": false,
+    "lookbook": false,
+    "shoppableVideo": true
+  },
+  "templates": {
+    "home": true,
+    "product": true,
+    "collection": true,
+    "cart": true
+  }
+}

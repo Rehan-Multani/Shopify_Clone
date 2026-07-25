@@ -1,0 +1,9 @@
+{
+  "name": "Shop Categories",
+  "type": "category-grid",
+  "settings": {
+    "title": "Shop Collections",
+    "layout": "editorial",
+    "cardShape": "square"
+  }
+}

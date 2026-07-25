@@ -1,0 +1,36 @@
+{
+  "id": "aurora",
+  "name": "Aurora",
+  "version": "2.0.0",
+  "industry": "Creative D2C",
+  "category": "Fashion",
+  "type": "free",
+  "price": 0,
+  "thumbnail": "thumbnail.webp",
+  "schema": "schema.json",
+  "engine": {
+    "headerStyle": "floating",
+    "productCardStyle": "editorial",
+    "productPageLayout": "editorial",
+    "collectionLayout": "masonry",
+    "cartStyle": "drawer",
+    "heroStyle": "cinematic",
+    "spacingScale": "roomy",
+    "buttonStyle": "pill"
+  },
+  "supports": {
+    "announcementBar": true,
+    "megaMenu": false,
+    "quickView": true,
+    "wishlist": true,
+    "countdown": false,
+    "lookbook": true,
+    "shoppableVideo": false
+  },
+  "templates": {
+    "home": true,
+    "product": true,
+    "collection": true,
+    "cart": true
+  }
+}

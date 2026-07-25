@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { resolveMediaUrl, stripMediaBaseUrl } from '../../utils/resolveMediaUrl';
 
 const CATALOG_API_URL = import.meta.env.VITE_CATALOG_API_URL;
 const API_URL = CATALOG_API_URL;
@@ -81,7 +82,7 @@ const AddSingleVendorProduct = () => {
                             isActive: prod.isActive !== undefined ? prod.isActive : true
                         });
                         if (prod.images && prod.images.length > 0) {
-                            setImagePreviews(prod.images.map(img => `${API_URL.replace('/api', '')}${img}`));
+                            setImagePreviews(prod.images.map(img => resolveMediaUrl(img, API_URL)));
                         }
                     } else {
                         setError('Product not found');
@@ -156,7 +157,7 @@ const AddSingleVendorProduct = () => {
             let imageUrls = isEdit 
                 ? imagePreviews
                     .filter(img => !img.startsWith('blob:'))
-                    .map(img => img.replace(API_URL.replace('/api', ''), '')) 
+                    .map(img => stripMediaBaseUrl(img, API_URL)) 
                 : [];
 
             // Upload images if any

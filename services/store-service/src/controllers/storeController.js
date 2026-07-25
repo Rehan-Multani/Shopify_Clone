@@ -106,23 +106,84 @@ export const getStoreById = async (req, res) => {
 
         let storeObj = store.toObject();
 
-        if (req.query.cleanPreview === 'true' && req.query.folder) {
-            const folder = req.query.folder;
+        const resolveThemesDir = () => {
             let themesDir = path.resolve(process.cwd(), '..', 'themes');
             if (!fs.existsSync(themesDir)) {
                 themesDir = path.resolve(process.cwd(), '..', '..', 'themes');
             }
-            const defaultSettingsPath = path.join(themesDir, folder, 'defaultSettings.json');
-            
-            let defaultSettings = {};
+            return themesDir;
+        };
+
+        const readThemeDefaults = (folder) => {
+            if (!folder) return {};
             try {
+                const defaultSettingsPath = path.join(resolveThemesDir(), folder, 'defaultSettings.json');
                 if (fs.existsSync(defaultSettingsPath)) {
-                    defaultSettings = JSON.parse(fs.readFileSync(defaultSettingsPath, 'utf8'));
+                    return JSON.parse(fs.readFileSync(defaultSettingsPath, 'utf8'));
                 }
             } catch (err) {
-                console.error("Error reading defaultSettings in cleanPreview:", err);
+                console.error('Error reading theme defaultSettings:', err.message);
             }
+            return {};
+        };
 
+        /** Merge disk engine defaults under DB settings so regenerated themes apply without reinstall. */
+        const mergeThemeSettings = (folder, settings = {}) => {
+            const defaults = readThemeDefaults(folder);
+            const needsEngineRefresh = !settings.themeFolder && !settings.motionPreset;
+            const pickEngine = (key) => (
+                needsEngineRefresh
+                    ? (defaults[key] || settings[key])
+                    : (settings[key] || defaults[key])
+            );
+            return {
+                ...defaults,
+                ...settings,
+                themeFolder: folder || settings.themeFolder || defaults.themeId || '',
+                themeId: folder || defaults.themeId || settings.themeId || 'default',
+                designLanguage: defaults.designLanguage || settings.designLanguage || folder || '',
+                headerConfig: {
+                    ...(defaults.headerConfig || {}),
+                    ...(settings.headerConfig || {}),
+                    announcementBar: {
+                        ...(defaults.headerConfig?.announcementBar || {}),
+                        ...(settings.headerConfig?.announcementBar || {}),
+                    },
+                },
+                footerConfig: {
+                    ...(defaults.footerConfig || {}),
+                    ...(settings.footerConfig || {}),
+                },
+                productCardStyle: pickEngine('productCardStyle'),
+                heroStyle: pickEngine('heroStyle'),
+                motionPreset: pickEngine('motionPreset'),
+                hoverPreset: pickEngine('hoverPreset'),
+                sectionStyle: pickEngine('sectionStyle'),
+                imageTreatment: pickEngine('imageTreatment'),
+                contentDensity: pickEngine('contentDensity'),
+                carouselStyle: pickEngine('carouselStyle'),
+                mobileNavStyle: pickEngine('mobileNavStyle'),
+                cartStyle: pickEngine('cartStyle'),
+                buttonStyle: pickEngine('buttonStyle'),
+                footerStyle: pickEngine('footerStyle'),
+                headerStyle: pickEngine('headerStyle'),
+                productPageLayout: pickEngine('productPageLayout'),
+                collectionLayout: pickEngine('collectionLayout'),
+                spacingScale: pickEngine('spacingScale'),
+                headingFont: pickEngine('headingFont'),
+                bodyFont: pickEngine('bodyFont'),
+                buttonFont: pickEngine('buttonFont'),
+                navigationFont: pickEngine('navigationFont'),
+                priceFont: pickEngine('priceFont'),
+                primaryColor: settings.primaryColor || defaults.primaryColor,
+                secondaryColor: settings.secondaryColor || defaults.secondaryColor,
+                accentColor: settings.accentColor || defaults.accentColor,
+            };
+        };
+
+        if (req.query.cleanPreview === 'true' && req.query.folder) {
+            const folder = req.query.folder;
+            const defaultSettings = readThemeDefaults(folder);
             const mockThemeId = req.query.themeId || 'mock-theme-id';
             
             storeObj.activeTheme = {
@@ -137,9 +198,15 @@ export const getStoreById = async (req, res) => {
                 folder: folder,
                 version: req.query.version || '1.0.0',
                 installedAt: new Date(),
-                draftThemeSettings: defaultSettings,
-                publishedThemeSettings: defaultSettings
+                draftThemeSettings: mergeThemeSettings(folder, defaultSettings),
+                publishedThemeSettings: mergeThemeSettings(folder, defaultSettings)
             }];
+        } else if (Array.isArray(storeObj.installedThemes)) {
+            storeObj.installedThemes = storeObj.installedThemes.map((install) => ({
+                ...install,
+                publishedThemeSettings: mergeThemeSettings(install.folder, install.publishedThemeSettings || {}),
+                draftThemeSettings: mergeThemeSettings(install.folder, install.draftThemeSettings || {}),
+            }));
         }
 
         res.json(storeObj);

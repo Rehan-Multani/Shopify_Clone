@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import StorefrontLayout from '../../components/storefront/StorefrontLayout';
+import ThemeProductCard from '../../components/storefront/themeEngine/ThemeProductCard';
 import { getStorePath } from '../../components/storefront/storeUrlHelper';
+import { useTheme } from '../../components/storefront/themeEngine/ThemeContext';
+import { pushRecentlyViewed } from '../../utils/recentlyViewed';
+import { useCartUI } from '../../components/storefront/themeEngine/ThemeExperience';
 
 const GATEWAY_URL = import.meta.env.VITE_API_BASE_URL;
 const ASSETS_BASE_URL = GATEWAY_URL.replace('/api', '');
@@ -9,12 +13,17 @@ const ASSETS_BASE_URL = GATEWAY_URL.replace('/api', '');
 const StorefrontProductDetails = ({ cartCount, onAddToCart, customer, onLogout, storeInfo }) => {
     const { storeId: paramStoreId, productId } = useParams();
     const storeId = storeInfo?._id || paramStoreId;
+    const theme = useTheme();
+    const cartUi = useCartUI();
     const [product, setProduct] = useState(null);
     const [activeImage, setActiveImage] = useState('');
     const [qty, setQty] = useState(1);
     const [loading, setLoading] = useState(true);
     const [isWishlisted, setIsWishlisted] = useState(false);
     const [addedToast, setAddedToast] = useState(false);
+    const [galleryOpen, setGalleryOpen] = useState(false);
+    const [recentlyViewed, setRecentlyViewed] = useState([]);
+    const [relatedProducts, setRelatedProducts] = useState([]);
 
     useEffect(() => {
         if (!productId) return;
@@ -52,6 +61,42 @@ const StorefrontProductDetails = ({ cartCount, onAddToCart, customer, onLogout, 
                 .catch(err => console.error('Error loading wishlist state:', err));
         }
     }, [customer, productId, storeId]);
+
+    useEffect(() => {
+        if (!galleryOpen) return undefined;
+        const closeOnEscape = (event) => {
+            if (event.key === 'Escape') setGalleryOpen(false);
+        };
+        window.addEventListener('keydown', closeOnEscape);
+        return () => window.removeEventListener('keydown', closeOnEscape);
+    }, [galleryOpen]);
+
+    useEffect(() => {
+        if (!product?._id || !storeId) return;
+        const next = pushRecentlyViewed(storeId, product);
+        setRecentlyViewed(next.filter((item) => item._id !== product._id).slice(0, 4));
+
+        const categoryId = product.category?._id || product.category;
+        const loadRelated = async () => {
+            try {
+                const res = await fetch(`${GATEWAY_URL}/products?storeId=${storeId}`);
+                const data = await res.json();
+                const list = Array.isArray(data) ? data : (data.products || []);
+                const related = list
+                    .filter((item) => item._id !== product._id)
+                    .filter((item) => {
+                        if (!categoryId) return true;
+                        const itemCat = item.category?._id || item.category;
+                        return String(itemCat) === String(categoryId);
+                    })
+                    .slice(0, 4);
+                setRelatedProducts(related.length ? related : list.filter((item) => item._id !== product._id).slice(0, 4));
+            } catch (err) {
+                console.error('Error loading related products:', err);
+            }
+        };
+        loadRelated();
+    }, [product, storeId]);
 
     const handleWishlistToggle = async () => {
         if (!customer) {
@@ -91,6 +136,9 @@ const StorefrontProductDetails = ({ cartCount, onAddToCart, customer, onLogout, 
             await onAddToCart(product, qty);
             setAddedToast(true);
             setTimeout(() => setAddedToast(false), 3000);
+            if (theme.cartStyle === 'drawer' || theme.cartStyle === 'sticky') {
+                cartUi.openCart?.();
+            }
         }
     };
 
@@ -164,10 +212,24 @@ const StorefrontProductDetails = ({ cartCount, onAddToCart, customer, onLogout, 
                     <span className="text-zinc-650 truncate max-w-[120px] sm:max-w-xs">{product.name}</span>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 bg-white p-5 sm:p-8 rounded-3xl border border-zinc-200/60 shadow-sm relative">
+                <div className={`grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 relative ${
+                    theme.productPageLayout === 'editorial' || theme.productPageLayout === 'luxury'
+                        ? 'bg-transparent p-0 border-0 shadow-none'
+                        : 'bg-white p-5 sm:p-8 rounded-3xl border border-zinc-200/60 shadow-sm'
+                } ${theme.productPageLayout === 'sticky' ? 'items-start' : ''}`}>
                     {/* Media Gallery (Left) */}
-                    <div className="lg:col-span-7 space-y-4">
-                        <div className="aspect-square bg-[#fafafa] rounded-2xl overflow-hidden border border-zinc-200/40 flex items-center justify-center shadow-sm relative group/image">
+                    <div className={`${theme.productPageLayout === 'split' ? 'lg:col-span-6' : 'lg:col-span-7'} space-y-4`}>
+                        <div
+                            role="button"
+                            tabIndex={0}
+                            aria-label="Open fullscreen product gallery"
+                            onClick={() => activeImage && setGalleryOpen(true)}
+                            onKeyDown={(event) => { if (event.key === 'Enter') setGalleryOpen(true); }}
+                            className={`cursor-zoom-in overflow-hidden border border-zinc-200/40 flex items-center justify-center shadow-sm relative group/image ${
+                            theme.productPageLayout === 'editorial' || theme.productPageLayout === 'luxury'
+                                ? 'aspect-[3/4] bg-zinc-50 rounded-none'
+                                : 'aspect-square bg-[#fafafa] rounded-2xl'
+                        }`}>
                             {/* Wishlist Button */}
                             <button 
                                 onClick={handleWishlistToggle}
@@ -224,7 +286,9 @@ const StorefrontProductDetails = ({ cartCount, onAddToCart, customer, onLogout, 
                     </div>
 
                     {/* Product Details (Right) */}
-                    <div className="lg:col-span-5 flex flex-col justify-between space-y-6">
+                    <div className={`${theme.productPageLayout === 'split' ? 'lg:col-span-6' : 'lg:col-span-5'} flex flex-col justify-between space-y-6 ${
+                        theme.productPageLayout === 'sticky' ? 'lg:sticky lg:top-28' : ''
+                    }`}>
                         <div className="space-y-4">
                             {/* Brand / Category */}
                             <div className="flex items-center gap-2">
@@ -241,18 +305,18 @@ const StorefrontProductDetails = ({ cartCount, onAddToCart, customer, onLogout, 
                             </div>
 
                             {/* Name */}
-                            <h1 className="text-xl sm:text-2xl font-black text-zinc-900 leading-tight uppercase tracking-tight">
+                            <h1 className="font-medium text-zinc-900 leading-tight tracking-tight text-2xl sm:text-4xl normal-case" style={{ fontFamily: 'var(--heading-font)' }}>
                                 {product.name}
                             </h1>
 
                             {/* SKU */}
                             {product.sku && (
-                                <p className="text-[9px] text-zinc-400 font-black uppercase tracking-widest pl-0.5">SKU: {product.sku}</p>
+                                <p className="text-[10px] text-zinc-400 font-semibold uppercase tracking-[0.16em] pl-0.5">SKU: {product.sku}</p>
                             )}
 
                             {/* Price */}
                             <div className="flex items-baseline gap-3 pl-0.5">
-                                <span className="text-2xl font-black text-zinc-900">₹{product.sellingPrice}</span>
+                                <span className="text-2xl font-semibold text-zinc-900">₹{product.sellingPrice}</span>
                                 {product.actualPrice > product.sellingPrice && (
                                     <>
                                         <span className="text-xs text-zinc-400 line-through font-bold">₹{product.actualPrice}</span>
@@ -271,6 +335,31 @@ const StorefrontProductDetails = ({ cartCount, onAddToCart, customer, onLogout, 
                                 <p className="text-xs text-zinc-650 font-semibold leading-relaxed whitespace-pre-line">
                                     {product.description || 'No description provided for this product.'}
                                 </p>
+                            </div>
+
+                            {theme.productPageLayout === 'tech' && (
+                                <div className="rounded-xl border border-sky-200/60 bg-sky-50/40 p-4 space-y-2">
+                                    <h3 className="text-[9px] font-black uppercase tracking-widest text-sky-700">Tech Specs</h3>
+                                    <dl className="grid grid-cols-2 gap-2 text-[10px]">
+                                        <div><dt className="text-zinc-400 font-bold uppercase">SKU</dt><dd className="font-black text-zinc-800">{product.sku || '—'}</dd></div>
+                                        <div><dt className="text-zinc-400 font-bold uppercase">Brand</dt><dd className="font-black text-zinc-800">{product.brandName || '—'}</dd></div>
+                                        <div><dt className="text-zinc-400 font-bold uppercase">Category</dt><dd className="font-black text-zinc-800">{product.category?.name || '—'}</dd></div>
+                                        <div><dt className="text-zinc-400 font-bold uppercase">Stock</dt><dd className="font-black text-zinc-800">{product.stock ?? product.quantity ?? 'In stock'}</dd></div>
+                                    </dl>
+                                </div>
+                            )}
+
+                            <div className="grid grid-cols-3 gap-2 pt-2" aria-label="Purchase assurances">
+                                {[
+                                    ['◈', 'Secure payment'],
+                                    ['↗', 'Fast delivery'],
+                                    ['↻', 'Easy returns'],
+                                ].map(([icon, label]) => (
+                                    <div key={label} className="p-2.5 bg-zinc-50 border border-zinc-100 text-center rounded-lg">
+                                        <span className="block text-sm text-[var(--color-primary)]" aria-hidden="true">{icon}</span>
+                                        <span className="block mt-1 text-[8px] font-black uppercase tracking-wide text-zinc-500">{label}</span>
+                                    </div>
+                                ))}
                             </div>
                         </div>
 
@@ -319,6 +408,28 @@ const StorefrontProductDetails = ({ cartCount, onAddToCart, customer, onLogout, 
                 </div>
             </div>
 
+            <div className="fixed md:hidden bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-xl border-t border-zinc-200 p-3 pb-[max(12px,env(safe-area-inset-bottom))] flex items-center gap-3">
+                <div className="flex-1 min-w-0">
+                    <span className="text-[9px] text-zinc-400 uppercase font-black tracking-wide">Price</span>
+                    <strong className="block text-base truncate">₹{product.sellingPrice}</strong>
+                </div>
+                <button onClick={handleAddToCartClick} className="px-6 py-3 text-white text-xs font-black uppercase tracking-wider" style={{ background: 'var(--color-primary)', borderRadius: 'var(--border-radius)' }}>
+                    {addedToast ? 'Added ✓' : 'Add to Cart'}
+                </button>
+            </div>
+
+            {galleryOpen && (
+                <div role="dialog" aria-modal="true" aria-label="Product image gallery" className="fixed inset-0 z-[80] bg-black/95 p-4 md:p-10 grid place-items-center" onClick={() => setGalleryOpen(false)}>
+                    <button type="button" onClick={() => setGalleryOpen(false)} aria-label="Close gallery" className="absolute top-5 right-5 w-11 h-11 rounded-full bg-white text-black text-xl">×</button>
+                    <img
+                        src={activeImage.startsWith('http') || activeImage.startsWith('data:') ? activeImage : `${ASSETS_BASE_URL}${activeImage}`}
+                        alt={product.name}
+                        className="max-w-full max-h-full object-contain"
+                        onClick={(event) => event.stopPropagation()}
+                    />
+                </div>
+            )}
+
             {/* Micro Toast added indicator */}
             {addedToast && (
                 <div className="fixed bottom-6 right-6 z-50 bg-zinc-900 border border-zinc-800 text-white py-3 px-5 rounded-2xl shadow-xl flex items-center gap-3 animate-toast-in">
@@ -331,6 +442,40 @@ const StorefrontProductDetails = ({ cartCount, onAddToCart, customer, onLogout, 
                         <p className="text-[10px] font-black uppercase tracking-wider text-zinc-200">Added to Cart</p>
                         <p className="text-[9px] font-semibold text-zinc-400 mt-0.5">{qty}x {product.name}</p>
                     </div>
+                </div>
+            )}
+
+            {(relatedProducts.length > 0 || recentlyViewed.length > 0) && (
+                <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 md:pb-12 space-y-12">
+                    {relatedProducts.length > 0 && (
+                        <section className="space-y-8">
+                            <div className="flex items-end justify-between gap-4">
+                                <div className="space-y-3">
+                                    <h2 className="text-2xl md:text-3xl font-medium tracking-tight" style={{ fontFamily: 'var(--heading-font)' }}>Related Products</h2>
+                                    <div className="h-[2px] w-14" style={{ backgroundColor: 'var(--color-accent, var(--color-primary))' }} />
+                                </div>
+                                <Link to={getStorePath(storeId, '/catalog')} className="text-[11px] font-semibold uppercase tracking-widest text-zinc-500 hover:text-zinc-900">View All →</Link>
+                            </div>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                                {relatedProducts.map((item) => (
+                                    <ThemeProductCard key={item._id} product={item} storeId={storeId} onAddToCart={onAddToCart} customer={customer} />
+                                ))}
+                            </div>
+                        </section>
+                    )}
+                    {recentlyViewed.length > 0 && (
+                        <section className="space-y-8">
+                            <div className="space-y-3">
+                                <h2 className="text-2xl md:text-3xl font-medium tracking-tight" style={{ fontFamily: 'var(--heading-font)' }}>Recently Viewed</h2>
+                                <div className="h-[2px] w-14" style={{ backgroundColor: 'var(--color-accent, var(--color-primary))' }} />
+                            </div>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                                {recentlyViewed.map((item) => (
+                                    <ThemeProductCard key={item._id} product={item} storeId={storeId} onAddToCart={onAddToCart} customer={customer} />
+                                ))}
+                            </div>
+                        </section>
+                    )}
                 </div>
             )}
         </StorefrontLayout>

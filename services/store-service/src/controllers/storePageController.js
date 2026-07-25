@@ -384,21 +384,27 @@ export const getPages = async (req, res) => {
 
         const store = await Store.findById(storeId);
         const themeId = req.query.themeId || (store && store.activeTheme ? store.activeTheme.themeId : '');
-        const filter = req.merchant ? { merchantId: req.merchant._id, storeId, themeId } : { storeId, themeId };
+        const baseFilter = req.merchant ? { merchantId: req.merchant._id, storeId } : { storeId };
 
-        let pages = await StorePage.find(filter);
+        let pages = await StorePage.find({ ...baseFilter, themeId });
+        // Fall back to unscoped/default theme pages when active theme has none yet
+        if (pages.length === 0 && themeId) {
+            pages = await StorePage.find({ ...baseFilter, themeId: '' });
+        }
 
         const formattedPages = await Promise.all(pages.map(async p => {
             const obj = p.toObject();
             const isDef = DEFAULT_PAGES.some(d => d.slug === obj.slug);
             let sectionsList = obj.sections || [];
-            if (sectionsList.length === 0) {
+            // Prefer saved HTML content for CMS pages; only fall back to section templates when empty
+            if (sectionsList.length === 0 && (!obj.content || obj.slug === 'home')) {
                 sectionsList = await getDefaultPageSections(obj.slug, storeId, themeId);
             }
             return {
                 ...obj,
                 sections: sectionsList,
-                isDefault: isDef
+                isDefault: isDef,
+                isNew: false
             };
         }));
 
@@ -439,11 +445,14 @@ export const getPageBySlug = async (req, res) => {
         const useCleanPreview = req.query.cleanPreview === 'true';
         const store = await Store.findById(storeId);
         const themeId = req.query.themeId || req.query.previewThemeId || (store && store.activeTheme ? store.activeTheme.themeId : '');
-        const filter = req.merchant ? { merchantId: req.merchant._id, storeId, slug, themeId } : { storeId, slug, themeId };
+        const baseFilter = req.merchant ? { merchantId: req.merchant._id, storeId, slug } : { storeId, slug };
 
         let page = null;
         if (!useCleanPreview) {
-            page = await StorePage.findOne(filter);
+            page = await StorePage.findOne({ ...baseFilter, themeId });
+            if (!page && themeId) {
+                page = await StorePage.findOne({ ...baseFilter, themeId: '' });
+            }
         }
 
         if (!page) {
@@ -464,13 +473,14 @@ export const getPageBySlug = async (req, res) => {
             const obj = page.toObject();
             const isDef = DEFAULT_PAGES.some(d => d.slug === obj.slug);
             let sectionsList = obj.sections || [];
-            if (sectionsList.length === 0) {
+            if (sectionsList.length === 0 && (!obj.content || obj.slug === 'home')) {
                 sectionsList = await getDefaultPageSections(obj.slug, storeId, themeId, req.query.folder);
             }
             page = {
                 ...obj,
                 sections: sectionsList,
-                isDefault: isDef
+                isDefault: isDef,
+                isNew: false
             };
         }
 

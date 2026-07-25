@@ -1,0 +1,26 @@
+{
+  "primaryColor": "#78350f",
+  "secondaryColor": "#fffbeb",
+  "accentColor": "#b45309",
+  "borderRadius": "4px",
+  "fontFamily": "DM Serif Display",
+  "headerConfig": {
+    "enabled": true,
+    "sticky": true,
+    "transparent": false,
+    "backgroundColor": "#fffbeb",
+    "textColor": "#78350f",
+    "logoWidth": "auto",
+    "logoHeight": "36px",
+    "announcementBar": {
+      "enabled": true,
+      "text": "Design your space — Free design consult this week",
+      "backgroundColor": "#78350f",
+      "textColor": "#fffbeb"
+    }
+  },
+  "footerConfig": {
+    "backgroundColor": "#78350f",
+    "textColor": "#fffbeb"
+  }
+}

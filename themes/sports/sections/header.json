@@ -9,12 +9,12 @@
         "url": "/"
       },
       {
-        "label": "Apparel",
+        "label": "Catalog",
         "url": "/collections/all"
       },
       {
-        "label": "Gear",
-        "url": "/collections/all"
+        "label": "About",
+        "url": "/pages/about"
       }
     ]
   }

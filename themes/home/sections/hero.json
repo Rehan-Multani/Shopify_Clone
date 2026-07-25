@@ -1,0 +1,57 @@
+{
+  "name": "Hero Banner",
+  "type": "hero",
+  "settings": {
+    "backgroundImage": "https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=1600",
+    "alignment": "center",
+    "overlayOpacity": "0.35",
+    "height": "680px",
+    "showTrustBadges": true,
+    "badge1Text": "Free Design Tips",
+    "badge2Text": "Quality Craft",
+    "badge3Text": "Easy Returns"
+  },
+  "blocks": [
+    {
+      "type": "heading",
+      "settings": {
+        "text": "Spaces Worth Coming Home To",
+        "style": {
+          "tag": "h1",
+          "fontSize": 48,
+          "color": "#ffffff",
+          "fontWeight": "900",
+          "textAlign": "center"
+        }
+      }
+    },
+    {
+      "type": "subheading",
+      "settings": {
+        "text": "Furniture and decor for modern living.",
+        "style": {
+          "fontSize": 16,
+          "color": "#ffffff",
+          "fontWeight": "400",
+          "textAlign": "center"
+        }
+      }
+    },
+    {
+      "type": "button",
+      "settings": {
+        "label": "Shop Home",
+        "link": "/catalog",
+        "style": {
+          "backgroundColor": "#ffffff",
+          "textColor": "#111111",
+          "borderRadius": "8px",
+          "paddingY": 14,
+          "paddingX": 28,
+          "fontSize": 13,
+          "shadow": "lg"
+        }
+      }
+    }
+  ]
+}

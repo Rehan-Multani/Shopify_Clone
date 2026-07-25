@@ -1,0 +1,36 @@
+{
+  "id": "street",
+  "name": "Street",
+  "version": "2.0.0",
+  "industry": "Urban Fashion",
+  "category": "Fashion",
+  "type": "free",
+  "price": 0,
+  "thumbnail": "thumbnail.webp",
+  "schema": "schema.json",
+  "engine": {
+    "headerStyle": "dark",
+    "productCardStyle": "sale",
+    "productPageLayout": "classic",
+    "collectionLayout": "dense",
+    "cartStyle": "drawer",
+    "heroStyle": "promo",
+    "spacingScale": "tight",
+    "buttonStyle": "solid"
+  },
+  "supports": {
+    "announcementBar": true,
+    "megaMenu": false,
+    "quickView": true,
+    "wishlist": true,
+    "countdown": true,
+    "lookbook": false,
+    "shoppableVideo": true
+  },
+  "templates": {
+    "home": true,
+    "product": true,
+    "collection": true,
+    "cart": true
+  }
+}

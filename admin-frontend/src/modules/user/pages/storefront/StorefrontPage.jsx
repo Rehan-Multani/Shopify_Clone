@@ -88,25 +88,29 @@ const StorefrontPage = ({ cartCount, customer, onLogout, storeInfo }) => {
         );
     }
 
-    // Dynamic Address Builder
+    // Dynamic store tokens for CMS HTML pages
+    const storeName = storeInfo?.storeName || 'Our Store';
     const formattedAddress = [
         storeInfo?.address,
         storeInfo?.city,
         storeInfo?.state,
         storeInfo?.pincode ? `Pin: ${storeInfo.pincode}` : '',
         'India'
-    ].filter(Boolean).join(', ') || '123 Fashion Street, Sector 5, New Delhi, Pin: 110001, India';
+    ].filter(Boolean).join(', ') || 'India';
 
-    const dynamicEmail = storeInfo?.contactEmail || `support@${(storeInfo?.storeName?.toLowerCase().replace(/\s+/g, '') || 'rehanfashions')}.com`;
+    const dynamicEmail = storeInfo?.contactEmail || `support@${(storeInfo?.storeName?.toLowerCase().replace(/\s+/g, '') || 'store')}.com`;
     const dynamicPhone = storeInfo?.contactPhone || '+91 98765 43210';
 
-    let renderedContent = page.content || 'Content coming soon...';
-    if (slug === 'contact-us' && page.content) {
-        renderedContent = page.content
-            .replace(/support@rehanfashions\.com/gi, dynamicEmail)
-            .replace(/\+91\s*98765\s*43210/g, dynamicPhone)
-            .replace(/123\s+Fashion\s+Street,\s+Sector\s+5,\s+New\s+Delhi,\s+Pin:\s*110001,\s*India/gi, formattedAddress);
-    }
+    const applyStoreTokens = (html = '') => html
+        .replace(/\{\{storeName\}\}/gi, storeName)
+        .replace(/\{\{email\}\}/gi, dynamicEmail)
+        .replace(/\{\{phone\}\}/gi, dynamicPhone)
+        .replace(/\{\{address\}\}/gi, formattedAddress)
+        .replace(/support@rehanfashions\.com/gi, dynamicEmail)
+        .replace(/\+91\s*98765\s*43210/g, dynamicPhone)
+        .replace(/123\s+Fashion\s+Street,\s+Sector\s+5,\s+New\s+Delhi,\s+Pin:\s*110001,\s*India/gi, formattedAddress);
+
+    let renderedContent = applyStoreTokens(page.content || 'Content coming soon...');
 
     const hasSections = page.sections && page.sections.length > 0;
 

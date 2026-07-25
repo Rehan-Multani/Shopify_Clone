@@ -120,7 +120,7 @@ const PagesTab = () => {
                                     <td className="px-5 py-4">
                                         <div className="flex flex-col">
                                             <span className="font-bold text-sm text-[#202223]">{page.title}</span>
-                                            <span className="text-xs text-gray-400 font-mono">/page/{page.slug}</span>
+                                            <span className="text-xs text-gray-400 font-mono">/pages/{page.slug}</span>
                                         </div>
                                     </td>
                                     <td className="px-5 py-4 hidden md:table-cell">
@@ -134,7 +134,7 @@ const PagesTab = () => {
                                         {!page.isNew ? (
                                             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700">
                                                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-                                                Customized
+                                                {page.visibility === 'draft' ? 'Draft' : 'Published'}
                                             </span>
                                         ) : (
                                             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-gray-100 text-gray-500">

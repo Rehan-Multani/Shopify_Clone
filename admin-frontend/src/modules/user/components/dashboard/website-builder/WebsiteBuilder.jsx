@@ -189,6 +189,10 @@ export default function WebsiteBuilder() {
                               : type === 'countdown' ? { title: 'Season Finale Ends Soon!', targetDate: new Date(Date.now() + 86400000 * 2).toISOString().slice(0, 16) }
                               : type === 'newsletter' ? { title: 'Subscribe to newsletter', subtitle: 'Get promotions and announcements', buttonLabel: 'Subscribe' }
                               : type === 'features-grid' ? { title: 'Why Choose Us', subtitle: 'We are committed to delivering premium care and comfort.' }
+                              : type === 'lookbook' ? { title: 'Shop the Look', subtitle: 'Tap a hotspot to discover products.', imageUrl: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1600' }
+                              : type === 'shoppable-video' ? { title: 'See it in motion', videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-fashion-model-with-a-green-jacket-39875-large.mp4', autoplay: true, loop: true }
+                              : type === 'before-after' ? { title: 'See the Transformation', beforeImage: 'https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=1400', afterImage: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=1400' }
+                              : type === 'storytelling' ? { eyebrow: 'Our Story', title: 'Made with intention.', subtitle: 'Follow the journey from first idea to finished product.' }
                               : type === 'heading' ? { text: 'New Heading Element', style: { tag: 'h2', fontSize: 28, color: '#18181b', fontWeight: '700', textAlign: 'center', marginTop: 10, marginBottom: 15 } }
                               : type === 'paragraph' ? { text: 'Write your text details here. This paragraph block is fully customizable with spacing, weight and color systems.', style: { fontSize: 14, color: '#3f3f46', fontWeight: '400', textAlign: 'left', lineHeight: '1.6', marginTop: 5, marginBottom: 10 } }
                               : type === 'button' ? { label: 'Click Me', link: '#', style: { backgroundColor: '#008060', textColor: '#ffffff', hoverBgColor: '#006e52', hoverTextColor: '#ffffff', borderRadius: '8px', paddingX: 20, paddingY: 10, fontSize: 13, shadow: 'sm', textAlign: 'center' } }
@@ -203,6 +207,15 @@ export default function WebsiteBuilder() {
             { blockId: Math.random().toString(36).substr(2, 9), type: 'feature', settings: { title: 'Free Shipping', text: 'Orders above ₹999 shipped free.', icon: 'truck' } },
             { blockId: Math.random().toString(36).substr(2, 9), type: 'feature', settings: { title: 'Easy Returns', text: '30-day hassle-free returns policy.', icon: 'rotate-ccw' } },
             { blockId: Math.random().toString(36).substr(2, 9), type: 'feature', settings: { title: 'Secure Payments', text: 'Your data is safe with SSL.', icon: 'shield-check' } }
+        ] : type === 'lookbook' ? [
+            { blockId: Math.random().toString(36).substr(2, 9), type: 'hotspot', settings: { x: 35, y: 35, label: 'Featured Style', price: 'Explore', link: '/catalog' } },
+            { blockId: Math.random().toString(36).substr(2, 9), type: 'hotspot', settings: { x: 65, y: 70, label: 'Complete the Look', price: 'Shop now', link: '/catalog' } }
+        ] : type === 'storytelling' ? [
+            { blockId: Math.random().toString(36).substr(2, 9), type: 'chapter', settings: { eyebrow: '01 — Origin', title: 'How it started', text: 'A simple idea shaped by purpose.' } },
+            { blockId: Math.random().toString(36).substr(2, 9), type: 'chapter', settings: { eyebrow: '02 — Process', title: 'How we make it', text: 'Thoughtful materials and trusted makers.' } },
+            { blockId: Math.random().toString(36).substr(2, 9), type: 'chapter', settings: { eyebrow: '03 — Promise', title: 'Why it matters', text: 'Quality designed to last.' } }
+        ] : type === 'shoppable-video' ? [
+            { blockId: Math.random().toString(36).substr(2, 9), type: 'product', settings: { title: 'Shop the featured collection', price: 'Explore now', link: '/catalog' } }
         ] : [];
 
         const newSec = {

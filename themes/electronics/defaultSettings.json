@@ -1,26 +1,26 @@
 {
-  "primaryColor": "#2563eb",
-  "secondaryColor": "#0f172a",
-  "accentColor": "#06b6d4",
-  "borderRadius": "0px",
-  "fontFamily": "Outfit",
+  "primaryColor": "#1d4ed8",
+  "secondaryColor": "#eff6ff",
+  "accentColor": "#f97316",
+  "borderRadius": "8px",
+  "fontFamily": "Inter",
   "headerConfig": {
     "enabled": true,
     "sticky": true,
     "transparent": false,
-    "backgroundColor": "#1e293b",
-    "textColor": "#ffffff",
+    "backgroundColor": "#eff6ff",
+    "textColor": "#1d4ed8",
     "logoWidth": "auto",
     "logoHeight": "36px",
     "announcementBar": {
       "enabled": true,
-      "text": "⚡ PRIORITY DROP: Mechanical keyboards, GPUs, and headsets restocked! Use code: QUANTUMTECH",
-      "backgroundColor": "#2563eb",
-      "textColor": "#ffffff"
+      "text": "⚡ Mega deals — Ends midnight tonight",
+      "backgroundColor": "#1d4ed8",
+      "textColor": "#eff6ff"
     }
   },
   "footerConfig": {
-    "backgroundColor": "#0f172a",
-    "textColor": "#94a3b8"
+    "backgroundColor": "#1d4ed8",
+    "textColor": "#eff6ff"
   }
 }

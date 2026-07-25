@@ -1,0 +1,57 @@
+{
+  "name": "Hero Banner",
+  "type": "hero",
+  "settings": {
+    "backgroundImage": "https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=1600",
+    "alignment": "center",
+    "overlayOpacity": "0.35",
+    "height": "560px",
+    "showTrustBadges": true,
+    "badge1Text": "Wide Selection",
+    "badge2Text": "Trusted Sellers",
+    "badge3Text": "Fast Delivery"
+  },
+  "blocks": [
+    {
+      "type": "heading",
+      "settings": {
+        "text": "Everything. One Marketplace.",
+        "style": {
+          "tag": "h1",
+          "fontSize": 48,
+          "color": "#ffffff",
+          "fontWeight": "900",
+          "textAlign": "center"
+        }
+      }
+    },
+    {
+      "type": "subheading",
+      "settings": {
+        "text": "Browse categories, catch flash deals, shop smarter.",
+        "style": {
+          "fontSize": 16,
+          "color": "#ffffff",
+          "fontWeight": "400",
+          "textAlign": "center"
+        }
+      }
+    },
+    {
+      "type": "button",
+      "settings": {
+        "label": "Explore Categories",
+        "link": "/catalog",
+        "style": {
+          "backgroundColor": "#ffffff",
+          "textColor": "#111111",
+          "borderRadius": "8px",
+          "paddingY": 14,
+          "paddingX": 28,
+          "fontSize": 13,
+          "shadow": "lg"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "id": "bloom",
+  "name": "Bloom",
+  "version": "2.0.0",
+  "industry": "Beauty",
+  "category": "Beauty",
+  "type": "free",
+  "price": 0,
+  "thumbnail": "thumbnail.webp",
+  "schema": "schema.json",
+  "engine": {
+    "headerStyle": "centered",
+    "productCardStyle": "standard",
+    "productPageLayout": "sticky",
+    "collectionLayout": "grid",
+    "cartStyle": "drawer",
+    "heroStyle": "full",
+    "spacingScale": "normal",
+    "buttonStyle": "pill"
+  },
+  "supports": {
+    "announcementBar": true,
+    "megaMenu": false,
+    "quickView": true,
+    "wishlist": true,
+    "countdown": false,
+    "lookbook": false,
+    "shoppableVideo": false
+  },
+  "templates": {
+    "home": true,
+    "product": true,
+    "collection": true,
+    "cart": true
+  }
+}

@@ -135,8 +135,8 @@ const StorefrontHome = ({ cartCount, onAddToCart, customer, onLogout, storeInfo 
                     <BannerSection storeId={storeId} />
                 )}
                 {pageSections.map((section, idx) => (
-                    <div key={section.sectionId || section._id || idx} className="animate-fade-in-up" style={{ animationDelay: `${idx * 100}ms` }}>
-                        <SectionRenderer section={section} storeId={storeId} onAddToCart={onAddToCart} />
+                    <div key={section.sectionId || section._id || idx}>
+                        <SectionRenderer section={section} storeId={storeId} onAddToCart={onAddToCart} customer={customer} />
                     </div>
                 ))}
             </div>

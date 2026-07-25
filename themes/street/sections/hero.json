@@ -1,0 +1,57 @@
+{
+  "name": "Hero Banner",
+  "type": "hero",
+  "settings": {
+    "backgroundImage": "https://images.unsplash.com/photo-1552346154-21d32810aba3?w=1600",
+    "alignment": "left",
+    "overlayOpacity": "0.4",
+    "height": "680px",
+    "layout": "overlay",
+    "showTrustBadges": true,
+    "badge1Text": "Limited",
+    "badge2Text": "Authentic",
+    "badge3Text": "Fast Ship"
+  },
+  "blocks": [
+    {
+      "type": "heading",
+      "settings": {
+        "text": "OWN THE STREETS",
+        "style": {
+          "tag": "h1",
+          "fontSize": 48,
+          "color": "#fff",
+          "fontWeight": "900",
+          "textAlign": "left"
+        }
+      }
+    },
+    {
+      "type": "subheading",
+      "settings": {
+        "text": "Limited drops. Maximum heat.",
+        "style": {
+          "fontSize": 16,
+          "color": "#fff",
+          "fontWeight": "400",
+          "textAlign": "left"
+        }
+      }
+    },
+    {
+      "type": "button",
+      "settings": {
+        "label": "Shop Drop",
+        "link": "/catalog",
+        "style": {
+          "backgroundColor": "#fff",
+          "textColor": "#111",
+          "borderRadius": "8px",
+          "paddingY": 14,
+          "paddingX": 28,
+          "fontSize": 13
+        }
+      }
+    }
+  ]
+}

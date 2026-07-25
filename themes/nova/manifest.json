@@ -1,0 +1,36 @@
+{
+  "id": "nova",
+  "name": "Nova",
+  "version": "2.0.0",
+  "industry": "Modern D2C",
+  "category": "General Store",
+  "type": "free",
+  "price": 0,
+  "thumbnail": "thumbnail.webp",
+  "schema": "schema.json",
+  "engine": {
+    "headerStyle": "floating",
+    "productCardStyle": "hoverSwap",
+    "productPageLayout": "sticky",
+    "collectionLayout": "grid",
+    "cartStyle": "drawer",
+    "heroStyle": "split",
+    "spacingScale": "normal",
+    "buttonStyle": "solid"
+  },
+  "supports": {
+    "announcementBar": true,
+    "megaMenu": false,
+    "quickView": true,
+    "wishlist": true,
+    "countdown": false,
+    "lookbook": false,
+    "shoppableVideo": false
+  },
+  "templates": {
+    "home": true,
+    "product": true,
+    "collection": true,
+    "cart": true
+  }
+}

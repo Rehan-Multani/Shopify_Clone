@@ -1,0 +1,13 @@
+{
+  "title": "Home Page",
+  "sections": [
+    "header",
+    "hero",
+    "rich-text",
+    "featured-products",
+    "image-banner",
+    "newsletter",
+    "storytelling",
+    "footer"
+  ]
+}

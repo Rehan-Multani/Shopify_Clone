@@ -1,54 +1,54 @@
 {
-  "name": "Athletic Hero Banner",
+  "name": "Hero Banner",
   "type": "hero",
   "settings": {
     "backgroundImage": "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=1600",
-    "alignment": "center",
-    "overlayOpacity": "0.4",
-    "height": "700px",
+    "alignment": "left",
+    "overlayOpacity": "0.35",
+    "height": "640px",
     "showTrustBadges": true,
-    "badge1Text": "Free Delivery",
-    "badge2Text": "Premium Quality",
-    "badge3Text": "Secure Payment"
+    "badge1Text": "Performance",
+    "badge2Text": "Durable",
+    "badge3Text": "Athlete Tested"
   },
   "blocks": [
     {
       "type": "heading",
       "settings": {
-        "text": "PUSH YOUR LIMITS",
+        "text": "Train Beyond Limits",
         "style": {
           "tag": "h1",
-          "fontSize": 60,
+          "fontSize": 48,
           "color": "#ffffff",
           "fontWeight": "900",
-          "textAlign": "center"
+          "textAlign": "left"
         }
       }
     },
     {
       "type": "subheading",
       "settings": {
-        "text": "Premium performance wear, advanced athletic tech, and professional strength gear engineered for maximum endurance.",
+        "text": "Gear built for athletes who never quit.",
         "style": {
-          "fontSize": 18,
+          "fontSize": 16,
           "color": "#ffffff",
-          "fontWeight": "600",
-          "textAlign": "center"
+          "fontWeight": "400",
+          "textAlign": "left"
         }
       }
     },
     {
       "type": "button",
       "settings": {
-        "label": "Gear Up Now",
+        "label": "Shop Gear",
         "link": "/catalog",
         "style": {
-          "backgroundColor": "#ea580c",
-          "textColor": "#ffffff",
+          "backgroundColor": "#ffffff",
+          "textColor": "#111111",
           "borderRadius": "8px",
           "paddingY": 14,
-          "paddingX": 32,
-          "fontSize": 12,
+          "paddingX": 28,
+          "fontSize": 13,
           "shadow": "lg"
         }
       }

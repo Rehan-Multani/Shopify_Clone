@@ -1,0 +1,36 @@
+{
+  "id": "empire",
+  "name": "Empire",
+  "version": "2.0.0",
+  "industry": "Large Catalog",
+  "category": "General Store",
+  "type": "paid",
+  "price": 5999,
+  "thumbnail": "thumbnail.webp",
+  "schema": "schema.json",
+  "engine": {
+    "headerStyle": "mega",
+    "productCardStyle": "marketplace",
+    "productPageLayout": "classic",
+    "collectionLayout": "sidebar",
+    "cartStyle": "page",
+    "heroStyle": "promo",
+    "spacingScale": "tight",
+    "buttonStyle": "solid"
+  },
+  "supports": {
+    "announcementBar": true,
+    "megaMenu": true,
+    "quickView": true,
+    "wishlist": true,
+    "countdown": true,
+    "lookbook": false,
+    "shoppableVideo": false
+  },
+  "templates": {
+    "home": true,
+    "product": true,
+    "collection": true,
+    "cart": true
+  }
+}

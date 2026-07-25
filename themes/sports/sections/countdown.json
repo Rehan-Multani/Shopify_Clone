@@ -1,11 +1,11 @@
 {
-  "name": "Endurance Countdown",
+  "name": "Fresh Flash Sale",
   "type": "countdown",
   "settings": {
-    "title": "Weekend Flash Sale",
-    "subtitle": "Get up to 40% off on all pro trainers, athletic compression wear, and dynamic strength gear. Limited stock available.",
+    "title": "Fresh Harvest Deals of the Day",
+    "subtitle": "Get up to 40% off on pesticide-free vegetables. Refreshing premium harvest delivered directly to your doorstep.",
     "endTime": "2028-12-31T23:59:59",
-    "discountCode": "SHRED40",
-    "backgroundImage": "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=1600"
+    "discountCode": "FRESH40",
+    "backgroundImage": "https://images.unsplash.com/photo-1506084868230-bb9d95c24759?w=1600"
   }
 }

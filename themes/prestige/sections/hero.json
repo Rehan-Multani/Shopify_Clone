@@ -1,0 +1,57 @@
+{
+  "name": "Hero Banner",
+  "type": "hero",
+  "settings": {
+    "backgroundImage": "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=1600",
+    "alignment": "center",
+    "overlayOpacity": "0.4",
+    "height": "820px",
+    "layout": "overlay",
+    "showTrustBadges": true,
+    "badge1Text": "Certified",
+    "badge2Text": "Insured",
+    "badge3Text": "Lifetime"
+  },
+  "blocks": [
+    {
+      "type": "heading",
+      "settings": {
+        "text": "CRAFTED FOR FOREVER",
+        "style": {
+          "tag": "h1",
+          "fontSize": 48,
+          "color": "#fff",
+          "fontWeight": "900",
+          "textAlign": "center"
+        }
+      }
+    },
+    {
+      "type": "subheading",
+      "settings": {
+        "text": "Fine jewellery that defines quiet luxury.",
+        "style": {
+          "fontSize": 16,
+          "color": "#fff",
+          "fontWeight": "400",
+          "textAlign": "center"
+        }
+      }
+    },
+    {
+      "type": "button",
+      "settings": {
+        "label": "Discover",
+        "link": "/catalog",
+        "style": {
+          "backgroundColor": "#fff",
+          "textColor": "#111",
+          "borderRadius": "8px",
+          "paddingY": 14,
+          "paddingX": 28,
+          "fontSize": 13
+        }
+      }
+    }
+  ]
+}

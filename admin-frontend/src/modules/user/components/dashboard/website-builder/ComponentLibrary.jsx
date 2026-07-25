@@ -60,7 +60,11 @@ const COMPONENT_CATEGORIES = [
         items: [
             { type: 'contact-form', label: 'Contact Form', description: 'Interactive visitor inquiry message form' },
             { type: 'social-icons', label: 'Social Media Feed', description: 'Follow icons for Instagram, Facebook, etc' },
-            { type: 'pricing-table', label: 'Pricing Table', description: 'Compare features and billing plans' }
+            { type: 'pricing-table', label: 'Pricing Table', description: 'Compare features and billing plans' },
+            { type: 'lookbook', label: 'Shoppable Lookbook', description: 'Lifestyle image with clickable product hotspots' },
+            { type: 'shoppable-video', label: 'Shoppable Video', description: 'Campaign video with attached product links' },
+            { type: 'before-after', label: 'Before / After', description: 'Interactive image comparison slider' },
+            { type: 'storytelling', label: 'Brand Story', description: 'Sticky scroll chapters for brand storytelling' }
         ]
     }
 ];

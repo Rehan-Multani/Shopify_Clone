@@ -190,6 +190,45 @@ export const installTheme = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Store not found' });
         }
 
+        // Gate premium themes — require a paid ThemePurchase record
+        try {
+            const merchantAdminUrl = process.env.MERCHANT_ADMIN_SERVICE_URL || 'http://localhost:5002';
+            const themeRes = await fetch(`${merchantAdminUrl}/api/admin/themes/${themeId}`);
+            if (themeRes.ok) {
+                const themeJson = await themeRes.json();
+                const themeMeta = themeJson.data || themeJson;
+                if (themeMeta?.type === 'paid') {
+                    const billingUrl = process.env.BILLING_SERVICE_URL || 'http://localhost:5005';
+                    const merchantId = store.merchantId;
+                    const checkRes = await fetch(
+                        `${billingUrl}/api/billing/themes/check/${themeId}?merchantId=${merchantId}`,
+                        {
+                            headers: {
+                                'x-merchant-id': String(merchantId),
+                                Authorization: req.headers.authorization || '',
+                            },
+                        }
+                    );
+                    const checkJson = await checkRes.json();
+                    if (!checkJson.purchased) {
+                        return res.status(402).json({
+                            success: false,
+                            code: 'THEME_PURCHASE_REQUIRED',
+                            message: 'This is a premium theme. Please purchase it before adding to your library.',
+                            price: themeMeta.price,
+                            themeName: themeMeta.displayName || themeMeta.themeName,
+                        });
+                    }
+                }
+            }
+        } catch (gateErr) {
+            console.error('[ThemeController] Premium gate check failed:', gateErr.message);
+            return res.status(503).json({
+                success: false,
+                message: 'Unable to verify theme purchase entitlement. Please try again.',
+            });
+        }
+
         // Read physical folder JSONs
         let themesDir = path.resolve(process.cwd(), '..', 'themes');
         if (!fs.existsSync(themesDir)) {
@@ -202,22 +241,54 @@ export const installTheme = async (req, res) => {
         // Check if theme is already installed in installedThemes history
         let themeIndex = store.installedThemes.findIndex(t => t.themeId === themeId);
 
+        const withFolderIdentity = (settings = {}) => ({
+            ...defaultSettings,
+            ...settings,
+            themeId: folder,
+            themeFolder: folder,
+            designLanguage: defaultSettings.designLanguage || settings.designLanguage || folder,
+            // Always refresh visual engine keys from disk so theme upgrades stick
+            productCardStyle: defaultSettings.productCardStyle || settings.productCardStyle,
+            productPageLayout: defaultSettings.productPageLayout || settings.productPageLayout,
+            collectionLayout: defaultSettings.collectionLayout || settings.collectionLayout,
+            cartStyle: defaultSettings.cartStyle || settings.cartStyle,
+            heroStyle: defaultSettings.heroStyle || settings.heroStyle,
+            headerStyle: defaultSettings.headerStyle || settings.headerStyle,
+            footerStyle: defaultSettings.footerStyle || settings.footerStyle,
+            buttonStyle: defaultSettings.buttonStyle || settings.buttonStyle,
+            spacingScale: defaultSettings.spacingScale || settings.spacingScale,
+            motionPreset: defaultSettings.motionPreset || settings.motionPreset,
+            hoverPreset: defaultSettings.hoverPreset || settings.hoverPreset,
+            carouselStyle: defaultSettings.carouselStyle || settings.carouselStyle,
+            imageTreatment: defaultSettings.imageTreatment || settings.imageTreatment,
+            sectionStyle: defaultSettings.sectionStyle || settings.sectionStyle,
+            mobileNavStyle: defaultSettings.mobileNavStyle || settings.mobileNavStyle,
+            contentDensity: defaultSettings.contentDensity || settings.contentDensity,
+            headingFont: defaultSettings.headingFont || settings.headingFont,
+            bodyFont: defaultSettings.bodyFont || settings.bodyFont,
+            buttonFont: defaultSettings.buttonFont || settings.buttonFont,
+            navigationFont: defaultSettings.navigationFont || settings.navigationFont,
+            priceFont: defaultSettings.priceFont || settings.priceFont,
+        });
+
         if (themeIndex === -1) {
             // New installation: initialize draft and published settings from defaultSettings
             store.installedThemes.push({
                 themeId,
                 folder,
                 version,
-                draftThemeSettings: defaultSettings,
-                publishedThemeSettings: defaultSettings,
+                draftThemeSettings: withFolderIdentity(defaultSettings),
+                publishedThemeSettings: withFolderIdentity(defaultSettings),
                 installedAt: new Date()
             });
             themeIndex = store.installedThemes.length - 1;
         } else {
-            // Already installed: activate it and optionally keep existing configs,
-            // or reset settings. We will keep current customizations if they exist, or fallback to defaults.
+            // Re-activate: keep merchant color/copy customizations, refresh engine identity from disk
+            const existing = store.installedThemes[themeIndex];
             store.installedThemes[themeIndex].folder = folder;
             store.installedThemes[themeIndex].version = version;
+            store.installedThemes[themeIndex].draftThemeSettings = withFolderIdentity(existing.draftThemeSettings || {});
+            store.installedThemes[themeIndex].publishedThemeSettings = withFolderIdentity(existing.publishedThemeSettings || {});
         }
 
         // Set pointer as activeTheme

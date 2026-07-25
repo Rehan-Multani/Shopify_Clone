@@ -1,33 +1,56 @@
 {
-  "name": "Playbox Advantages",
+  "name": "Our Services",
   "type": "features-grid",
   "settings": {
-    "title": "Why Parents Choose Playbox",
-    "subtitle": "Safe materials, early learning focus, and child-safe certification."
+    "title": "Quantum Tech Direct Guarantees",
+    "subtitle": "Enjoy enterprise-grade shopping support.",
+    "features": [
+      {
+        "settings": {
+          "icon": "truck",
+          "title": "Express Shipping",
+          "text": "Same-day delivery for all gaming setups and hardware components."
+        }
+      },
+      {
+        "settings": {
+          "icon": "shield-check",
+          "title": "2-Year Warranty",
+          "text": "Hassle-free hardware replacement guarantee on all accessories."
+        }
+      },
+      {
+        "settings": {
+          "icon": "phone",
+          "title": "24/7 Tech Support",
+          "text": "Reach our engineering hotline for setup assistance anytime."
+        }
+      }
+    ]
   },
   "blocks": [
     {
       "type": "feature",
       "settings": {
-        "title": "Child-Safe Certified",
-        "text": "100% non-toxic materials, certified safe for children of all ages.",
-        "icon": "shield-check"
-      }
-    },
-    {
-      "type": "feature",
-      "settings": {
+        "icon": "truck",
         "title": "Express Shipping",
-        "text": "Express delivery straight to your doorstep in secure boxes.",
-        "icon": "truck"
+        "text": "Same-day delivery for all gaming setups and hardware components."
       }
     },
     {
       "type": "feature",
       "settings": {
-        "title": "Play & Learn Trial",
-        "text": "30-day play and learn trial. Love the toy or return it.",
-        "icon": "rotate-ccw"
+        "icon": "shield-check",
+        "title": "2-Year Warranty",
+        "text": "Hassle-free hardware replacement guarantee on all accessories."
+      }
+    },
+    {
+      "type": "feature",
+      "settings": {
+        "icon": "phone",
+        "title": "24/7 Tech Support",
+        "text": "Reach our engineering hotline for setup assistance anytime."
       }
     }
   ]

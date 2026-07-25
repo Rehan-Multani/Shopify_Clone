@@ -1,0 +1,36 @@
+{
+  "id": "marketplace-pro",
+  "name": "Marketplace Pro",
+  "version": "2.0.0",
+  "industry": "Marketplace",
+  "category": "General Store",
+  "type": "free",
+  "price": 0,
+  "thumbnail": "thumbnail.webp",
+  "schema": "schema.json",
+  "engine": {
+    "headerStyle": "mega",
+    "productCardStyle": "marketplace",
+    "productPageLayout": "classic",
+    "collectionLayout": "sidebar",
+    "cartStyle": "page",
+    "heroStyle": "promo",
+    "spacingScale": "tight",
+    "buttonStyle": "solid"
+  },
+  "supports": {
+    "announcementBar": true,
+    "megaMenu": true,
+    "quickView": true,
+    "wishlist": true,
+    "countdown": true,
+    "lookbook": false,
+    "shoppableVideo": true
+  },
+  "templates": {
+    "home": true,
+    "product": true,
+    "collection": true,
+    "cart": true
+  }
+}

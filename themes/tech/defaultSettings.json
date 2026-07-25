@@ -1,0 +1,26 @@
+{
+  "primaryColor": "#38bdf8",
+  "secondaryColor": "#020617",
+  "accentColor": "#a78bfa",
+  "borderRadius": "8px",
+  "fontFamily": "Inter",
+  "headerConfig": {
+    "enabled": true,
+    "sticky": true,
+    "transparent": false,
+    "backgroundColor": "#020617",
+    "textColor": "#38bdf8",
+    "logoWidth": "auto",
+    "logoHeight": "36px",
+    "announcementBar": {
+      "enabled": true,
+      "text": "New arrivals — 10% off with code TECH10",
+      "backgroundColor": "#38bdf8",
+      "textColor": "#020617"
+    }
+  },
+  "footerConfig": {
+    "backgroundColor": "#38bdf8",
+    "textColor": "#020617"
+  }
+}

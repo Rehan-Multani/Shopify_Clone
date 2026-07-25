@@ -820,6 +820,52 @@ export default function SettingsPanel({
         );
     };
 
+    const renderAdvancedCommerceSettings = () => (
+        <div className="space-y-4">
+            <div>
+                <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Section title</label>
+                <input
+                    type="text"
+                    value={settings.title || ''}
+                    onChange={(event) => handleSettingChange('title', event.target.value)}
+                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-xs font-semibold focus:outline-none"
+                />
+            </div>
+            <div>
+                <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Supporting text</label>
+                <textarea
+                    value={settings.subtitle || ''}
+                    onChange={(event) => handleSettingChange('subtitle', event.target.value)}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-xs font-semibold focus:outline-none resize-none"
+                />
+            </div>
+            {type === 'lookbook' && (
+                <ImageUploadField value={settings.imageUrl || ''} onChange={(value) => handleSettingChange('imageUrl', value)} label="Lookbook Image" />
+            )}
+            {type === 'before-after' && (
+                <>
+                    <ImageUploadField value={settings.beforeImage || ''} onChange={(value) => handleSettingChange('beforeImage', value)} label="Before Image" />
+                    <ImageUploadField value={settings.afterImage || ''} onChange={(value) => handleSettingChange('afterImage', value)} label="After Image" />
+                </>
+            )}
+            {type === 'shoppable-video' && (
+                <div>
+                    <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">MP4 video URL</label>
+                    <input
+                        type="url"
+                        value={settings.videoUrl || ''}
+                        onChange={(event) => handleSettingChange('videoUrl', event.target.value)}
+                        className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-xs font-semibold focus:outline-none"
+                    />
+                </div>
+            )}
+            <p className="text-[10px] leading-relaxed text-zinc-400">
+                Product hotspots, chapters and attached products can be reordered as section blocks.
+            </p>
+        </div>
+    );
+
     const renderBlockSubSettings = () => {
         if (blocks.length === 0) return null;
         return (
@@ -1025,6 +1071,11 @@ export default function SettingsPanel({
                 return renderTestimonialsSettings();
             case 'countdown':
                 return renderCountdownSettings();
+            case 'lookbook':
+            case 'before-after':
+            case 'storytelling':
+            case 'shoppable-video':
+                return renderAdvancedCommerceSettings();
             case 'spacer':
                 return renderSpacerSettings();
             default:

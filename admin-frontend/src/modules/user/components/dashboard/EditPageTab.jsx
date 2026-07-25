@@ -177,8 +177,13 @@ const EditPageTab = () => {
             </div>
 
             <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm flex flex-col h-[500px]">
-                <div className="p-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
-                    <span className="text-sm font-bold text-gray-600">Page Content (HTML supported)</span>
+                <div className="p-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between gap-3 flex-wrap">
+                    <div>
+                        <span className="text-sm font-bold text-gray-600">Page Content (HTML supported)</span>
+                        <p className="text-[11px] text-gray-400 mt-0.5">
+                            Dynamic tokens: {'{{storeName}}'}, {'{{email}}'}, {'{{phone}}'}, {'{{address}}'}
+                        </p>
+                    </div>
                     <button 
                         onClick={handleSave}
                         disabled={saving}

@@ -1,26 +1,26 @@
 {
-  "primaryColor": "#be185d",
-  "secondaryColor": "#fff1f2",
-  "accentColor": "#701a75",
+  "primaryColor": "#9d174d",
+  "secondaryColor": "#fdf2f8",
+  "accentColor": "#f9a8d4",
   "borderRadius": "24px",
-  "fontFamily": "Cormorant Garamond",
+  "fontFamily": "Playfair Display",
   "headerConfig": {
     "enabled": true,
     "sticky": true,
     "transparent": false,
-    "backgroundColor": "#ffffff",
-    "textColor": "#701a75",
+    "backgroundColor": "#fdf2f8",
+    "textColor": "#9d174d",
     "logoWidth": "auto",
     "logoHeight": "36px",
     "announcementBar": {
       "enabled": true,
-      "text": "✨ GLOW EXCLUSIVE: Free Luxury Samples with all orders + Code: GLOWBEAUTY",
-      "backgroundColor": "#be185d",
-      "textColor": "#ffffff"
+      "text": "Glow season — Buy 2 get 1 free on skincare",
+      "backgroundColor": "#9d174d",
+      "textColor": "#fdf2f8"
     }
   },
   "footerConfig": {
-    "backgroundColor": "#be185d",
-    "textColor": "#fff1f2"
+    "backgroundColor": "#9d174d",
+    "textColor": "#fdf2f8"
   }
 }

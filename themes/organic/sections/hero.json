@@ -1,0 +1,57 @@
+{
+  "name": "Hero Banner",
+  "type": "hero",
+  "settings": {
+    "backgroundImage": "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=1600",
+    "alignment": "center",
+    "overlayOpacity": "0.35",
+    "height": "600px",
+    "showTrustBadges": true,
+    "badge1Text": "Certified Organic",
+    "badge2Text": "No Chemicals",
+    "badge3Text": "Sustainable"
+  },
+  "blocks": [
+    {
+      "type": "heading",
+      "settings": {
+        "text": "Naturally Better",
+        "style": {
+          "tag": "h1",
+          "fontSize": 48,
+          "color": "#ffffff",
+          "fontWeight": "900",
+          "textAlign": "center"
+        }
+      }
+    },
+    {
+      "type": "subheading",
+      "settings": {
+        "text": "Organic products with transparent sourcing.",
+        "style": {
+          "fontSize": 16,
+          "color": "#ffffff",
+          "fontWeight": "400",
+          "textAlign": "center"
+        }
+      }
+    },
+    {
+      "type": "button",
+      "settings": {
+        "label": "Shop Organic",
+        "link": "/catalog",
+        "style": {
+          "backgroundColor": "#ffffff",
+          "textColor": "#111111",
+          "borderRadius": "8px",
+          "paddingY": 14,
+          "paddingX": 28,
+          "fontSize": 13,
+          "shadow": "lg"
+        }
+      }
+    }
+  ]
+}

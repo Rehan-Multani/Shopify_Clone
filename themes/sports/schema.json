@@ -8,19 +8,19 @@
           "id": "primaryColor",
           "type": "color",
           "label": "Primary Accent Color",
-          "default": "#ea580c"
+          "default": "#ffffff"
         },
         {
           "id": "secondaryColor",
           "type": "color",
           "label": "Secondary Background Color",
-          "default": "#171717"
+          "default": "#14532d"
         },
         {
           "id": "accentColor",
           "type": "color",
           "label": "Link & Highlights Color",
-          "default": "#84cc16"
+          "default": "#22c55e"
         }
       ]
     },
@@ -32,12 +32,30 @@
           "type": "select",
           "label": "Primary Font Family",
           "options": [
-            { "value": "Inter", "label": "Inter" },
-            { "value": "Outfit", "label": "Outfit" },
-            { "value": "Playfair Display", "label": "Playfair Display" },
-            { "value": "Cormorant Garamond", "label": "Cormorant Garamond" },
-            { "value": "DM Serif Display", "label": "DM Serif Display" },
-            { "value": "Roboto", "label": "Roboto" }
+            {
+              "value": "Inter",
+              "label": "Inter"
+            },
+            {
+              "value": "Outfit",
+              "label": "Outfit"
+            },
+            {
+              "value": "Playfair Display",
+              "label": "Playfair Display"
+            },
+            {
+              "value": "Cormorant Garamond",
+              "label": "Cormorant Garamond"
+            },
+            {
+              "value": "DM Serif Display",
+              "label": "DM Serif Display"
+            },
+            {
+              "value": "Roboto",
+              "label": "Roboto"
+            }
           ],
           "default": "Outfit"
         },
@@ -46,11 +64,26 @@
           "type": "select",
           "label": "Border Radius Style",
           "options": [
-            { "value": "0px", "label": "Sharp (0px)" },
-            { "value": "4px", "label": "Soft (4px)" },
-            { "value": "8px", "label": "Rounded (8px)" },
-            { "value": "16px", "label": "Circular (16px)" },
-            { "value": "24px", "label": "Pill (24px)" }
+            {
+              "value": "0px",
+              "label": "Sharp (0px)"
+            },
+            {
+              "value": "4px",
+              "label": "Soft (4px)"
+            },
+            {
+              "value": "8px",
+              "label": "Rounded (8px)"
+            },
+            {
+              "value": "16px",
+              "label": "Circular (16px)"
+            },
+            {
+              "value": "24px",
+              "label": "Pill (24px)"
+            }
           ],
           "default": "8px"
         }
@@ -66,6 +99,12 @@
           "default": true
         },
         {
+          "id": "headerConfig.transparent",
+          "type": "toggle",
+          "label": "Transparent Header",
+          "default": false
+        },
+        {
           "id": "headerConfig.announcementBar.enabled",
           "type": "toggle",
           "label": "Show Announcement Bar",
@@ -75,7 +114,7 @@
           "id": "headerConfig.announcementBar.text",
           "type": "text",
           "label": "Announcement Text",
-          "default": "⚡ FUEL YOUR PERFORMANCE: Free delivery on all premium fitness gear above ₹1,499 | Use Code: SHRED20"
+          "default": "Train harder — Extra 15% off training gear"
         }
       ]
     }

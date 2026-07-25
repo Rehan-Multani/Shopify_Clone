@@ -1,8 +1,8 @@
 {
-  "name": "Featured Products",
+  "name": "Featured Products Grid",
   "type": "featured-products",
   "settings": {
-    "title": "Featured Gear",
+    "title": "New Arrivals",
     "limit": 8,
     "columns": 4,
     "cardShape": "square"

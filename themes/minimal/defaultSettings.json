@@ -1,0 +1,26 @@
+{
+  "primaryColor": "#171717",
+  "secondaryColor": "#ffffff",
+  "accentColor": "#737373",
+  "borderRadius": "0px",
+  "fontFamily": "Cormorant Garamond",
+  "headerConfig": {
+    "enabled": true,
+    "sticky": false,
+    "transparent": true,
+    "backgroundColor": "transparent",
+    "textColor": "#171717",
+    "logoWidth": "auto",
+    "logoHeight": "36px",
+    "announcementBar": {
+      "enabled": true,
+      "text": "New arrivals — quietly curated",
+      "backgroundColor": "#171717",
+      "textColor": "#ffffff"
+    }
+  },
+  "footerConfig": {
+    "backgroundColor": "#171717",
+    "textColor": "#ffffff"
+  }
+}

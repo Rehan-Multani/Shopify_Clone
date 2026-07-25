@@ -1,0 +1,57 @@
+{
+  "name": "Hero Banner",
+  "type": "hero",
+  "settings": {
+    "backgroundImage": "https://images.unsplash.com/photo-1452860606245-08befc0ff44b?w=1600",
+    "alignment": "left",
+    "overlayOpacity": "0.4",
+    "height": "640px",
+    "layout": "overlay",
+    "showTrustBadges": true,
+    "badge1Text": "Handmade",
+    "badge2Text": "Unique",
+    "badge3Text": "Fair"
+  },
+  "blocks": [
+    {
+      "type": "heading",
+      "settings": {
+        "text": "Made With Hands & Heart",
+        "style": {
+          "tag": "h1",
+          "fontSize": 48,
+          "color": "#fff",
+          "fontWeight": "900",
+          "textAlign": "left"
+        }
+      }
+    },
+    {
+      "type": "subheading",
+      "settings": {
+        "text": "Unique artisan goods from independent makers.",
+        "style": {
+          "fontSize": 16,
+          "color": "#fff",
+          "fontWeight": "400",
+          "textAlign": "left"
+        }
+      }
+    },
+    {
+      "type": "button",
+      "settings": {
+        "label": "Meet Makers",
+        "link": "/catalog",
+        "style": {
+          "backgroundColor": "#fff",
+          "textColor": "#111",
+          "borderRadius": "8px",
+          "paddingY": 14,
+          "paddingX": 28,
+          "fontSize": 13
+        }
+      }
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { resolveMediaUrl, stripMediaBaseUrl } from '../../utils/resolveMediaUrl';
 
 const CATALOG_API_URL = import.meta.env.VITE_CATALOG_API_URL;
 const API_URL = CATALOG_API_URL;
@@ -39,7 +40,7 @@ const AddBanner = () => {
                         isActive: data.isActive !== undefined ? data.isActive : true
                     });
                     if (data.image) {
-                        setImagePreview(`${API_URL.replace('/api', '')}${data.image}`);
+                        setImagePreview(resolveMediaUrl(data.image, API_URL));
                     }
                 } else {
                     setError('Failed to fetch banner details');
@@ -88,7 +89,7 @@ const AddBanner = () => {
         setError('');
 
         try {
-            let imageUrl = isEdit ? (imageFile ? '' : imagePreview.replace(API_URL.replace('/api', ''), '')) : '';
+            let imageUrl = isEdit ? (imageFile ? '' : stripMediaBaseUrl(imagePreview, API_URL)) : '';
 
             // Upload image first if selected
             if (imageFile) {

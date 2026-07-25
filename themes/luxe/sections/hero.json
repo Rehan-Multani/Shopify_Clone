@@ -1,0 +1,57 @@
+{
+  "name": "Hero Banner",
+  "type": "hero",
+  "settings": {
+    "backgroundImage": "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=1600",
+    "alignment": "center",
+    "overlayOpacity": "0.35",
+    "height": "720px",
+    "showTrustBadges": true,
+    "badge1Text": "Certified",
+    "badge2Text": "Insured Shipping",
+    "badge3Text": "Lifetime Care"
+  },
+  "blocks": [
+    {
+      "type": "heading",
+      "settings": {
+        "text": "Crafted For Forever",
+        "style": {
+          "tag": "h1",
+          "fontSize": 48,
+          "color": "#ffffff",
+          "fontWeight": "900",
+          "textAlign": "center"
+        }
+      }
+    },
+    {
+      "type": "subheading",
+      "settings": {
+        "text": "Fine jewelry that defines elegance.",
+        "style": {
+          "fontSize": 16,
+          "color": "#ffffff",
+          "fontWeight": "400",
+          "textAlign": "center"
+        }
+      }
+    },
+    {
+      "type": "button",
+      "settings": {
+        "label": "Shop Jewelry",
+        "link": "/catalog",
+        "style": {
+          "backgroundColor": "#ffffff",
+          "textColor": "#111111",
+          "borderRadius": "8px",
+          "paddingY": 14,
+          "paddingX": 28,
+          "fontSize": 13,
+          "shadow": "lg"
+        }
+      }
+    }
+  ]
+}

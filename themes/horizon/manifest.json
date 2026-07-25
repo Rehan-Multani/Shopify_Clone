@@ -1,0 +1,36 @@
+{
+  "id": "horizon",
+  "name": "Horizon",
+  "version": "2.0.0",
+  "industry": "Minimal Premium",
+  "category": "Luxury",
+  "type": "free",
+  "price": 0,
+  "thumbnail": "thumbnail.webp",
+  "schema": "schema.json",
+  "engine": {
+    "headerStyle": "minimal",
+    "productCardStyle": "minimal",
+    "productPageLayout": "editorial",
+    "collectionLayout": "editorial",
+    "cartStyle": "page",
+    "heroStyle": "minimal",
+    "spacingScale": "roomy",
+    "buttonStyle": "outline"
+  },
+  "supports": {
+    "announcementBar": true,
+    "megaMenu": false,
+    "quickView": true,
+    "wishlist": true,
+    "countdown": false,
+    "lookbook": false,
+    "shoppableVideo": false
+  },
+  "templates": {
+    "home": true,
+    "product": true,
+    "collection": true,
+    "cart": true
+  }
+}

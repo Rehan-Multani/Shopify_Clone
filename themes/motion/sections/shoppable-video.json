@@ -1,0 +1,21 @@
+{
+  "name": "Shoppable Video",
+  "type": "shoppable-video",
+  "settings": {
+    "title": "See it in motion",
+    "autoplay": true,
+    "loop": true,
+    "controls": false,
+    "videoUrl": "https://assets.mixkit.co/videos/preview/mixkit-fashion-model-with-a-green-jacket-39875-large.mp4"
+  },
+  "blocks": [
+    {
+      "type": "product",
+      "settings": {
+        "title": "Shop the featured collection",
+        "price": "Explore now",
+        "link": "/catalog"
+      }
+    }
+  ]
+}

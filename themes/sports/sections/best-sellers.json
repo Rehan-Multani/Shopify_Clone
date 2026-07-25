@@ -1,9 +1,9 @@
 {
-  "name": "Top Sellers",
+  "name": "Best Sellers",
   "type": "best-sellers",
   "settings": {
-    "title": "Trending Now",
+    "title": "Quantum Tech Best Sellers",
     "limit": 4,
-    "columns": 4
+    "cardShape": "square"
   }
 }

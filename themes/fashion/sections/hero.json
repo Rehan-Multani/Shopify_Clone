@@ -4,7 +4,7 @@
   "settings": {
     "backgroundImage": "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600",
     "alignment": "center",
-    "overlayOpacity": "0.2",
+    "overlayOpacity": "0.35",
     "height": "700px",
     "showTrustBadges": true,
     "badge1Text": "Prestige Shipping",
@@ -18,7 +18,7 @@
         "text": "THE NEW STANDARD OF COUTURE",
         "style": {
           "tag": "h1",
-          "fontSize": 56,
+          "fontSize": 48,
           "color": "#ffffff",
           "fontWeight": "900",
           "textAlign": "center"
@@ -28,7 +28,7 @@
     {
       "type": "subheading",
       "settings": {
-        "text": "Explore the curated Autumn-Winter collection, tailored for the contemporary avant-garde aesthetic.",
+        "text": "Explore the curated Autumn-Winter collection.",
         "style": {
           "fontSize": 16,
           "color": "#ffffff",
@@ -40,15 +40,15 @@
     {
       "type": "button",
       "settings": {
-        "label": "Explore The Collection",
+        "label": "Explore Collection",
         "link": "/catalog",
         "style": {
-          "backgroundColor": "#111111",
-          "textColor": "#ffffff",
-          "borderRadius": "0px",
+          "backgroundColor": "#ffffff",
+          "textColor": "#111111",
+          "borderRadius": "8px",
           "paddingY": 14,
-          "paddingX": 32,
-          "fontSize": 12,
+          "paddingX": 28,
+          "fontSize": 13,
           "shadow": "lg"
         }
       }

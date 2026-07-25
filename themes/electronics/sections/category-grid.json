@@ -1,8 +1,8 @@
 {
-  "name": "Categories Grid",
+  "name": "Shop Categories",
   "type": "category-grid",
   "settings": {
-    "title": "Shop by Tech Category",
+    "title": "Shop Collections",
     "cardShape": "square"
   }
 }

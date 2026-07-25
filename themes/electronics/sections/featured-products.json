@@ -2,7 +2,7 @@
   "name": "Featured Products Grid",
   "type": "featured-products",
   "settings": {
-    "title": "Trending Gadgets",
+    "title": "New Arrivals",
     "limit": 8,
     "columns": 4,
     "cardShape": "square"

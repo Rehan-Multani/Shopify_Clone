@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { resolveMediaUrl } from '../../utils/resolveMediaUrl';
 
 const CATALOG_API_URL = import.meta.env.VITE_CATALOG_API_URL;
 const API_URL = CATALOG_API_URL;
@@ -226,7 +227,7 @@ const BannersTab = () => {
                                         <td className="px-5 py-3">
                                             <div className="w-24 h-12 rounded-xl bg-gray-100 border border-gray-200 overflow-hidden flex-shrink-0">
                                                 {banner.image ? (
-                                                    <img src={`${API_URL.replace('/api', '')}${banner.image}`} alt={banner.title} className="w-full h-full object-cover" />
+                                                    <img src={resolveMediaUrl(banner.image, API_URL)} alt={banner.title} className="w-full h-full object-cover" />
                                                 ) : (
                                                     <div className="w-full h-full flex items-center justify-center text-gray-400">
                                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

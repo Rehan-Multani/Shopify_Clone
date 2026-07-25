@@ -1,0 +1,36 @@
+{
+  "id": "motion",
+  "name": "Motion",
+  "version": "2.0.0",
+  "industry": "Sports & Fitness",
+  "category": "Sports",
+  "type": "free",
+  "price": 0,
+  "thumbnail": "thumbnail.webp",
+  "schema": "schema.json",
+  "engine": {
+    "headerStyle": "dark",
+    "productCardStyle": "hoverSwap",
+    "productPageLayout": "sticky",
+    "collectionLayout": "dense",
+    "cartStyle": "sticky",
+    "heroStyle": "split",
+    "spacingScale": "tight",
+    "buttonStyle": "solid"
+  },
+  "supports": {
+    "announcementBar": true,
+    "megaMenu": false,
+    "quickView": true,
+    "wishlist": true,
+    "countdown": true,
+    "lookbook": false,
+    "shoppableVideo": true
+  },
+  "templates": {
+    "home": true,
+    "product": true,
+    "collection": true,
+    "cart": true
+  }
+}

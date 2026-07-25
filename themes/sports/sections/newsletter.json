@@ -1,8 +1,8 @@
 {
-  "name": "Newsletter Signup",
+  "name": "Newsletter",
   "type": "newsletter",
   "settings": {
-    "title": "Join Velocity Insiders",
-    "subtitle": "Subscribe to get early access to athlete training plans, priority gear releases, and exclusive member discounts."
+    "title": "Subscribe to the Newsletter",
+    "subtitle": "Enter the world of modern luxury. Enjoy private sales, new collections, and weekly design inspirations."
   }
 }

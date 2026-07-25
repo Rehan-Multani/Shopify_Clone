@@ -1,22 +1,22 @@
 {
   "primaryColor": "#7c3aed",
   "secondaryColor": "#faf5ff",
-  "accentColor": "#eab308",
-  "borderRadius": "24px",
-  "fontFamily": "Plus Jakarta Sans",
+  "accentColor": "#f59e0b",
+  "borderRadius": "16px",
+  "fontFamily": "Outfit",
   "headerConfig": {
     "enabled": true,
     "sticky": true,
     "transparent": false,
-    "backgroundColor": "#ffffff",
+    "backgroundColor": "#faf5ff",
     "textColor": "#7c3aed",
     "logoWidth": "auto",
     "logoHeight": "36px",
     "announcementBar": {
       "enabled": true,
-      "text": "🧸 TOYBOX WONDERLAND: Fun learning blocks, soft plushies, and creative board games. Extra 10% Off code: PLAYTIME",
+      "text": "🎁 Gift finder live — Perfect presents for every age",
       "backgroundColor": "#7c3aed",
-      "textColor": "#ffffff"
+      "textColor": "#faf5ff"
     }
   },
   "footerConfig": {

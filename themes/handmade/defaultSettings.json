@@ -1,0 +1,26 @@
+{
+  "primaryColor": "#7c2d12",
+  "secondaryColor": "#fff7ed",
+  "accentColor": "#ea580c",
+  "borderRadius": "4px",
+  "fontFamily": "DM Serif Display",
+  "headerConfig": {
+    "enabled": true,
+    "sticky": false,
+    "transparent": false,
+    "backgroundColor": "#fff7ed",
+    "textColor": "#7c2d12",
+    "logoWidth": "auto",
+    "logoHeight": "36px",
+    "announcementBar": {
+      "enabled": true,
+      "text": "Made by hand — Each piece is one of a kind",
+      "backgroundColor": "#7c2d12",
+      "textColor": "#fff7ed"
+    }
+  },
+  "footerConfig": {
+    "backgroundColor": "#7c2d12",
+    "textColor": "#fff7ed"
+  }
+}

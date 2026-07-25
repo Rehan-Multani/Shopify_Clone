@@ -1,0 +1,26 @@
+{
+  "primaryColor": "#166534",
+  "secondaryColor": "#f0fdf4",
+  "accentColor": "#eab308",
+  "borderRadius": "16px",
+  "fontFamily": "Outfit",
+  "headerConfig": {
+    "enabled": true,
+    "sticky": true,
+    "transparent": false,
+    "backgroundColor": "#f0fdf4",
+    "textColor": "#166534",
+    "logoWidth": "auto",
+    "logoHeight": "36px",
+    "announcementBar": {
+      "enabled": true,
+      "text": "Same-day delivery on orders before 2 PM",
+      "backgroundColor": "#166534",
+      "textColor": "#f0fdf4"
+    }
+  },
+  "footerConfig": {
+    "backgroundColor": "#166534",
+    "textColor": "#f0fdf4"
+  }
+}

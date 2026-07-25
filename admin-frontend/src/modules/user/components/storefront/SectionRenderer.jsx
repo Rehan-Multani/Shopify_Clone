@@ -14,8 +14,13 @@ import {
     CountdownSection,
     ContactFormSection,
     SocialIconsSection,
-    PricingTableSection
+    PricingTableSection,
+    LookbookSection,
+    BeforeAfterSection,
+    StorytellingSection,
+    ShoppableVideoSection
 } from './sections/NewSections';
+import { useTheme } from './themeEngine/ThemeContext';
 
 const GATEWAY_URL = import.meta.env.VITE_API_BASE_URL;
 const ASSETS_BASE_URL = GATEWAY_URL?.replace('/api', '') || '';
@@ -37,23 +42,25 @@ const formatText = (text) => {
     ));
 };
 
-// A dynamic newsletter block/section
+// A dynamic newsletter block/section — dark band + accent CTA (premium reference style)
 const NewsletterSection = ({ settings = {} }) => {
     const { title = 'Subscribe to our newsletter', subtitle = 'Get promotions and announcements' } = settings;
     return (
-        <section className="py-20 px-4 bg-transparent text-center border-t border-b border-zinc-200/50 max-w-4xl mx-auto rounded-3xl my-6 bg-white/40 backdrop-blur-sm shadow-sm">
-            <div className="max-w-xl mx-auto space-y-4">
-                <h2 className="text-xl font-black text-zinc-950 uppercase tracking-widest">{title}</h2>
-                <p className="text-xs text-zinc-550 font-semibold max-w-sm mx-auto leading-relaxed">{subtitle}</p>
-                <div className="max-w-md mx-auto flex flex-col sm:flex-row gap-2.5 pt-4">
-                    <input 
-                        type="email" 
+        <section className="py-20 md:py-24 px-6 w-full text-center" style={{ background: 'var(--color-secondary, #0f172a)', color: '#fff' }}>
+            <div className="max-w-xl mx-auto space-y-5">
+                <h2 className="text-2xl sm:text-3xl font-medium tracking-tight text-white" style={{ fontFamily: 'var(--heading-font)' }}>{title}</h2>
+                <div className="h-[2px] w-14 mx-auto" style={{ backgroundColor: 'var(--color-accent, var(--color-primary))' }} />
+                <p className="text-sm text-white/70 font-medium leading-relaxed">{subtitle}</p>
+                <div className="max-w-md mx-auto flex flex-col sm:flex-row gap-2.5 pt-2">
+                    <input
+                        type="email"
                         placeholder="Enter your email address"
-                        className="flex-grow px-4.5 py-3 border border-zinc-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-white shadow-sm transition-all focus:border-[var(--color-primary)] input-premium" 
+                        className="flex-grow px-4 py-3.5 text-sm focus:outline-none bg-white/10 border border-white/15 text-white placeholder:text-white/40"
+                        style={{ borderRadius: 'var(--border-radius, 10px)' }}
                     />
-                    <button 
-                        className="px-7 py-3 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-md hover:opacity-90 active:scale-95 transition-premium cursor-pointer btn-premium"
-                        style={{ backgroundColor: 'var(--color-primary)', borderRadius: 'var(--border-radius)' }}
+                    <button
+                        className="px-7 py-3.5 text-[11px] font-bold uppercase tracking-widest btn-premium text-white shrink-0"
+                        style={{ backgroundColor: 'var(--color-accent, var(--color-primary))', borderRadius: 'var(--border-radius, 10px)' }}
                     >
                         Subscribe
                     </button>
@@ -63,14 +70,17 @@ const NewsletterSection = ({ settings = {} }) => {
     );
 };
 
-const SectionRenderer = ({ section, storeId, onAddToCart }) => {
+const SectionRenderer = ({ section, storeId, onAddToCart, customer }) => {
+    const theme = useTheme();
     if (!section || !section.enabled) return null;
 
     const { type, settings = {}, blocks = [] } = section;
 
     switch (type) {
         case 'hero': {
-            const isSplit = settings.layout === 'split';
+            const heroStyle = settings.heroStyle || theme.heroStyle || 'full';
+            const isSplit = settings.layout === 'split' || heroStyle === 'split';
+            const isFullBleed = ['cinematic', 'promo', 'full', 'minimal'].includes(heroStyle) && !isSplit;
             const bgType = settings.backgroundType || 'image';
             
             let heroBg = '';
@@ -92,26 +102,43 @@ const SectionRenderer = ({ section, storeId, onAddToCart }) => {
             } else {
                 splitBgStyle = { background: 'linear-gradient(135deg, #f0fdfa 0%, #f8fafc 100%)' };
             }
+
+            const trustBadges = settings.showTrustBadges === true && (
+                <div className={`theme-hero-trust flex flex-wrap items-center gap-x-6 gap-y-2 pt-8 mt-1 w-full text-[10px] font-semibold uppercase tracking-[0.2em] animate-fade-in-up ${isSplit || heroStyle === 'promo' ? 'justify-start text-zinc-500' : 'justify-center text-white/80'}`} style={{ animationDelay: '350ms' }}>
+                    {[
+                        settings.badge1Text || 'Free Shipping',
+                        settings.badge2Text || 'Secure Payments',
+                        settings.badge3Text || 'Easy Returns',
+                    ].map((label) => (
+                        <span key={label} className="theme-hero-badge inline-flex items-center gap-2">
+                            <span className="w-1 h-1 rounded-full opacity-70" style={{ background: 'currentColor' }} aria-hidden="true" />
+                            {label}
+                        </span>
+                    ))}
+                </div>
+            );
             
             const contentBody = (
-                <div className={`relative z-10 w-full flex flex-col space-y-6.5 ${isSplit ? 'items-start text-left' : 'items-center text-center'}`}>
+                <div className={`relative z-10 w-full flex flex-col space-y-5 ${isSplit || heroStyle === 'promo' ? 'items-start text-left' : 'items-center text-center'}`}>
                     {(blocks || []).map((block, index) => {
                         if (block.type === 'heading') {
                             const style = block.settings?.style || {};
                             const HeadingTag = style.tag || (isSplit ? 'h2' : 'h1');
+                            const alignLeft = isSplit || heroStyle === 'promo';
                             return (
                                 <HeadingTag 
                                     key={block.blockId || index} 
-                                    className="leading-tight tracking-tight drop-shadow-sm animate-fade-in-up font-black"
+                                    className="leading-[1.05] tracking-tight drop-shadow-sm animate-fade-in-up font-medium"
                                     style={{ 
                                         animationDelay: '0ms',
-                                        fontSize: style.fontSize ? `clamp(${Math.max(20, Math.round(Number(style.fontSize) * 0.6))}px, 5vw, ${style.fontSize}px)` : (isSplit ? 'clamp(24px, 5vw, 42px)' : 'clamp(28px, 6vw, 48px)'),
+                                        fontSize: style.fontSize ? `clamp(${Math.max(20, Math.round(Number(style.fontSize) * 0.6))}px, 5vw, ${style.fontSize}px)` : (isSplit ? 'clamp(28px, 5vw, 48px)' : heroStyle === 'cinematic' ? 'clamp(2.75rem, 7.5vw, 5.5rem)' : 'clamp(2.25rem, 6vw, 4.25rem)'),
                                         color: isSplit ? 'var(--color-primary)' : (style.color || '#ffffff'),
-                                        fontWeight: style.fontWeight || '900',
-                                        lineHeight: style.lineHeight || undefined,
-                                        letterSpacing: style.letterSpacing || undefined,
+                                        fontWeight: style.fontWeight || '500',
+                                        lineHeight: style.lineHeight || '1.05',
+                                        letterSpacing: style.letterSpacing || '-0.02em',
                                         textTransform: style.textTransform || 'none',
-                                        textAlign: isSplit ? 'left' : (style.textAlign || 'center'),
+                                        fontFamily: 'var(--heading-font)',
+                                        textAlign: alignLeft ? 'left' : (style.textAlign || 'center'),
                                         marginTop: style.marginTop !== undefined ? `${style.marginTop}px` : undefined,
                                         marginBottom: style.marginBottom !== undefined ? `${style.marginBottom}px` : undefined
                                     }}
@@ -122,19 +149,20 @@ const SectionRenderer = ({ section, storeId, onAddToCart }) => {
                         }
                         if (block.type === 'subheading') {
                             const style = block.settings?.style || {};
+                            const alignLeft = isSplit || heroStyle === 'promo';
                             return (
                                 <p 
                                     key={block.blockId || index} 
-                                    className="leading-relaxed drop-shadow animate-fade-in-up font-semibold"
+                                    className={`leading-relaxed drop-shadow animate-fade-in-up font-medium max-w-xl ${heroStyle === 'promo' ? '' : ''}`}
                                     style={{ 
                                         animationDelay: '100ms',
-                                        fontSize: style.fontSize ? `clamp(${Math.max(13, Math.round(Number(style.fontSize) * 0.8))}px, 3.5vw, ${style.fontSize}px)` : 'clamp(13px, 3.5vw, 15px)',
-                                        color: isSplit ? '#4b5563' : (style.color || '#ffffff'),
+                                        fontSize: style.fontSize ? `clamp(${Math.max(13, Math.round(Number(style.fontSize) * 0.8))}px, 3.5vw, ${style.fontSize}px)` : 'clamp(13px, 2.4vw, 16px)',
+                                        color: isSplit ? '#57534e' : (style.color || 'rgba(255,255,255,0.88)'),
                                         fontWeight: style.fontWeight || '500',
-                                        lineHeight: style.lineHeight || undefined,
-                                        letterSpacing: style.letterSpacing || undefined,
-                                        textTransform: style.textTransform || 'none',
-                                        textAlign: isSplit ? 'left' : (style.textAlign || 'center'),
+                                        lineHeight: style.lineHeight || '1.7',
+                                        letterSpacing: style.letterSpacing || '0.14em',
+                                        textTransform: style.textTransform || 'uppercase',
+                                        textAlign: alignLeft ? 'left' : (style.textAlign || 'center'),
                                         marginTop: style.marginTop !== undefined ? `${style.marginTop}px` : undefined,
                                         marginBottom: style.marginBottom !== undefined ? `${style.marginBottom}px` : undefined
                                     }}
@@ -148,29 +176,32 @@ const SectionRenderer = ({ section, storeId, onAddToCart }) => {
 
                     {/* Render Buttons side-by-side */}
                     {(blocks || []).some(b => b.type === 'button') && (
-                        <div className={`flex flex-wrap gap-4 pt-2 ${isSplit ? 'justify-start' : 'justify-center'}`}>
+                        <div className={`flex flex-wrap gap-3.5 pt-3 ${isSplit || heroStyle === 'promo' ? 'justify-start' : 'justify-center'}`}>
                             {(blocks || []).filter(b => b.type === 'button').map((block, idx) => {
                                 const style = block.settings?.style || {};
+                                const isPrimary = idx === 0;
                                 return (
                                     <React.Fragment key={block.blockId || idx}>
                                         {block.settings?.startNewRow && <div className="w-full h-0"></div>}
                                         <a
                                             href={block.settings?.link || '/catalog'}
-                                            className="transition-all hover:scale-105 active:scale-95 transition-all duration-300 animate-fade-in-up cursor-pointer flex items-center justify-center font-bold"
+                                            className="theme-hero-cta btn-premium transition-all hover:-translate-y-0.5 active:scale-[0.98] duration-300 animate-fade-in-up cursor-pointer flex items-center justify-center gap-2 font-bold tracking-[0.14em] uppercase"
                                             style={{ 
-                                                backgroundColor: style.backgroundColor || (idx === 0 ? 'var(--color-primary)' : 'rgba(255, 255, 255, 0.15)'), 
-                                                color: style.textColor || '#ffffff',
-                                                borderColor: style.borderColor || (style.borderWidth && style.borderWidth !== '0px' ? '#18181b' : 'transparent'),
-                                                borderStyle: (style.borderWidth && style.borderWidth !== '0px') ? 'solid' : 'none',
-                                                borderWidth: style.borderWidth || '0px',
-                                                borderRadius: style.borderRadius || 'var(--border-radius)',
-                                                padding: `${style.paddingY !== undefined ? style.paddingY : 12}px ${style.paddingX !== undefined ? style.paddingX : 28}px`,
-                                                fontSize: style.fontSize ? `${style.fontSize}px` : '10px',
-                                                boxShadow: style.shadow === 'lg' ? '0 10px 15px -3px rgba(0,0,0,0.1)' : style.shadow === 'md' ? '0 4px 6px -1px rgba(0,0,0,0.1)' : style.shadow === 'sm' ? '0 1px 2px 0 rgba(0,0,0,0.05)' : 'none',
-                                                animationDelay: `${200 + idx * 50}ms`
+                                                backgroundColor: style.backgroundColor || (isPrimary ? (heroStyle === 'promo' ? '#fff' : 'var(--color-accent, var(--color-primary))') : 'transparent'), 
+                                                color: style.textColor || (heroStyle === 'promo' && isPrimary ? '#111' : '#ffffff'),
+                                                borderColor: style.borderColor || (!isPrimary ? 'rgba(255,255,255,0.45)' : 'transparent'),
+                                                borderStyle: 'solid',
+                                                borderWidth: style.borderWidth || (!isPrimary ? '1px' : '0px'),
+                                                borderRadius: style.borderRadius || 'var(--border-radius, 10px)',
+                                                padding: `${style.paddingY !== undefined ? style.paddingY : 14}px ${style.paddingX !== undefined ? style.paddingX : 30}px`,
+                                                fontSize: style.fontSize ? `${style.fontSize}px` : '11px',
+                                                boxShadow: isPrimary ? '0 14px 40px -18px rgba(0,0,0,0.45)' : 'none',
+                                                animationDelay: `${200 + idx * 50}ms`,
+                                                backdropFilter: !isPrimary ? 'blur(8px)' : undefined,
                                             }}
                                         >
-                                            {block.settings?.label || 'Shop Now'}
+                                            <span>{block.settings?.label || 'Shop Now'}</span>
+                                            <span aria-hidden="true" className="theme-hero-arrow">→</span>
                                         </a>
                                     </React.Fragment>
                                 );
@@ -181,45 +212,29 @@ const SectionRenderer = ({ section, storeId, onAddToCart }) => {
                     {/* Fallback if no blocks */}
                     {blocks.length === 0 && (
                         <div className={`${isSplit ? 'text-zinc-800' : 'text-white'} space-y-4`}>
-                            <h1 className="text-3xl sm:text-4xl font-black leading-tight tracking-tight">{formatText(settings.title || 'Welcome to Our Store')}</h1>
-                            <p className="text-xs sm:text-sm text-zinc-550 font-semibold max-w-sm">{formatText(settings.subtitle)}</p>
+                            <h1 className="text-3xl sm:text-5xl font-medium leading-tight tracking-tight" style={{ fontFamily: 'var(--heading-font)' }}>{formatText(settings.title || 'Welcome to Our Store')}</h1>
+                            <p className="text-xs sm:text-sm font-medium tracking-[0.14em] uppercase opacity-80 max-w-sm">{formatText(settings.subtitle)}</p>
                         </div>
                     )}
 
-                    {/* QubanHC Style Trust Badges */}
-                    {settings.showTrustBadges !== false && (
-                        <div className={`flex flex-wrap items-center gap-6 pt-6.5 mt-2.5 border-t w-full text-[9px] font-black uppercase tracking-widest animate-fade-in-up ${isSplit ? 'border-zinc-200 justify-start text-zinc-650' : 'border-white/10 justify-center text-white/95'}`} style={{ animationDelay: '350ms' }}>
-                            <div className={`flex items-center gap-2 px-3.5 py-2 rounded-full border ${isSplit ? 'bg-zinc-50 border-zinc-200/60' : 'bg-black/25 border-white/5'}`}>
-                                <span className="text-xs">🚚</span>
-                                <span>{settings.badge1Text || 'Free Shipping'}</span>
-                            </div>
-                            <div className={`flex items-center gap-2 px-3.5 py-2 rounded-full border ${isSplit ? 'bg-zinc-50 border-zinc-200/60' : 'bg-black/25 border-white/5'}`}>
-                                <span className="text-xs">🛡️</span>
-                                <span>{settings.badge2Text || 'Secure Payments'}</span>
-                            </div>
-                            <div className={`flex items-center gap-2 px-3.5 py-2 rounded-full border ${isSplit ? 'bg-zinc-50 border-zinc-200/60' : 'bg-black/25 border-white/5'}`}>
-                                <span className="text-xs">🔄</span>
-                                <span>{settings.badge3Text || 'Easy Returns'}</span>
-                            </div>
-                        </div>
-                    )}
+                    {trustBadges}
                 </div>
             );
 
             if (isSplit) {
                 return (
                     <section 
-                        className="relative flex items-center justify-center py-16 px-6 md:px-12 rounded-3xl"
-                        style={{ minHeight: settings.height || '500px', ...splitBgStyle }}
+                        className={`theme-hero theme-hero--${heroStyle} relative flex items-center justify-center py-16 px-6 md:px-12`}
+                        style={{ minHeight: settings.height || '560px', ...splitBgStyle }}
                     >
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center w-full max-w-6xl mx-auto">
                             {contentBody}
                             <div className="flex justify-center items-center w-full">
                                 <div 
-                                    className="relative w-full aspect-[4/3] rounded-[32px] overflow-hidden shadow-2xl border border-teal-100/50 bg-white p-2.5"
-                                    style={{ animationDelay: '200ms' }}
+                                    className="theme-hero-media relative w-full aspect-[4/3] overflow-hidden shadow-2xl bg-white p-2.5"
+                                    style={{ animationDelay: '200ms', borderRadius: theme.borderRadius || '24px' }}
                                 >
-                                    <div className="w-full h-full rounded-[22px] overflow-hidden bg-zinc-50 relative group">
+                                    <div className="w-full h-full overflow-hidden bg-zinc-50 relative group" style={{ borderRadius: `calc(${theme.borderRadius || '24px'} - 6px)` }}>
                                         {settings.backgroundImage ? (
                                             <img src={getImageUrl(settings.backgroundImage)} alt="Hero illustration" className="w-full h-full object-cover transition-transform duration-700 hover:scale-105" />
                                         ) : (
@@ -237,17 +252,36 @@ const SectionRenderer = ({ section, storeId, onAddToCart }) => {
 
             return (
                 <section 
-                    className="relative flex items-center justify-center overflow-hidden py-24 px-4 text-center rounded-3xl"
+                    className={`theme-hero theme-hero--${heroStyle} relative flex items-center ${heroStyle === 'promo' ? 'justify-start text-left' : 'justify-center text-center'} overflow-hidden py-28 md:py-36 px-4 ${isFullBleed ? 'rounded-none' : ''}`}
                     style={{
-                        background: heroBg,
+                        background: bgType === 'image' ? undefined : heroBg,
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',   
-                        minHeight: settings.height || '480px'
+                        minHeight: (heroStyle === 'cinematic' || heroStyle === 'full')
+                            ? 'min(94vh, 920px)'
+                            : (settings.height || (heroStyle === 'promo' ? '620px' : '75vh'))
                     }}
                 >
-                    {/* Dark Overlay */}
-                    {bgType === 'image' && <div className="absolute inset-0 bg-black/45"></div>}
-                    <div className="relative z-10 max-w-2xl w-full flex flex-col items-center space-y-6.5">
+                    {bgType === 'image' && (
+                        <div
+                            className="absolute inset-0 scale-105 animate-ken-burns bg-cover bg-center"
+                            style={{ backgroundImage: heroBg }}
+                            aria-hidden="true"
+                        />
+                    )}
+                    {bgType === 'image' && (
+                        <div className={`absolute inset-0 ${
+                            heroStyle === 'minimal' ? 'bg-black/30'
+                            : heroStyle === 'promo' ? 'bg-gradient-to-r from-black/78 via-black/48 to-black/18'
+                            : heroStyle === 'cinematic' ? 'bg-gradient-to-t from-black/75 via-black/40 to-black/30'
+                            : 'bg-gradient-to-t from-black/65 via-black/40 to-black/30'
+                        }`} />
+                    )}
+                    <div className={`relative z-10 w-full flex flex-col space-y-5 ${
+                        heroStyle === 'promo' ? 'max-w-7xl mx-auto items-start px-4 sm:px-8'
+                        : heroStyle === 'cinematic' ? 'max-w-4xl items-center px-4'
+                        : 'max-w-3xl items-center px-4'
+                    }`}>
                         {contentBody}
                     </div>
                 </section>
@@ -270,11 +304,24 @@ const SectionRenderer = ({ section, storeId, onAddToCart }) => {
         case 'carousel':
             return <CarouselSection settings={settings} blocks={blocks} />;
 
+        case 'lookbook':
+            return <LookbookSection settings={settings} blocks={blocks} />;
+
+        case 'before-after':
+            return <BeforeAfterSection settings={settings} />;
+
+        case 'storytelling':
+        case 'brand-story':
+            return <StorytellingSection settings={settings} blocks={blocks} />;
+
+        case 'shoppable-video':
+            return <ShoppableVideoSection settings={settings} blocks={blocks} />;
+
         case 'features-grid':
             const items = blocks.length > 0 ? blocks : (settings.features || []);
             
             const getIconSvg = (iconName) => {
-                const props = { className: "w-5 h-5 text-[var(--color-primary)]", stroke: "currentColor", strokeWidth: "2.2", fill: "none", viewBox: "0 0 24 24" };
+                const props = { className: "w-5 h-5", stroke: "currentColor", strokeWidth: "2.2", fill: "none", viewBox: "0 0 24 24" };
                 switch (iconName) {
                     case 'truck':
                         return (
@@ -322,36 +369,35 @@ const SectionRenderer = ({ section, storeId, onAddToCart }) => {
             };
 
             return (
-                <section className="py-20 px-4 sm:px-6 lg:px-8 bg-transparent max-w-7xl mx-auto w-full space-y-12">
-                    <div className="text-center space-y-2.5 max-w-xl mx-auto">
-                        <h2 className="text-xl sm:text-2xl font-black text-zinc-950 uppercase tracking-widest leading-tight">
+                <section className="theme-features py-20 md:py-24 px-6 sm:px-10 lg:px-14 w-full space-y-14">
+                    <div className="text-center space-y-3 max-w-2xl mx-auto">
+                        <h2 className="text-2xl sm:text-4xl font-medium tracking-tight leading-tight" style={{ fontFamily: 'var(--heading-font)' }}>
                             {settings.title || 'Why Choose Us'}
                         </h2>
+                        <div className="h-[2px] w-14 mx-auto" style={{ backgroundColor: 'var(--color-accent, var(--color-primary))' }} />
                         {settings.subtitle && (
-                            <p className="text-xs text-zinc-550 font-semibold leading-relaxed">
+                            <p className="text-sm text-zinc-600 font-medium leading-relaxed">
                                 {settings.subtitle}
                             </p>
                         )}
-                        <div className="w-8 h-0.5 rounded-full mx-auto" style={{ backgroundColor: 'var(--color-primary)' }}></div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 pt-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 lg:gap-14 max-w-6xl mx-auto">
                         {items.map((item, index) => {
                             const blockSettings = item.settings || {};
                             return (
                                 <div 
                                     key={item.blockId || index} 
-                                    className="p-8 bg-white border border-zinc-200/60 rounded-3xl flex flex-col items-start text-left space-y-4.5 card-premium relative hover:-translate-y-1 transition-all duration-300 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.02)] hover:shadow-[0_12px_24px_-10px_rgba(0,0,0,0.06)]"
-                                    style={{ borderRadius: 'var(--border-radius, 16px)' }}
+                                    className="flex flex-col items-start text-left space-y-4"
                                 >
-                                    <div className="w-11 h-11 rounded-2xl flex items-center justify-center bg-[var(--color-primary-light)]/60 border border-[var(--color-primary-semi)] shadow-inner">
+                                    <div className="w-10 h-10 flex items-center justify-center text-[var(--color-primary)]">
                                         {getIconSvg(blockSettings.icon)}
                                     </div>
-                                    <div className="space-y-1.5">
-                                        <h3 className="text-xs font-black uppercase text-zinc-900 tracking-wider">
+                                    <div className="space-y-2">
+                                        <h3 className="text-sm font-black uppercase tracking-wider text-zinc-900">
                                             {blockSettings.title || 'Feature Title'}
                                         </h3>
-                                        <p className="text-xs text-zinc-550 leading-relaxed font-semibold">
+                                        <p className="text-sm text-zinc-600 leading-relaxed font-medium">
                                             {blockSettings.text || 'Feature description details goes here to reassure customers.'}
                                         </p>
                                     </div>
@@ -382,51 +428,51 @@ const SectionRenderer = ({ section, storeId, onAddToCart }) => {
             return <PricingTableSection settings={settings} blocks={blocks} />;
 
         case 'best-sellers':
-            return <BestSellerSection settings={settings} storeId={storeId} onAddToCart={onAddToCart} />;
+            return <BestSellerSection settings={settings} storeId={storeId} onAddToCart={onAddToCart} customer={customer} />;
 
         case 'featured-products':
         case 'product-slider':
-            return <FeaturedProductsSection settings={settings} storeId={storeId} onAddToCart={onAddToCart} />;
+            return <FeaturedProductsSection settings={settings} storeId={storeId} onAddToCart={onAddToCart} customer={customer} />;
 
         case 'testimonials':
             // Render Testimonials based on blocks
             const list = blocks.length > 0 ? blocks : (settings.testimonials || []);
             return (
-                <section className="py-20 px-4 text-center space-y-10">
-                    <div className="space-y-1 border-b border-zinc-200/65 pb-4 flex items-center justify-between max-w-7xl mx-auto">
-                        <div>
-                            <h2 className="text-lg font-black tracking-widest text-zinc-900 uppercase">{settings.title || 'What Our Customers Say'}</h2>
-                            <div className="w-8 h-0.5 rounded-full" style={{ backgroundColor: 'var(--color-primary)' }}></div>
+                <section className="py-24 px-6 w-full">
+                    <div className="max-w-6xl mx-auto space-y-14">
+                        <div className="text-center space-y-3">
+                            <h2 className="text-2xl sm:text-3xl font-black tracking-tight" style={{ fontFamily: 'var(--heading-font)' }}>{settings.title || 'What Our Customers Say'}</h2>
+                            <div className="w-10 h-px mx-auto" style={{ backgroundColor: 'var(--color-primary)' }}></div>
                         </div>
-                    </div>
-                    <div className="flex flex-wrap justify-center gap-6 max-w-7xl mx-auto">
-                        {list.map((item, index) => (
-                            <div 
-                                key={item.blockId || index} 
-                                className="p-7 bg-white border border-zinc-200/60 rounded-2xl flex flex-col justify-between space-y-5 card-premium w-full md:w-[340px] text-left relative"
-                                style={{ borderRadius: 'var(--border-radius, 12px)' }}
-                            >
-                                <span className="absolute -top-3 -right-1 text-7xl text-[var(--color-primary)] opacity-5 select-none font-serif leading-none">“</span>
-                                <div className="flex gap-1 text-amber-400">
-                                    {[1, 2, 3, 4, 5].map(star => (
-                                        <svg key={star} className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
-                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                        </svg>
-                                    ))}
-                                </div>
-                                <p className="text-zinc-650 italic text-xs font-semibold leading-relaxed relative z-10">
-                                    "{item.settings?.text || item.text || 'Amazing shopping experience, highly recommended!'}"
-                                </p>
-                                <div className="flex items-center gap-3 pt-3 border-t border-zinc-100">
-                                    <div className="w-7 h-7 rounded-full text-white flex items-center justify-center font-black text-[9px] uppercase shadow-sm" style={{ backgroundColor: 'var(--color-primary)' }}>
-                                        {(item.settings?.author || item.author || 'H')[0]}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-12">
+                            {list.map((item, index) => (
+                                <div 
+                                    key={item.blockId || index} 
+                                    className="flex flex-col justify-between space-y-6 text-left relative pt-2"
+                                >
+                                    <div className="space-y-4">
+                                        <div className="flex gap-1 text-amber-400">
+                                            {[1, 2, 3, 4, 5].map(star => (
+                                                <svg key={star} className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
+                                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                                </svg>
+                                            ))}
+                                        </div>
+                                        <p className="text-zinc-700 text-sm font-medium leading-relaxed">
+                                            "{item.settings?.text || item.text || 'Amazing shopping experience, highly recommended!'}"
+                                        </p>
                                     </div>
-                                    <span className="block text-[10px] font-black text-zinc-700 tracking-wider uppercase">
-                                        {item.settings?.author || item.author || 'Happy Customer'}
-                                    </span>
+                                    <div className="flex items-center gap-3 pt-4 border-t border-black/5">
+                                        <div className="w-8 h-8 text-white flex items-center justify-center font-black text-[10px] uppercase" style={{ backgroundColor: 'var(--color-primary)' }}>
+                                            {(item.settings?.author || item.author || 'H')[0]}
+                                        </div>
+                                        <span className="block text-[11px] font-bold text-zinc-800 tracking-wide uppercase">
+                                            {item.settings?.author || item.author || 'Happy Customer'}
+                                        </span>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
                 </section>
             );

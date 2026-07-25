@@ -1,0 +1,57 @@
+{
+  "name": "Hero Banner",
+  "type": "hero",
+  "settings": {
+    "backgroundImage": "https://images.unsplash.com/photo-1542838132-92c53300491e?w=1600",
+    "alignment": "left",
+    "overlayOpacity": "0.35",
+    "height": "560px",
+    "showTrustBadges": true,
+    "badge1Text": "Fresh Daily",
+    "badge2Text": "Fast Delivery",
+    "badge3Text": "Best Prices"
+  },
+  "blocks": [
+    {
+      "type": "heading",
+      "settings": {
+        "text": "Farm Fresh To Your Door",
+        "style": {
+          "tag": "h1",
+          "fontSize": 48,
+          "color": "#ffffff",
+          "fontWeight": "900",
+          "textAlign": "left"
+        }
+      }
+    },
+    {
+      "type": "subheading",
+      "settings": {
+        "text": "Groceries and everyday essentials, delivered fast.",
+        "style": {
+          "fontSize": 16,
+          "color": "#ffffff",
+          "fontWeight": "400",
+          "textAlign": "left"
+        }
+      }
+    },
+    {
+      "type": "button",
+      "settings": {
+        "label": "Start Shopping",
+        "link": "/catalog",
+        "style": {
+          "backgroundColor": "#ffffff",
+          "textColor": "#111111",
+          "borderRadius": "8px",
+          "paddingY": 14,
+          "paddingX": 28,
+          "fontSize": 13,
+          "shadow": "lg"
+        }
+      }
+    }
+  ]
+}

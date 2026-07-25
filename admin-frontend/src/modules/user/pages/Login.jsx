@@ -10,8 +10,8 @@ const Login = () => {
   const [onboardingStep, setOnboardingStep] = useState(1);
   const [selections, setSelections] = useState({}); // { 1: [ids], 2: [ids] }
   const [storeName, setStoreName] = useState('');
-  const [email, setEmail] = useState('john@gmail.com');
-  const [password, setPassword] = useState('1234');
+  const [email, setEmail] = useState('single@storify.com');
+  const [password, setPassword] = useState('password123');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -34,8 +34,10 @@ const Login = () => {
         localStorage.setItem('merchantToken', data.token);
         localStorage.setItem('shopStoreName', data.merchant.name);
         
-        // Auto select type: john@gmail.com is forced to multi, mrmmultani is forced to single
-        const isMulti = email.trim().toLowerCase() === 'john@gmail.com' || data.merchant.plan?.planType === 'Multi Vendor';
+        const isMulti =
+          email.trim().toLowerCase() === 'multi@storify.com' ||
+          data.merchant.planType === 'Multi Vendor' ||
+          data.merchant.plan?.planType === 'Multi Vendor';
         localStorage.setItem('adminPanelType', isMulti ? 'multi' : 'single');
         
         navigate('/dashboard');
@@ -345,12 +347,12 @@ const Login = () => {
             <button
               type="button"
               onClick={() => {
-                setEmail('mrmmultani@gmail.com');
-                setPassword('1234');
+                setEmail('single@storify.com');
+                setPassword('password123');
               }}
               className={`flex-1 py-2 text-xs font-bold rounded-md transition-all cursor-pointer ${
-                email.trim().toLowerCase() === 'mrmmultani@gmail.com' 
-                  ? 'bg-emerald-600 text-white shadow-sm' 
+                email.trim().toLowerCase() === 'single@storify.com'
+                  ? 'bg-emerald-600 text-white shadow-sm'
                   : 'text-gray-400 hover:text-white'
               }`}
             >
@@ -359,12 +361,12 @@ const Login = () => {
             <button
               type="button"
               onClick={() => {
-                setEmail('john@gmail.com');
-                setPassword('1234');
+                setEmail('multi@storify.com');
+                setPassword('password123');
               }}
               className={`flex-1 py-2 text-xs font-bold rounded-md transition-all cursor-pointer ${
-                email.trim().toLowerCase() === 'john@gmail.com' 
-                  ? 'bg-blue-600 text-white shadow-sm' 
+                email.trim().toLowerCase() === 'multi@storify.com'
+                  ? 'bg-blue-600 text-white shadow-sm'
                   : 'text-gray-400 hover:text-white'
               }`}
             >

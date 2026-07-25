@@ -1,8 +1,8 @@
 {
-  "name": "Featured Toys",
+  "name": "Featured Products Grid",
   "type": "featured-products",
   "settings": {
-    "title": "Bestselling Toys",
+    "title": "New Arrivals",
     "limit": 8,
     "columns": 4,
     "cardShape": "square"

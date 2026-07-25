@@ -3,12 +3,10 @@
   "sections": [
     "header",
     "hero",
-    "category-grid",
     "countdown",
     "featured-products",
     "features-grid",
     "best-sellers",
-    "testimonials",
     "newsletter",
     "footer"
   ]

@@ -1,0 +1,15 @@
+{
+  "title": "Home Page",
+  "sections": [
+    "header",
+    "carousel",
+    "category-grid",
+    "featured-products",
+    "video-banner",
+    "features-grid",
+    "best-sellers",
+    "newsletter",
+    "shoppable-video",
+    "footer"
+  ]
+}

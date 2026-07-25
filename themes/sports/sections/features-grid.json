@@ -1,33 +1,56 @@
 {
-  "name": "Velocity Advantages",
+  "name": "Our Services",
   "type": "features-grid",
   "settings": {
-    "title": "Why Choose Velocity",
-    "subtitle": "Professional grade fitness accessories, high endurance materials, and round the clock support."
+    "title": "Quantum Tech Direct Guarantees",
+    "subtitle": "Enjoy enterprise-grade shopping support.",
+    "features": [
+      {
+        "settings": {
+          "icon": "truck",
+          "title": "Express Shipping",
+          "text": "Same-day delivery for all gaming setups and hardware components."
+        }
+      },
+      {
+        "settings": {
+          "icon": "shield-check",
+          "title": "2-Year Warranty",
+          "text": "Hassle-free hardware replacement guarantee on all accessories."
+        }
+      },
+      {
+        "settings": {
+          "icon": "phone",
+          "title": "24/7 Tech Support",
+          "text": "Reach our engineering hotline for setup assistance anytime."
+        }
+      }
+    ]
   },
   "blocks": [
     {
       "type": "feature",
       "settings": {
-        "title": "Express Delivery",
-        "text": "Same day dispatch & real time transit tracking on all fitness accessories.",
-        "icon": "lightning"
+        "icon": "truck",
+        "title": "Express Shipping",
+        "text": "Same-day delivery for all gaming setups and hardware components."
       }
     },
     {
       "type": "feature",
       "settings": {
-        "title": "Premium Durability",
-        "text": "All items are performance tested & engineered for peak athletic stress.",
-        "icon": "shield-check"
+        "icon": "shield-check",
+        "title": "2-Year Warranty",
+        "text": "Hassle-free hardware replacement guarantee on all accessories."
       }
     },
     {
       "type": "feature",
       "settings": {
-        "title": "Hassle-Free Returns",
-        "text": "30-day trial period on all compression garments and trainers.",
-        "icon": "rotate-ccw"
+        "icon": "phone",
+        "title": "24/7 Tech Support",
+        "text": "Reach our engineering hotline for setup assistance anytime."
       }
     }
   ]

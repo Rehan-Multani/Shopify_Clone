@@ -1,0 +1,325 @@
+{
+  "name": "Craft Theme Settings",
+  "settings": [
+    {
+      "name": "Colors",
+      "settings": [
+        {
+          "id": "primaryColor",
+          "type": "color",
+          "label": "Primary",
+          "default": "#7c2d12"
+        },
+        {
+          "id": "secondaryColor",
+          "type": "color",
+          "label": "Background",
+          "default": "#fff7ed"
+        },
+        {
+          "id": "accentColor",
+          "type": "color",
+          "label": "Accent",
+          "default": "#ea580c"
+        }
+      ]
+    },
+    {
+      "name": "Layout Engine",
+      "settings": [
+        {
+          "id": "headerStyle",
+          "type": "select",
+          "label": "Header Style",
+          "default": "minimal",
+          "options": [
+            {
+              "value": "classic",
+              "label": "classic"
+            },
+            {
+              "value": "centered",
+              "label": "centered"
+            },
+            {
+              "value": "floating",
+              "label": "floating"
+            },
+            {
+              "value": "transparent",
+              "label": "transparent"
+            },
+            {
+              "value": "minimal",
+              "label": "minimal"
+            },
+            {
+              "value": "mega",
+              "label": "mega"
+            },
+            {
+              "value": "dark",
+              "label": "dark"
+            }
+          ]
+        },
+        {
+          "id": "productCardStyle",
+          "type": "select",
+          "label": "Product Card",
+          "default": "editorial",
+          "options": [
+            {
+              "value": "standard",
+              "label": "standard"
+            },
+            {
+              "value": "minimal",
+              "label": "minimal"
+            },
+            {
+              "value": "editorial",
+              "label": "editorial"
+            },
+            {
+              "value": "luxury",
+              "label": "luxury"
+            },
+            {
+              "value": "compact",
+              "label": "compact"
+            },
+            {
+              "value": "hoverSwap",
+              "label": "hoverSwap"
+            },
+            {
+              "value": "quickAdd",
+              "label": "quickAdd"
+            },
+            {
+              "value": "marketplace",
+              "label": "marketplace"
+            },
+            {
+              "value": "sale",
+              "label": "sale"
+            },
+            {
+              "value": "large",
+              "label": "large"
+            }
+          ]
+        },
+        {
+          "id": "productPageLayout",
+          "type": "select",
+          "label": "Product Page",
+          "default": "editorial",
+          "options": [
+            {
+              "value": "classic",
+              "label": "classic"
+            },
+            {
+              "value": "sticky",
+              "label": "sticky"
+            },
+            {
+              "value": "editorial",
+              "label": "editorial"
+            },
+            {
+              "value": "split",
+              "label": "split"
+            },
+            {
+              "value": "tech",
+              "label": "tech"
+            },
+            {
+              "value": "luxury",
+              "label": "luxury"
+            }
+          ]
+        },
+        {
+          "id": "collectionLayout",
+          "type": "select",
+          "label": "Collection Layout",
+          "default": "editorial",
+          "options": [
+            {
+              "value": "grid",
+              "label": "grid"
+            },
+            {
+              "value": "dense",
+              "label": "dense"
+            },
+            {
+              "value": "editorial",
+              "label": "editorial"
+            },
+            {
+              "value": "masonry",
+              "label": "masonry"
+            },
+            {
+              "value": "sidebar",
+              "label": "sidebar"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Typography & Motion",
+      "settings": [
+        {
+          "id": "headingFont",
+          "type": "font",
+          "label": "Heading font",
+          "default": "DM Serif Display"
+        },
+        {
+          "id": "bodyFont",
+          "type": "font",
+          "label": "Body font",
+          "default": "Newsreader"
+        },
+        {
+          "id": "navigationFont",
+          "type": "font",
+          "label": "Navigation font",
+          "default": "DM Sans"
+        },
+        {
+          "id": "priceFont",
+          "type": "font",
+          "label": "Price font",
+          "default": "DM Sans"
+        },
+        {
+          "id": "motionPreset",
+          "type": "select",
+          "label": "Animation language",
+          "default": "handmade",
+          "options": [
+            {
+              "value": "quiet",
+              "label": "quiet"
+            },
+            {
+              "value": "gentle",
+              "label": "gentle"
+            },
+            {
+              "value": "editorial",
+              "label": "editorial"
+            },
+            {
+              "value": "cinematic",
+              "label": "cinematic"
+            },
+            {
+              "value": "fluid",
+              "label": "fluid"
+            },
+            {
+              "value": "snappy",
+              "label": "snappy"
+            },
+            {
+              "value": "kinetic",
+              "label": "kinetic"
+            },
+            {
+              "value": "playful",
+              "label": "playful"
+            },
+            {
+              "value": "functional",
+              "label": "functional"
+            }
+          ]
+        },
+        {
+          "id": "hoverPreset",
+          "type": "select",
+          "label": "Hover language",
+          "default": "paper",
+          "options": [
+            {
+              "value": "fade",
+              "label": "fade"
+            },
+            {
+              "value": "zoom",
+              "label": "zoom"
+            },
+            {
+              "value": "slow-zoom",
+              "label": "slow-zoom"
+            },
+            {
+              "value": "lift-swap",
+              "label": "lift-swap"
+            },
+            {
+              "value": "mask-reveal",
+              "label": "mask-reveal"
+            },
+            {
+              "value": "cta-rise",
+              "label": "cta-rise"
+            },
+            {
+              "value": "tilt",
+              "label": "tilt"
+            },
+            {
+              "value": "glitch",
+              "label": "glitch"
+            },
+            {
+              "value": "scan",
+              "label": "scan"
+            },
+            {
+              "value": "bounce",
+              "label": "bounce"
+            },
+            {
+              "value": "magnetic",
+              "label": "magnetic"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Header",
+      "settings": [
+        {
+          "id": "headerConfig.sticky",
+          "type": "toggle",
+          "label": "Sticky Header",
+          "default": false
+        },
+        {
+          "id": "headerConfig.announcementBar.enabled",
+          "type": "toggle",
+          "label": "Announcement Bar",
+          "default": true
+        },
+        {
+          "id": "headerConfig.announcementBar.text",
+          "type": "text",
+          "label": "Announcement Text",
+          "default": "Made by hand — each piece is one of a kind"
+        }
+      ]
+    }
+  ]
+}

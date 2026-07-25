@@ -1,0 +1,36 @@
+{
+  "id": "craft",
+  "name": "Craft",
+  "version": "2.0.0",
+  "industry": "Handmade",
+  "category": "Handmade",
+  "type": "free",
+  "price": 0,
+  "thumbnail": "thumbnail.webp",
+  "schema": "schema.json",
+  "engine": {
+    "headerStyle": "minimal",
+    "productCardStyle": "editorial",
+    "productPageLayout": "editorial",
+    "collectionLayout": "editorial",
+    "cartStyle": "page",
+    "heroStyle": "full",
+    "spacingScale": "roomy",
+    "buttonStyle": "outline"
+  },
+  "supports": {
+    "announcementBar": true,
+    "megaMenu": false,
+    "quickView": true,
+    "wishlist": true,
+    "countdown": false,
+    "lookbook": false,
+    "shoppableVideo": false
+  },
+  "templates": {
+    "home": true,
+    "product": true,
+    "collection": true,
+    "cart": true
+  }
+}

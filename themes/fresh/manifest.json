@@ -1,0 +1,27 @@
+{
+  "id": "fresh",
+  "name": "Fresh",
+  "version": "1.0.0",
+  "industry": "Grocery",
+  "category": "Food",
+  "type": "free",
+  "price": 0,
+  "thumbnail": "thumbnail.webp",
+  "schema": "schema.json",
+  "supports": {
+    "announcementBar": true,
+    "megaMenu": false,
+    "quickView": false,
+    "wishlist": true,
+    "productReviews": true,
+    "countdown": true
+  },
+  "templates": {
+    "404": true,
+    "home": true,
+    "product": true,
+    "collection": true,
+    "cart": true,
+    "search": true
+  }
+}

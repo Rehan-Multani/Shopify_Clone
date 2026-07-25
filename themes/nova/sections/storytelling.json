@@ -1,0 +1,35 @@
+{
+  "name": "Brand Story",
+  "type": "storytelling",
+  "settings": {
+    "eyebrow": "Our story",
+    "title": "Made with intention.",
+    "subtitle": "From first idea to finished product."
+  },
+  "blocks": [
+    {
+      "type": "chapter",
+      "settings": {
+        "eyebrow": "01 — Origin",
+        "title": "How it started",
+        "text": "A simple idea shaped by care, craft, and purpose."
+      }
+    },
+    {
+      "type": "chapter",
+      "settings": {
+        "eyebrow": "02 — Process",
+        "title": "How we make it",
+        "text": "Thoughtful materials and trusted makers."
+      }
+    },
+    {
+      "type": "chapter",
+      "settings": {
+        "eyebrow": "03 — Promise",
+        "title": "Why it matters",
+        "text": "Quality designed to last beyond the season."
+      }
+    }
+  ]
+}

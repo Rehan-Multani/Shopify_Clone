@@ -20,7 +20,7 @@
           "id": "accentColor",
           "type": "color",
           "label": "Link & Highlights Color",
-          "default": "#eab308"
+          "default": "#f59e0b"
         }
       ]
     },
@@ -32,27 +32,60 @@
           "type": "select",
           "label": "Primary Font Family",
           "options": [
-            { "value": "Inter", "label": "Inter" },
-            { "value": "Outfit", "label": "Outfit" },
-            { "value": "Playfair Display", "label": "Playfair Display" },
-            { "value": "Cormorant Garamond", "label": "Cormorant Garamond" },
-            { "value": "DM Serif Display", "label": "DM Serif Display" },
-            { "value": "Roboto", "label": "Roboto" }
+            {
+              "value": "Inter",
+              "label": "Inter"
+            },
+            {
+              "value": "Outfit",
+              "label": "Outfit"
+            },
+            {
+              "value": "Playfair Display",
+              "label": "Playfair Display"
+            },
+            {
+              "value": "Cormorant Garamond",
+              "label": "Cormorant Garamond"
+            },
+            {
+              "value": "DM Serif Display",
+              "label": "DM Serif Display"
+            },
+            {
+              "value": "Roboto",
+              "label": "Roboto"
+            }
           ],
-          "default": "Plus Jakarta Sans"
+          "default": "Outfit"
         },
         {
           "id": "borderRadius",
           "type": "select",
           "label": "Border Radius Style",
           "options": [
-            { "value": "0px", "label": "Sharp (0px)" },
-            { "value": "4px", "label": "Soft (4px)" },
-            { "value": "8px", "label": "Rounded (8px)" },
-            { "value": "16px", "label": "Circular (16px)" },
-            { "value": "24px", "label": "Pill (24px)" }
+            {
+              "value": "0px",
+              "label": "Sharp (0px)"
+            },
+            {
+              "value": "4px",
+              "label": "Soft (4px)"
+            },
+            {
+              "value": "8px",
+              "label": "Rounded (8px)"
+            },
+            {
+              "value": "16px",
+              "label": "Circular (16px)"
+            },
+            {
+              "value": "24px",
+              "label": "Pill (24px)"
+            }
           ],
-          "default": "24px"
+          "default": "16px"
         }
       ]
     },
@@ -66,6 +99,12 @@
           "default": true
         },
         {
+          "id": "headerConfig.transparent",
+          "type": "toggle",
+          "label": "Transparent Header",
+          "default": false
+        },
+        {
           "id": "headerConfig.announcementBar.enabled",
           "type": "toggle",
           "label": "Show Announcement Bar",
@@ -75,7 +114,7 @@
           "id": "headerConfig.announcementBar.text",
           "type": "text",
           "label": "Announcement Text",
-          "default": "🧸 TOYBOX WONDERLAND: Fun learning blocks, soft plushies, and creative board games. Extra 10% Off code: PLAYTIME"
+          "default": "🎁 Gift finder live — Perfect presents for every age"
         }
       ]
     }
