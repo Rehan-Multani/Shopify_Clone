@@ -10,6 +10,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const SINGLE_MERCHANT_EMAIL = 'single@storify.com';
+const MULTI_MERCHANT_EMAIL = 'multi@storify.com';
 
 const pageContent = {
     'about-us': `<h2>About {{storeName}}</h2>
@@ -66,23 +67,23 @@ const DEFAULT_PAGES = [
     { slug: 'refund-policy', title: 'Refund Policy', content: pageContent['refund-policy'] },
 ];
 
-const seedStorePages = async ({ exitOnDone = true } = {}) => {
+const seedStorePages = async ({ exitOnDone = true, merchantEmail = SINGLE_MERCHANT_EMAIL } = {}) => {
     try {
         if (mongoose.connection.readyState === 0) {
             await mongoose.connect(process.env.MONGODB_URL);
             console.log('[Pages Seed] MongoDB connected');
         }
 
-        const merchant = await Merchant.findOne({ email: SINGLE_MERCHANT_EMAIL });
+        const merchant = await Merchant.findOne({ email: merchantEmail });
         if (!merchant) {
-            console.error(`[Pages Seed] Merchant not found: ${SINGLE_MERCHANT_EMAIL}`);
+            console.error(`[Pages Seed] Merchant not found: ${merchantEmail}`);
             if (exitOnDone) process.exit(1);
             return;
         }
 
         const store = await Store.findOne({ merchantId: merchant._id });
         if (!store) {
-            console.error('[Pages Seed] Store not found. Run seedSingleStore.js first.');
+            console.error(`[Pages Seed] Store not found for ${merchantEmail}. Run the matching store seed first.`);
             if (exitOnDone) process.exit(1);
             return;
         }
@@ -134,7 +135,11 @@ const seedStorePages = async ({ exitOnDone = true } = {}) => {
 
 const isDirectRun = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (isDirectRun) {
-    seedStorePages();
+    const argEmail = process.argv[2];
+    const merchantEmail = argEmail === 'multi' || argEmail === MULTI_MERCHANT_EMAIL
+        ? MULTI_MERCHANT_EMAIL
+        : (argEmail || SINGLE_MERCHANT_EMAIL);
+    seedStorePages({ merchantEmail });
 }
 
 export default seedStorePages;

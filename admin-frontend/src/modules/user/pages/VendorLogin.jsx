@@ -2,10 +2,16 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from '../../../assets/storify-logo.png';
 
+const DEMO_VENDORS = [
+  { label: 'Urban Thread Co.', email: 'vendor1@storify.com', password: 'password123' },
+  { label: 'Northwind Goods', email: 'vendor2@storify.com', password: 'password123' },
+  { label: 'Bloom & Home', email: 'vendor3@storify.com', password: 'password123' },
+];
+
 const VendorLogin = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('vendor@example.com');
-  const [password, setPassword] = useState('123456');
+  const [email, setEmail] = useState(DEMO_VENDORS[0].email);
+  const [password, setPassword] = useState(DEMO_VENDORS[0].password);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -66,6 +72,27 @@ const VendorLogin = () => {
 
         {/* Form area */}
         <form onSubmit={handleVendorLogin} className="space-y-4">
+          {/* Demo vendor selector */}
+          <div className="flex gap-2 bg-[#111827] p-1 rounded-lg border border-white/5">
+            {DEMO_VENDORS.map((vendor) => (
+              <button
+                key={vendor.email}
+                type="button"
+                onClick={() => {
+                  setEmail(vendor.email);
+                  setPassword(vendor.password);
+                }}
+                className={`flex-1 py-2 px-1 text-[11px] font-bold rounded-md transition-all cursor-pointer ${
+                  email.trim().toLowerCase() === vendor.email
+                    ? 'bg-teal-600 text-white shadow-sm'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                {vendor.label}
+              </button>
+            ))}
+          </div>
+
           <div className="space-y-1.5">
             <label className="text-[13px] font-semibold text-gray-300 block ml-0.5">
               Email Address
@@ -76,7 +103,7 @@ const VendorLogin = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full bg-[#0f172a] border-2 border-white/10 rounded-lg py-2.5 px-4 text-white text-base font-medium focus:outline-none focus:border-teal-500 transition-all"
-              placeholder="vendor@example.com"
+              placeholder="vendor1@storify.com"
             />
           </div>
 
