@@ -8,6 +8,7 @@ const storeSchema = new mongoose.Schema({
     },
     planType: {
         type: String,
+        enum: ['Single Vendor', 'Multi Vendor'],
         default: 'Single Vendor'
     },
     storeName: {
@@ -20,10 +21,17 @@ const storeSchema = new mongoose.Schema({
     isActive: {
         type: Boolean,
         default: true
-    }
+    },
+    paymentSettings: {
+        codEnabled: { type: Boolean, default: true },
+        onlineEnabled: { type: Boolean, default: true }
+    },
+    gstPercent: { type: Number, default: 0 },
+    platformCommission: { type: Number, default: 0 }
 }, {
-    timestamps: true
+    timestamps: true,
+    strict: false
 });
 
-const Store = mongoose.model('Store', storeSchema);
+const Store = mongoose.models.Store || mongoose.model('Store', storeSchema);
 export default Store;

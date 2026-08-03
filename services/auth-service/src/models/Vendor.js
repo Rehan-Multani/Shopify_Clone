@@ -18,6 +18,14 @@ const vendorSchema = new mongoose.Schema({
     store: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Store'
+    },
+    resetPasswordOTP: {
+        type: String,
+        default: undefined
+    },
+    resetPasswordExpire: {
+        type: Date,
+        default: undefined
     }
 }, {
     timestamps: true,

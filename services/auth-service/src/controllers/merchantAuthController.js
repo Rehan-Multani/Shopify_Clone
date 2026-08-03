@@ -1,5 +1,5 @@
 import Merchant from '../models/Merchant.js';
-import { sendEmail } from '../../../shared/sendEmail.js';
+import { sendTransactionalEmail } from '../../../shared/transactionalEmail.js';
 import generateToken from '../../../shared/generateToken.js';
 
 // @desc    Merchant Login
@@ -74,7 +74,24 @@ export const merchantForgotPassword = async (req, res) => {
           </div>
         `;
 
-        await sendEmail({ to: email, subject: emailSubject, text: emailText, html: emailHtml });
+        try {
+            await sendTransactionalEmail({
+                to: email,
+                subject: emailSubject,
+                text: emailText,
+                html: emailHtml,
+                merchantId: merchant._id,
+                event: 'forgot_password_otp'
+            });
+        } catch (mailErr) {
+            merchant.resetPasswordOTP = undefined;
+            merchant.resetPasswordExpire = undefined;
+            await merchant.save();
+            return res.status(502).json({
+                message: 'Could not send verification email. Please check Brevo SMTP settings or try again later.',
+                code: 'EMAIL_SEND_FAILED'
+            });
+        }
 
         res.json({ message: 'Verification code sent to email successfully.' });
     } catch (error) {
@@ -171,6 +188,12 @@ export const changeMerchantPassword = async (req, res) => {
 
         merchant.password = newPassword;
         await merchant.save();
+
+        const { sendMerchantMail, passwordChangedEmail } = await import('../../../shared/merchantEmails.js');
+        sendMerchantMail(passwordChangedEmail({
+            name: merchant.name,
+            email: merchant.email
+        }));
 
         res.json({ success: true, message: 'Password updated successfully' });
     } catch (error) {

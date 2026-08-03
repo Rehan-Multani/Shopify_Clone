@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import connectDB from '../../shared/connectDB.js';
+import { initTransactionalEmail } from '../../shared/transactionalEmail.js';
 import app from './app.js';
 import themeService from './services/themeService.js';
 import seedPlans from './seedPlans.js';
@@ -14,6 +15,7 @@ const PORT = process.env.PORT || 5002;
 
 const startServer = async () => {
     await connectDB(mongoose);
+    initTransactionalEmail(mongoose);
     await seedPlans();
     await seedMerchants();
     await seedThemeStore();

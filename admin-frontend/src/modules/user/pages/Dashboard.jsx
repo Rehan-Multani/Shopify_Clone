@@ -45,6 +45,8 @@ import CreateMetaobjectDefinition from '../components/dashboard/CreateMetaobject
 import ReportsTab from '../components/dashboard/ReportsTab';
 import MerchantProfileTab from '../components/dashboard/MerchantProfileTab';
 import StoreProfileTab from '../components/dashboard/StoreProfileTab';
+import PaymentGatewaysTab from '../components/dashboard/PaymentGatewaysTab';
+import EmailConfigurationTab from '../components/dashboard/EmailConfigurationTab';
 import CategoryTab from '../components/dashboard/CategoryTab';
 import AddCategorySingle from '../components/dashboard/AddCategory';
 import SingleVendorProductsTab from '../components/dashboard/SingleVendorProductsTab';
@@ -145,6 +147,14 @@ const Dashboard = () => {
 
         if (tab === 'store-profile') {
             return <StoreProfileTab />;
+        }
+
+        if (tab === 'payment-gateways') {
+            return <PaymentGatewaysTab />;
+        }
+
+        if (tab === 'email-configuration') {
+            return <EmailConfigurationTab mode="merchant" />;
         }
 
         if (tab === 'inventory') {

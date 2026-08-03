@@ -3,7 +3,7 @@ import Store from '../models/Store.js';
 import sharp from 'sharp';
 import path from 'path';
 import fs from 'fs';
-import { sendEmail } from '../../../shared/sendEmail.js';
+import { sendMerchantMail, signupWelcomeEmail } from '../../../shared/merchantEmails.js';
 
 // @desc    Get all merchants
 // @route   GET /api/admin/merchants
@@ -17,67 +17,101 @@ export const getMerchants = async (req, res) => {
     }
 };
 
-// @desc    Create a merchant
+async function createMerchantAccount(payload, { status = 'trial' } = {}) {
+    const { name, email, mobile, profile, address, planType, revenue, gstNumber, password: bodyPassword } = payload;
+
+    if (!mobile || !/^\d{10}$/.test(mobile)) {
+        const err = new Error('Mobile number must be exactly 10 digits');
+        err.status = 400;
+        throw err;
+    }
+
+    const existingMerchant = await Merchant.findOne({ $or: [{ email }, { mobile }] });
+    if (existingMerchant) {
+        const err = new Error(
+            existingMerchant.email === email
+                ? 'Merchant email already exists'
+                : 'Merchant mobile number already exists'
+        );
+        err.status = 400;
+        throw err;
+    }
+
+    const rawPassword = bodyPassword || Math.random().toString(36).slice(-10);
+    const merchant = new Merchant({
+        name,
+        email,
+        mobile,
+        profile: profile || '',
+        address: address || '',
+        planType: planType || 'Single Vendor',
+        status: payload.status || status,
+        revenue: revenue !== undefined ? revenue : 0,
+        gstNumber: gstNumber || '',
+        password: rawPassword
+    });
+
+    const createdMerchant = await merchant.save();
+    const populatedMerchant = await Merchant.findById(createdMerchant._id);
+
+    await sendMerchantMail(signupWelcomeEmail({
+        name,
+        email,
+        password: rawPassword
+    }));
+
+    return populatedMerchant;
+}
+
+// @desc    Create a merchant (Superadmin)
 // @route   POST /api/admin/merchants
 // @access  Private/MasterAdmin
 export const createMerchant = async (req, res) => {
     try {
-        const { name, email, mobile, profile, address, planType, status, revenue, gstNumber } = req.body;
-
-        if (!mobile || !/^\d{10}$/.test(mobile)) {
-            return res.status(400).json({ message: 'Mobile number must be exactly 10 digits' });
-        }
-
-        const existingMerchant = await Merchant.findOne({ $or: [{ email }, { mobile }] });
-        if (existingMerchant) {
-            if (existingMerchant.email === email) {
-                return res.status(400).json({ message: 'Merchant email already exists' });
-            }
-            if (existingMerchant.mobile === mobile) {
-                return res.status(400).json({ message: 'Merchant mobile number already exists' });
-            }
-        }
-
-        const rawPassword = Math.random().toString(36).slice(-10);
-        const merchant = new Merchant({
-            name,
-            email,
-            mobile,
-            profile: profile || '',
-            address: address || '',
-            planType: planType || 'Single Vendor',
-            status: status || 'active',
-            revenue: revenue !== undefined ? revenue : 0,
-            gstNumber: gstNumber || '',
-            password: rawPassword
-        });
-
-        const createdMerchant = await merchant.save();
-        const populatedMerchant = await Merchant.findById(createdMerchant._id);
-
-        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5174';
-        const emailSubject = 'Welcome to Storify - Your Merchant Account Credentials';
-        const emailText = `Hello ${name},\n\nYour merchant account has been successfully created by the Superadmin.\n\nYou can log in to your dashboard at ${frontendUrl}/admin/login using these credentials:\n\nEmail: ${email}\nPassword: ${rawPassword}\n\nRegards,\nStorify Team`;
-        const emailHtml = `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 12px;">
-            <h2 style="color: #0d9488; text-align: center;">Welcome to Storify!</h2>
-            <p>Hello <strong>${name}</strong>,</p>
-            <p>Your merchant account has been successfully created by the Superadmin.</p>
-            <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
-              <p style="margin: 5px 0;"><strong>Login URL:</strong> <a href="${frontendUrl}/admin/login">${frontendUrl}/admin/login</a></p>
-              <p style="margin: 5px 0;"><strong>Email:</strong> ${email}</p>
-              <p style="margin: 5px 0;"><strong>Password:</strong> <code style="background-color: #e5e7eb; padding: 2px 6px; border-radius: 4px; font-weight: bold;">${rawPassword}</code></p>
-            </div>
-            <p>We recommend logging in and updating your password under your profile settings.</p>
-            <p>Regards,<br/><strong>Storify Team</strong></p>
-          </div>
-        `;
-        
-        sendEmail({ to: email, subject: emailSubject, text: emailText, html: emailHtml });
-
+        const populatedMerchant = await createMerchantAccount(
+            { ...req.body, status: req.body.status || 'active' },
+            { status: 'active' }
+        );
         res.status(201).json(populatedMerchant);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(error.status || 500).json({ message: error.message });
+    }
+};
+
+// @desc    Public merchant signup
+// @route   POST /api/admin/merchants/signup
+// @access  Public
+export const publicMerchantSignup = async (req, res) => {
+    try {
+        const { name, email, mobile, planType, gstNumber, address, profile } = req.body;
+        if (!name || !email || !mobile) {
+            return res.status(400).json({ message: 'Name, email and mobile are required' });
+        }
+
+        const merchant = await createMerchantAccount({
+            name,
+            email: String(email).toLowerCase().trim(),
+            mobile,
+            planType,
+            gstNumber,
+            address,
+            profile,
+            status: 'trial'
+        }, { status: 'trial' });
+
+        res.status(201).json({
+            message: 'Account created successfully. Check your email for login credentials.',
+            merchant: {
+                _id: merchant._id,
+                name: merchant.name,
+                email: merchant.email,
+                mobile: merchant.mobile,
+                planType: merchant.planType,
+                status: merchant.status
+            }
+        });
+    } catch (error) {
+        res.status(error.status || 500).json({ message: error.message });
     }
 };
 

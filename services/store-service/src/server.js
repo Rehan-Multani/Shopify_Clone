@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import connectDB from '../../shared/connectDB.js';
+import { initTransactionalEmail } from '../../shared/transactionalEmail.js';
 import app from './app.js';
 
 // Load env vars (updated with JWT secret)
@@ -8,6 +9,7 @@ dotenv.config();
 
 // Connect to database
 connectDB(mongoose);
+initTransactionalEmail(mongoose);
 
 mongoose.connection.once('open', async () => {
     try {

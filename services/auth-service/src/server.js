@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import connectDB from '../../shared/connectDB.js';
+import { initTransactionalEmail } from '../../shared/transactionalEmail.js';
 import app from './app.js';
 import seedMasterAdmin from './seedMasterAdmin.js';
 
@@ -11,6 +12,7 @@ const PORT = process.env.PORT || 5001;
 
 const startServer = async () => {
     await connectDB(mongoose);
+    initTransactionalEmail(mongoose);
     await seedMasterAdmin();
 
     const server = app.listen(PORT, () => {

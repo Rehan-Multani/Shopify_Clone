@@ -15,7 +15,11 @@ module.exports = {
       cwd: "./services/auth-service",
       env: {
         NODE_ENV: "production",
-        PORT: 5001
+        PORT: 5001,
+        SMTP_PROVIDER: "brevo",
+        SMTP_HOST: "smtp-relay.brevo.com",
+        SMTP_PORT: 587,
+        SMTP_SECURE: "false"
       }
     },
     {

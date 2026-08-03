@@ -8,9 +8,12 @@ export const gatewayAuthMiddleware = async (req, res, next) => {
     
     if (path === '/api/master-admin/profile' || path === '/api/master-admin/analytics') {
         requiredAuth = 'admin';
+    } else if (path.startsWith('/api/vendors/forgot-password') || path.startsWith('/api/vendors/verify-otp') || path.startsWith('/api/vendors/reset-password')) {
+        requiredAuth = null;
     } else if (path.startsWith('/api/merchants')) {
         const publicMerchantPaths = [
             '/api/merchants/login',
+            '/api/merchants/signup',
             '/api/merchants/forgot-password',
             '/api/merchants/verify-otp',
             '/api/merchants/reset-password'
@@ -54,8 +57,43 @@ export const gatewayAuthMiddleware = async (req, res, next) => {
         } else {
             requiredAuth = 'merchant';
         }
-    } else if (path.startsWith('/api/payments') || path.startsWith('/api/billing')) {
+    } else if (path.startsWith('/api/webhooks/')) {
+        requiredAuth = null; // gateway provider callbacks
+    } else if (path.startsWith('/api/checkout/')) {
+        requiredAuth = null; // storefront checkout
+    } else if (
+        path.startsWith('/api/merchant/payment-gateways')
+        || path.startsWith('/api/merchant/email-config')
+        || path.startsWith('/api/marketplace/payment-settings')
+    ) {
         requiredAuth = 'merchant';
+    } else if (
+        path.startsWith('/api/vendor/payment-gateways')
+        || path.startsWith('/api/vendor/email-config')
+    ) {
+        requiredAuth = 'vendor';
+    } else if (path.startsWith('/api/payments') || path.startsWith('/api/billing')) {
+        // Checkout/webhook aliases under billing stay public; rest require merchant
+        if (
+            path.includes('/checkout/') ||
+            path.includes('/webhooks/') ||
+            path.includes('/vendor/payment-gateways') ||
+            path.includes('/vendor/email-config')
+        ) {
+            if (path.includes('/vendor/payment-gateways') || path.includes('/vendor/email-config')) {
+                requiredAuth = 'vendor';
+            } else {
+                requiredAuth = null;
+            }
+        } else if (
+            path.includes('/merchant/payment-gateways')
+            || path.includes('/merchant/email-config')
+            || path.includes('/marketplace/payment-settings')
+        ) {
+            requiredAuth = 'merchant';
+        } else {
+            requiredAuth = 'merchant';
+        }
     } else if (path.startsWith('/api/themes/admin')) {
         requiredAuth = 'admin';
     } else if (path.startsWith('/api/themes')) {
@@ -111,6 +149,10 @@ export const gatewayAuthMiddleware = async (req, res, next) => {
             return res.status(401).json({ message: 'Not authorized, admin privileges required' });
         } else if (requiredAuth === 'merchant_or_vendor' && verified.type !== 'merchant' && verified.type !== 'vendor') {
             return res.status(401).json({ message: 'Not authorized, merchant or vendor privileges required' });
+        } else if (requiredAuth === 'merchant' && verified.type !== 'merchant' && verified.type !== 'admin') {
+            return res.status(401).json({ message: 'Not authorized, merchant privileges required' });
+        } else if (requiredAuth === 'vendor' && verified.type !== 'vendor') {
+            return res.status(401).json({ message: 'Not authorized, vendor privileges required' });
         }
         
         // Inject trusted headers for downstream services

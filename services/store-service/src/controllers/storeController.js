@@ -5,6 +5,7 @@ import dns from 'dns';
 import { exec } from 'child_process';
 import path from 'path';
 import fs from 'fs';
+import { sendMerchantMail, storeCreatedEmail } from '../../../shared/merchantEmails.js';
 
 const getLast6MonthsMockData = (totalRevenue) => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -71,6 +72,15 @@ export const createStore = async (req, res) => {
             gstPercent: gstPercent || 0,
             platformCommission: platformCommission || 0
         });
+
+        if (merchant?.email) {
+            sendMerchantMail(storeCreatedEmail({
+                name: merchant.name,
+                email: merchant.email,
+                storeName: store.storeName,
+                storeId: String(store._id)
+            }));
+        }
 
         res.status(201).json(store);
     } catch (error) {
@@ -1013,7 +1023,7 @@ export const updatePlatformSettings = async (req, res) => {
         if (!settings) {
             settings = new PlatformSetting();
         }
-        const { expectedStoreIP, sshUser, sshPassword, platformName, supportEmail, adminEmail, maxStoresPerMerchant, trialDays, defaultCurrency, maintenanceMode } = req.body;
+        const { expectedStoreIP, sshUser, sshPassword, platformName, supportEmail, adminEmail, maxStoresPerMerchant, trialDays, defaultCurrency, maintenanceMode, availablePaymentGateways } = req.body;
 
         if (expectedStoreIP !== undefined) settings.expectedStoreIP = expectedStoreIP.trim();
         if (sshUser !== undefined) settings.sshUser = sshUser.trim();
@@ -1025,6 +1035,12 @@ export const updatePlatformSettings = async (req, res) => {
         if (trialDays !== undefined) settings.trialDays = Number(trialDays);
         if (defaultCurrency !== undefined) settings.defaultCurrency = defaultCurrency;
         if (maintenanceMode !== undefined) settings.maintenanceMode = maintenanceMode;
+        if (availablePaymentGateways !== undefined) {
+            const allowed = ['razorpay', 'stripe', 'payu', 'cashfree'];
+            settings.availablePaymentGateways = (Array.isArray(availablePaymentGateways) ? availablePaymentGateways : [])
+                .map((g) => String(g).toLowerCase())
+                .filter((g) => allowed.includes(g));
+        }
 
         await settings.save();
         res.json(settings);

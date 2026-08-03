@@ -37,7 +37,8 @@ const SettingsTab = () => {
         maintenanceMode: false,
         expectedStoreIP: '76.76.21.21',
         sshUser: 'root',
-        sshPassword: ''
+        sshPassword: '',
+        availablePaymentGateways: ['razorpay', 'stripe', 'payu', 'cashfree']
     });
     const [showSshPassword, setShowSshPassword] = useState(false);
 
@@ -55,8 +56,25 @@ const SettingsTab = () => {
 
     const sections = [
         { id: 'platform', label: 'Platform Config', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
+        { id: 'payments', label: 'Payment Gateways', icon: 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z' },
         { id: 'security', label: 'Security', icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z' },
     ];
+
+    const ALL_GATEWAYS = [
+        { id: 'razorpay', name: 'Razorpay', desc: 'UPI, Cards, Netbanking (India)' },
+        { id: 'stripe', name: 'Stripe', desc: 'Cards & international payments' },
+        { id: 'payu', name: 'PayU', desc: 'Cards, UPI, EMI (India)' },
+        { id: 'cashfree', name: 'Cashfree', desc: 'UPI, Cards & settlements' }
+    ];
+
+    const togglePlatformGateway = (id) => {
+        setPlatformConfig((prev) => {
+            const set = new Set(prev.availablePaymentGateways || []);
+            if (set.has(id)) set.delete(id);
+            else set.add(id);
+            return { ...prev, availablePaymentGateways: [...set] };
+        });
+    };
 
     const getAuthHeaders = () => {
         const info = JSON.parse(localStorage.getItem('masterAdminInfo') || '{}');
@@ -84,7 +102,10 @@ const SettingsTab = () => {
                         maintenanceMode: data.maintenanceMode || false,
                         expectedStoreIP: data.expectedStoreIP || '76.76.21.21',
                         sshUser: data.sshUser || 'root',
-                        sshPassword: data.sshPassword || ''
+                        sshPassword: data.sshPassword || '',
+                        availablePaymentGateways: Array.isArray(data.availablePaymentGateways) && data.availablePaymentGateways.length
+                            ? data.availablePaymentGateways
+                            : ['razorpay', 'stripe', 'payu', 'cashfree']
                     });
                 }
             } catch (err) {
@@ -256,6 +277,38 @@ const SettingsTab = () => {
                                         </div>
                                     ))}
                                 </div>
+                                <div className="pt-2">
+                                    <button onClick={handleSave} className="px-6 py-2.5 rounded-lg text-sm font-bold text-white hover:opacity-90 transition-all" style={{ background: '#1a1c23' }}>
+                                        Save Changes
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Payment Gateways - Super Admin platform availability */}
+                    {activeSection === 'payments' && (
+                        <div className={card}>
+                            <SectionHeader
+                                title="Platform Payment Gateways"
+                                desc="Enable which payment gateways Merchants and Vendors can configure across the platform"
+                            />
+                            <div className="p-6 space-y-4">
+                                {ALL_GATEWAYS.map((gw) => {
+                                    const enabled = (platformConfig.availablePaymentGateways || []).includes(gw.id);
+                                    return (
+                                        <div key={gw.id} className="flex items-center justify-between p-4 rounded-xl border border-[#e3e3e3] bg-[#fafafa]">
+                                            <div>
+                                                <h4 className="text-sm font-bold text-[#202223]">{gw.name}</h4>
+                                                <p className="text-xs text-[#9CA3AF] mt-0.5">{gw.desc}</p>
+                                            </div>
+                                            <Toggle enabled={enabled} onChange={() => togglePlatformGateway(gw.id)} />
+                                        </div>
+                                    );
+                                })}
+                                <p className="text-[11px] text-[#9CA3AF]">
+                                    Disabled gateways will not appear in Merchant or Vendor payment settings.
+                                </p>
                                 <div className="pt-2">
                                     <button onClick={handleSave} className="px-6 py-2.5 rounded-lg text-sm font-bold text-white hover:opacity-90 transition-all" style={{ background: '#1a1c23' }}>
                                         Save Changes

@@ -42,11 +42,34 @@ const Signup = () => {
     e?.preventDefault();
     setIsLoading(true);
 
-    // Simulate signup for now since public API endpoint might not be available
-    setTimeout(() => {
-        setIsLoading(false);
-        navigate('/admin/login');
-    }, 1200);
+    try {
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+      const res = await fetch(`${API_BASE}/merchants/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name.trim(),
+          email: form.email.trim(),
+          mobile: form.mobile,
+          planType: form.planType,
+          gstNumber: form.gstNumber || '',
+          address: form.address || '',
+          profile: form.profile || ''
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.message || 'Signup failed');
+        return;
+      }
+      alert(data.message || 'Account created! Check your email for login credentials.');
+      navigate('/admin/login');
+    } catch (err) {
+      console.error('Signup error', err);
+      alert('Connection error. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleUpload = async (e) => {

@@ -4,6 +4,11 @@ import Subscription from '../models/Subscription.js';
 import Plan from '../models/Plan.js';
 import Merchant from '../models/Merchant.js';
 import Store from '../models/Store.js';
+import {
+    sendMerchantMail,
+    paymentSuccessEmail,
+    storePaymentSuccessEmail
+} from '../../../shared/merchantEmails.js';
 
 const getRazorpayInstance = () => {
     return new Razorpay({
@@ -132,6 +137,21 @@ export const verifyPayment = async (req, res) => {
             }
         } catch (err) {
             console.error('Error calling auth-service to activate merchant:', err.message);
+        }
+
+        try {
+            const merchant = await Merchant.findById(merchantId);
+            if (merchant?.email) {
+                sendMerchantMail(paymentSuccessEmail({
+                    name: merchant.name,
+                    email: merchant.email,
+                    planName: plan.planName,
+                    amount: plan.planPrice,
+                    paymentId: razorpay_payment_id
+                }));
+            }
+        } catch (mailErr) {
+            console.error('Payment success mail error:', mailErr.message);
         }
 
         res.json({
@@ -285,6 +305,22 @@ export const verifyStorePayment = async (req, res) => {
             });
         } catch (err) {
             console.error('Error calling auth-service to activate merchant internally:', err.message);
+        }
+
+        try {
+            const merchant = await Merchant.findById(merchantId);
+            if (merchant?.email) {
+                sendMerchantMail(storePaymentSuccessEmail({
+                    name: merchant.name,
+                    email: merchant.email,
+                    storeName: store.storeName,
+                    planName: plan.planName,
+                    amount: plan.planPrice,
+                    paymentId: razorpay_payment_id
+                }));
+            }
+        } catch (mailErr) {
+            console.error('Store payment success mail error:', mailErr.message);
         }
 
         res.status(201).json({

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import logo from '../../../assets/storify-logo.png';
 
 const DEMO_VENDORS = [
-  { label: 'Urban Thread Co.', email: 'vendor1@storify.com', password: 'password123' },
+  { label: 'Urban Thread Co.', email: 'mrmmultani@gmail.com', password: 'password123' },
   { label: 'Northwind Goods', email: 'vendor2@storify.com', password: 'password123' },
   { label: 'Bloom & Home', email: 'vendor3@storify.com', password: 'password123' },
 ];
@@ -103,14 +103,22 @@ const VendorLogin = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full bg-[#0f172a] border-2 border-white/10 rounded-lg py-2.5 px-4 text-white text-base font-medium focus:outline-none focus:border-teal-500 transition-all"
-              placeholder="vendor1@storify.com"
+              placeholder="mrmmultani@gmail.com"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[13px] font-semibold text-gray-300 block">
-              Password
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="text-[13px] font-semibold text-gray-300 block">
+                Password
+              </label>
+              <Link
+                to="/vendor/forgot-password"
+                className="text-[12px] font-semibold text-teal-400 hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}

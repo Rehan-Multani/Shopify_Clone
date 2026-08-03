@@ -83,6 +83,9 @@ const createServiceProxy = (target, pathRewrite = null) => {
                 if (req.headers['x-vendor-id']) {
                     proxyReq.setHeader('x-vendor-id', req.headers['x-vendor-id']);
                 }
+                if (req.headers['x-store-id']) {
+                    proxyReq.setHeader('x-store-id', req.headers['x-store-id']);
+                }
             },
             proxyRes: (proxyRes, req, res) => {
                 const origin = req.headers.origin;
@@ -147,6 +150,9 @@ app.use('/api/master-admin/login', createServiceProxy(AUTH_SERVICE_URL, (path, r
 app.use('/api/master-admin/logout', createServiceProxy(AUTH_SERVICE_URL, (path, req) => {
     return req.originalUrl.replace('/api/master-admin/logout', '/api/auth/admin/logout');
 }));
+app.use('/api/merchants/signup', createServiceProxy(MERCHANT_ADMIN_SERVICE_URL, (path, req) => {
+    return req.originalUrl.replace('/api/merchants/signup', '/api/admin/merchants/signup');
+}));
 app.use('/api/merchants/login', createServiceProxy(AUTH_SERVICE_URL, (path, req) => {
     return req.originalUrl.replace('/api/merchants/login', '/api/auth/merchant/login');
 }));
@@ -158,6 +164,15 @@ app.use('/api/merchants/verify-otp', createServiceProxy(AUTH_SERVICE_URL, (path,
 }));
 app.use('/api/merchants/reset-password', createServiceProxy(AUTH_SERVICE_URL, (path, req) => {
     return req.originalUrl.replace('/api/merchants/reset-password', '/api/auth/merchant/reset-password');
+}));
+app.use('/api/vendors/forgot-password', createServiceProxy(AUTH_SERVICE_URL, (path, req) => {
+    return req.originalUrl.replace('/api/vendors/forgot-password', '/api/auth/vendor/forgot-password');
+}));
+app.use('/api/vendors/verify-otp', createServiceProxy(AUTH_SERVICE_URL, (path, req) => {
+    return req.originalUrl.replace('/api/vendors/verify-otp', '/api/auth/vendor/verify-otp');
+}));
+app.use('/api/vendors/reset-password', createServiceProxy(AUTH_SERVICE_URL, (path, req) => {
+    return req.originalUrl.replace('/api/vendors/reset-password', '/api/auth/vendor/reset-password');
 }));
 
 // 2. Merchant Admin Service Routes
@@ -211,6 +226,15 @@ app.use('/api/payments', createServiceProxy(BILLING_SERVICE_URL, (path, req) => 
     return req.originalUrl.replace('/api/payments', '/api/billing');
 }));
 app.use('/api/billing', createServiceProxy(BILLING_SERVICE_URL));
+
+// Payment gateway + email configuration, checkout & webhooks (billing-service)
+app.use('/api/merchant/payment-gateways', createServiceProxy(BILLING_SERVICE_URL));
+app.use('/api/vendor/payment-gateways', createServiceProxy(BILLING_SERVICE_URL));
+app.use('/api/merchant/email-config', createServiceProxy(BILLING_SERVICE_URL));
+app.use('/api/vendor/email-config', createServiceProxy(BILLING_SERVICE_URL));
+app.use('/api/marketplace/payment-settings', createServiceProxy(BILLING_SERVICE_URL));
+app.use('/api/checkout', createServiceProxy(BILLING_SERVICE_URL));
+app.use('/api/webhooks', createServiceProxy(BILLING_SERVICE_URL));
 
 // 6. Support Tickets Proxy
 app.use('/api/support-tickets', createServiceProxy(MERCHANT_ADMIN_SERVICE_URL, (path, req) => {

@@ -15,6 +15,11 @@ import NotFound from './modules/user/pages/NotFound';
 import VendorLogin from './modules/user/pages/VendorLogin';
 import VendorProtectedRoute from './modules/user/components/VendorProtectedRoute';
 import VendorDashboard from './modules/user/pages/VendorDashboard';
+import AboutUs from './modules/user/pages/AboutUs';
+import ContactUs from './modules/user/pages/ContactUs';
+import PrivacyPolicy from './modules/user/pages/PrivacyPolicy';
+import RefundPolicy from './modules/user/pages/RefundPolicy';
+import TermsAndConditions from './modules/user/pages/TermsAndConditions';
 
 function App() {
   const [resolvedStore, setResolvedStore] = useState(null);
@@ -82,6 +87,11 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/enterprise" element={<Enterprise />} />
+        <Route path="/about" element={<AboutUs />} />
+        <Route path="/contact" element={<ContactUs />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/refund-policy" element={<RefundPolicy />} />
+        <Route path="/terms" element={<TermsAndConditions />} />
         <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
         <Route path="/admin/login" element={<Login />} />
         <Route path="/dashboard" element={
@@ -117,6 +127,7 @@ function App() {
         } />
         <Route path="/signup" element={<Signup />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/vendor/forgot-password" element={<ForgotPassword />} />
         
         {/* Customer Storefront Routes */}
         <Route path="/store/:storeId/*" element={<StorefrontContainer />} />

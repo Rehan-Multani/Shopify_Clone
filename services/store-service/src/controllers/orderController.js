@@ -1,5 +1,7 @@
 import Order from '../models/Order.js';
 import Store from '../models/Store.js';
+import Product from '../models/Product.js';
+import Coupon from '../models/Coupon.js';
 
 // @desc    Get all orders for the merchant
 // @route   GET /api/orders
@@ -31,13 +33,10 @@ export const createOrder = async (req, res) => {
             paymentMethod,
             shippingAddress,
             products, 
-            totalAmount, 
             status, 
-            paymentStatus, 
             storeId, 
-            subtotal, 
-            gstAmount, 
-            platformCommissionAmount 
+            vendorId: bodyVendorId,
+            couponCode
         } = req.body;
 
         if (!customerName) {
@@ -51,60 +50,135 @@ export const createOrder = async (req, res) => {
         // Determine storeId and merchantId
         let finalStoreId = storeId;
         let finalMerchantId = req.merchant?._id;
+        let storeDoc = null;
 
         if (finalStoreId) {
-            const store = await Store.findById(finalStoreId);
-            if (!store) {
+            storeDoc = await Store.findById(finalStoreId);
+            if (!storeDoc) {
                 return res.status(400).json({ message: 'Store not found.' });
             }
-            finalMerchantId = store.merchantId;
+            finalMerchantId = storeDoc.merchantId;
         } else if (finalMerchantId) {
-            const store = await Store.findOne({ merchantId: finalMerchantId });
-            if (!store) {
+            storeDoc = await Store.findOne({ merchantId: finalMerchantId });
+            if (!storeDoc) {
                 return res.status(400).json({ message: 'No store found for this merchant. Please create a store first.' });
             }
-            finalStoreId = store._id;
+            finalStoreId = storeDoc._id;
         } else {
             return res.status(400).json({ message: 'storeId or merchant authentication is required' });
         }
 
-        const computedSubtotal = subtotal || products.reduce((sum, p) => sum + (p.price * p.quantity), 0);
-        const finalGst = gstAmount || 0;
-        const finalCommission = platformCommissionAmount || 0;
+        // Server-side totals + catalog prices — ignore client price / totalAmount / paymentStatus=paid
+        const productIds = products.map((p) => p.productId).filter(Boolean);
+        const dbProducts = await Product.find({
+            _id: { $in: productIds },
+            store: finalStoreId
+        }).lean();
+        const byId = new Map(dbProducts.map((p) => [String(p._id), p]));
+
+        const normalizedProducts = [];
+        for (const p of products) {
+            const dbp = byId.get(String(p.productId));
+            if (!dbp) {
+                return res.status(400).json({
+                    message: `Invalid product in cart: ${p.productName || p.productId}`,
+                    code: 'INVALID_PRODUCT'
+                });
+            }
+            if (dbp.isActive === false) {
+                return res.status(400).json({
+                    message: `Product unavailable: ${dbp.name}`,
+                    code: 'PRODUCT_INACTIVE'
+                });
+            }
+            normalizedProducts.push({
+                productId: dbp._id,
+                productName: dbp.name || p.productName,
+                quantity: Math.max(1, Number(p.quantity) || 1),
+                price: Number(dbp.sellingPrice) || 0,
+                vendorId: dbp.vendor || p.vendorId || null
+            });
+        }
+        const computedSubtotal = normalizedProducts.reduce((sum, p) => sum + (p.price * p.quantity), 0);
+        const gstPercent = Number(storeDoc.gstPercent) || 0;
+        const platformCommissionPercent = Number(storeDoc.platformCommission) || 0;
+        const finalGst = Math.round(computedSubtotal * (gstPercent / 100));
+        const finalCommission = Math.round(computedSubtotal * (platformCommissionPercent / 100));
+
+        let finalDiscount = 0;
+        if (couponCode && String(couponCode).trim()) {
+            const coupon = await Coupon.findOne({
+                store: finalStoreId,
+                code: String(couponCode).trim().toUpperCase()
+            });
+            if (!coupon || coupon.isApproved === false || coupon.isActive === false) {
+                return res.status(400).json({ message: 'Invalid or inactive coupon', code: 'INVALID_COUPON' });
+            }
+            const now = new Date();
+            if (coupon.endDate && new Date(coupon.endDate) < now) {
+                return res.status(400).json({ message: 'Coupon has expired', code: 'INVALID_COUPON' });
+            }
+            if (coupon.usageLimit != null && coupon.usedCount >= coupon.usageLimit) {
+                return res.status(400).json({ message: 'Coupon usage limit reached', code: 'INVALID_COUPON' });
+            }
+            if (computedSubtotal < (coupon.minimumOrderAmount || 0)) {
+                return res.status(400).json({
+                    message: `Minimum order amount for this coupon is ₹${coupon.minimumOrderAmount}`,
+                    code: 'INVALID_COUPON'
+                });
+            }
+            if (coupon.discountType === 'percentage') {
+                finalDiscount = Math.round(computedSubtotal * (Number(coupon.discountValue) / 100));
+            } else {
+                finalDiscount = Number(coupon.discountValue) || 0;
+            }
+            finalDiscount = Math.min(finalDiscount, computedSubtotal);
+            await Coupon.updateOne({ _id: coupon._id }, { $inc: { usedCount: 1 } });
+        }
+
+        const serverTotal = Math.max(0, computedSubtotal - finalDiscount + finalGst + finalCommission);
+
+        const vendorIds = [
+            ...new Set(
+                [
+                    bodyVendorId,
+                    ...normalizedProducts.map((p) => p.vendorId).filter(Boolean)
+                ].map((id) => String(id)).filter(Boolean)
+            )
+        ];
+        const finalVendorId = vendorIds.length === 1 ? vendorIds[0] : null;
 
         const initialTrackingStatus = [
             {
                 status: 'pending',
                 updatedAt: new Date(),
-                description: 'Order placed successfully. Waiting for store acceptance.'
+                description: 'Order placed successfully. Waiting for payment / store acceptance.'
             }
         ];
 
         const order = await Order.create({
             merchantId: finalMerchantId,
             storeId: finalStoreId,
+            vendorId: finalVendorId,
             customerName,
             customerEmail: customerEmail || '',
             customerPhone: customerPhone || '',
             customerId: customerId || null,
             paymentMethod: paymentMethod || 'COD',
             shippingAddress: shippingAddress || { address: '', city: '', state: '', pincode: '' },
-            products,
+            products: normalizedProducts,
             subtotal: computedSubtotal,
             gstAmount: finalGst,
             platformCommissionAmount: finalCommission,
-            totalAmount: totalAmount || (computedSubtotal + finalGst + finalCommission),
+            totalAmount: serverTotal,
             status: status || 'pending',
-            paymentStatus: paymentStatus || 'pending',
+            // Always pending on create — paid only via verified payment / webhook
+            paymentStatus: 'pending',
             trackingStatus: initialTrackingStatus
         });
 
-        // Increment totalOrders and revenue on the Store
         await Store.findByIdAndUpdate(finalStoreId, {
-            $inc: { 
-                totalOrders: 1,
-                revenue: order.paymentStatus === 'paid' ? order.totalAmount : 0
-            }
+            $inc: { totalOrders: 1 }
         });
 
         res.status(201).json(order);

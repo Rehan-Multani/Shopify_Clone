@@ -29,7 +29,7 @@ const VENDOR_DATA = [
     {
         name: 'Aisha Khan',
         businessName: 'Urban Thread Co.',
-        email: 'vendor1@storify.com',
+        email: 'mrmmultani@gmail.com',
         mobile: '9811111111',
         password: 'password123',
         commission: 12,

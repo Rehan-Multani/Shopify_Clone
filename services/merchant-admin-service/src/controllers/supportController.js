@@ -155,6 +155,25 @@ export const addMessage = async (req, res) => {
 
         await ticket.save();
 
+        // Notify merchant when admin replies
+        if (sender === 'admin') {
+            try {
+                const merchant = await Merchant.findById(ticket.merchantId);
+                if (merchant?.email) {
+                    const { sendMerchantMail, supportAdminReplyEmail } = await import('../../../shared/merchantEmails.js');
+                    sendMerchantMail(supportAdminReplyEmail({
+                        name: merchant.name,
+                        email: merchant.email,
+                        ticketTitle: ticket.title,
+                        messagePreview: message,
+                        ticketId: String(ticket._id)
+                    }));
+                }
+            } catch (mailErr) {
+                console.error('Support reply mail error:', mailErr.message);
+            }
+        }
+
         res.status(200).json({
             status: 'success',
             data: ticket

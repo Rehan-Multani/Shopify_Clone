@@ -1,7 +1,7 @@
 import express from 'express';
 import { authMasterAdmin, logoutAdmin, changeAdminPassword } from '../controllers/adminAuthController.js';
 import { merchantLogin, merchantForgotPassword, merchantVerifyOtp, merchantResetPassword, changeMerchantPassword } from '../controllers/merchantAuthController.js';
-import { vendorLogin } from '../controllers/vendorAuthController.js';
+import { vendorLogin, vendorForgotPassword, vendorVerifyOtp, vendorResetPassword } from '../controllers/vendorAuthController.js';
 import { verifyToken, activateMerchantInternal, getMerchantInternal } from '../controllers/verifyController.js';
 
 const router = express.Router();
@@ -20,6 +20,9 @@ router.put('/merchant/change-password', changeMerchantPassword);
 
 // Vendor Auth Routes
 router.post('/vendor/login', vendorLogin);
+router.post('/vendor/forgot-password', vendorForgotPassword);
+router.post('/vendor/verify-otp', vendorVerifyOtp);
+router.post('/vendor/reset-password', vendorResetPassword);
 
 // Internal Token Validation (used by gateway)
 router.post('/verify', verifyToken);

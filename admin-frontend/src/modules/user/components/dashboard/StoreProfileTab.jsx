@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 const STORE_API_URL = import.meta.env.VITE_STORE_API_URL;
 
@@ -355,7 +356,7 @@ const StoreProfileTab = () => {
                     <div className="flex items-center justify-between p-4 bg-gray-50 border border-gray-100 rounded-xl">
                         <div>
                             <h4 className="text-xs font-bold text-gray-800">Online Payment</h4>
-                            <p className="text-[10px] text-gray-500 mt-0.5">Enable checkout via Razorpay Gateway.</p>
+                            <p className="text-[10px] text-gray-500 mt-0.5">Enable online checkout via configured gateways.</p>
                         </div>
                         <button
                             onClick={() => setPaymentSettings(p => ({ ...p, onlineEnabled: !p.onlineEnabled }))}
@@ -365,6 +366,12 @@ const StoreProfileTab = () => {
                         </button>
                     </div>
                 </div>
+                <Link
+                    to="/dashboard/payment-gateways"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 hover:underline"
+                >
+                    Manage Payment Gateways (Razorpay, Stripe, PayU, Cashfree) →
+                </Link>
             </div>
 
             {/* Tax & Handling Settings Section */}

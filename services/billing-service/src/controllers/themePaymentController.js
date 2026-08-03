@@ -1,6 +1,8 @@
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
 import ThemePurchase from '../models/ThemePurchase.js';
+import Merchant from '../models/Merchant.js';
+import { sendMerchantMail, themePurchaseEmail } from '../../../shared/merchantEmails.js';
 
 const getRazorpayInstance = () => {
     return new Razorpay({
@@ -149,6 +151,21 @@ export const verifyThemePayment = async (req, res) => {
             purchase.amount = theme.price;
             purchase.purchasedAt = new Date();
             await purchase.save();
+        }
+
+        try {
+            const merchant = await Merchant.findById(merchantId);
+            if (merchant?.email) {
+                sendMerchantMail(themePurchaseEmail({
+                    name: merchant.name,
+                    email: merchant.email,
+                    themeName: purchase.themeName || theme.displayName || theme.themeName,
+                    amount: purchase.amount || theme.price,
+                    paymentId: razorpay_payment_id
+                }));
+            }
+        } catch (mailErr) {
+            console.error('Theme purchase mail error:', mailErr.message);
         }
 
         res.json({

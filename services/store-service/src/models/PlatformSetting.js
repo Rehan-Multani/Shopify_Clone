@@ -40,6 +40,11 @@ const platformSettingSchema = new mongoose.Schema({
     maintenanceMode: {
         type: Boolean,
         default: false
+    },
+    // Super Admin: which gateways exist on the platform
+    availablePaymentGateways: {
+        type: [String],
+        default: ['razorpay', 'stripe', 'payu', 'cashfree']
     }
 }, {
     timestamps: true

@@ -11,6 +11,12 @@ const orderSchema = new mongoose.Schema({
         ref: 'Store',
         required: true
     },
+    vendorId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Vendor',
+        default: null,
+        index: true
+    },
     customerName: {
         type: String,
         required: true
@@ -36,6 +42,10 @@ const orderSchema = new mongoose.Schema({
         price: {
             type: Number,
             required: true
+        },
+        vendorId: {
+            type: mongoose.Schema.Types.ObjectId,
+            default: null
         }
     }],
     totalAmount: {
@@ -63,7 +73,7 @@ const orderSchema = new mongoose.Schema({
     },
     paymentStatus: {
         type: String,
-        enum: ['pending', 'paid', 'refunded'],
+        enum: ['pending', 'paid', 'failed', 'refunded'],
         default: 'pending'
     },
     customerId: {
@@ -77,6 +87,23 @@ const orderSchema = new mongoose.Schema({
     paymentMethod: {
         type: String,
         default: 'COD'
+    },
+    paymentOwnerType: {
+        type: String,
+        enum: ['merchant', 'vendor', 'store', null],
+        default: null
+    },
+    isFallbackPayment: {
+        type: Boolean,
+        default: false
+    },
+    gatewayPaymentId: {
+        type: String,
+        default: ''
+    },
+    checkoutPaymentId: {
+        type: mongoose.Schema.Types.ObjectId,
+        default: null
     },
     shippingAddress: {
         address: { type: String, default: '' },

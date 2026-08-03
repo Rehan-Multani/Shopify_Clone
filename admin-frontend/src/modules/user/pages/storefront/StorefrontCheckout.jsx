@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useSearchParams } from 'react-router-dom';
 import StorefrontLayout from '../../components/storefront/StorefrontLayout';
 import { getStorePath } from '../../components/storefront/storeUrlHelper';
 
@@ -8,6 +8,7 @@ const GATEWAY_URL = import.meta.env.VITE_API_BASE_URL;
 const StorefrontCheckout = ({ cart, cartCount, onClearCart, customer, onLogout, storeInfo }) => {
     const { storeId: paramStoreId } = useParams();
     const storeId = storeInfo?._id || paramStoreId;
+    const [searchParams, setSearchParams] = useSearchParams();
     const [step, setStep] = useState(1); // 1: Shipping, 2: Payment
 
     const [form, setForm] = useState({
@@ -109,22 +110,99 @@ const StorefrontCheckout = ({ cart, cartCount, onClearCart, customer, onLogout, 
         });
     };
 
-    const isCodEnabled = storeInfo?.paymentSettings?.codEnabled ?? true;
-    const isOnlineEnabled = storeInfo?.paymentSettings?.onlineEnabled ?? false;
-
-    const [paymentMethod, setPaymentMethod] = useState('COD');
+    const [paymentOptions, setPaymentOptions] = useState([]);
+    const [paymentMethod, setPaymentMethod] = useState('');
     const [error, setError] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [orderSuccess, setOrderSuccess] = useState(null);
+    const [loadingPayments, setLoadingPayments] = useState(false);
+    const [vendorGatewayError, setVendorGatewayError] = useState(null);
 
-    // Set default payment method based on settings
-    useEffect(() => {
-        if (isCodEnabled) {
-            setPaymentMethod('COD');
-        } else if (isOnlineEnabled) {
-            setPaymentMethod('Razorpay');
+    const cartVendorInfo = React.useMemo(() => {
+        const ids = [];
+        for (const item of cart || []) {
+            const raw = item.vendor?._id || item.vendor || item.vendorId || null;
+            if (!raw) continue;
+            const id = String(raw);
+            if (!ids.includes(id)) ids.push(id);
         }
-    }, [isCodEnabled, isOnlineEnabled]);
+        return {
+            vendorId: ids.length === 1 ? ids[0] : (ids[0] || null),
+            vendorIds: ids,
+            isMixedVendors: ids.length > 1
+        };
+    }, [cart]);
+
+    const vendorIdFromCart = cartVendorInfo.vendorId;
+    const isMixedVendorCart = cartVendorInfo.isMixedVendors;
+
+    const onlineOptions = paymentOptions.filter((o) => o.gateway !== 'cod');
+
+    // Load dynamic checkout payment options
+    useEffect(() => {
+        if (!storeId) return;
+        let cancelled = false;
+        const load = async () => {
+            setLoadingPayments(true);
+            try {
+                // Mixed-vendor carts cannot charge one online gateway for two sellers
+                if (isMixedVendorCart) {
+                    if (cancelled) return;
+                    const fallback = [];
+                    if (storeInfo?.paymentSettings?.codEnabled !== false) {
+                        fallback.push({
+                            gateway: 'cod',
+                            name: 'Cash on Delivery',
+                            description: 'Checkout separately per vendor for online payment'
+                        });
+                    }
+                    setPaymentOptions(fallback);
+                    setVendorGatewayError('Cart me alag-alag vendors ke products hain. Online payment ke liye ek vendor ke products hi rakhein, ya COD use karein.');
+                    setPaymentMethod(fallback[0] ? 'COD' : '');
+                    setLoadingPayments(false);
+                    return;
+                }
+
+                const qs = new URLSearchParams({ storeId });
+                if (vendorIdFromCart) qs.set('vendorId', String(vendorIdFromCart));
+                const res = await fetch(`${GATEWAY_URL}/checkout/payment-options?${qs.toString()}`);
+                const data = await res.json();
+                if (!cancelled && res.ok) {
+                    const opts = data.options || [];
+                    setPaymentOptions(opts);
+                    setVendorGatewayError(data.vendorGatewayError || null);
+                    const preferred = opts.find((o) => o.isDefault) || opts[0];
+                    if (preferred) setPaymentMethod(preferred.gateway === 'cod' ? 'COD' : preferred.gateway);
+                } else if (!cancelled) {
+                    setVendorGatewayError(null);
+                    const fallback = [];
+                    if (storeInfo?.paymentSettings?.codEnabled !== false) {
+                        fallback.push({ gateway: 'cod', name: 'Cash on Delivery' });
+                    }
+                    setPaymentOptions(fallback);
+                    if (fallback[0]) setPaymentMethod('COD');
+                }
+            } catch {
+                if (!cancelled) {
+                    setPaymentOptions([{ gateway: 'cod', name: 'Cash on Delivery' }]);
+                    setPaymentMethod('COD');
+                }
+            } finally {
+                if (!cancelled) setLoadingPayments(false);
+            }
+        };
+        load();
+        return () => { cancelled = true; };
+    }, [storeId, vendorIdFromCart, isMixedVendorCart, storeInfo?.paymentSettings?.codEnabled]);
+
+    const loadRazorpayScript = () => new Promise((resolve) => {
+        if (window.Razorpay) return resolve(true);
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.onload = () => resolve(true);
+        script.onerror = () => resolve(false);
+        document.body.appendChild(script);
+    });
 
     const [couponCode, setCouponCode] = useState('');
     const [appliedCoupon, setAppliedCoupon] = useState(null);
@@ -199,6 +277,233 @@ const StorefrontCheckout = ({ cart, cartCount, onClearCart, customer, onLogout, 
         setStep(2);
     };
 
+    // Resume after PayU redirect (?payment=success|failed&orderId=...)
+    useEffect(() => {
+        const paymentFlag = searchParams.get('payment');
+        const orderId = searchParams.get('orderId');
+        if (!paymentFlag || !orderId) return;
+
+        let cancelled = false;
+        const resume = async () => {
+            try {
+                const res = await fetch(`${GATEWAY_URL}/checkout/payment-status?orderId=${orderId}`);
+                const data = await res.json();
+                if (cancelled) return;
+
+                if (paymentFlag === 'success' && data.paymentStatus === 'paid') {
+                    const orderRes = await fetch(`${GATEWAY_URL}/orders/${orderId}`);
+                    const orderData = await orderRes.json();
+                    const order = orderData.order || orderData;
+                    if (order?._id) {
+                        setOrderSuccess(order);
+                        setPaymentMethod(order.paymentMethod || 'payu');
+                        onClearCart();
+                    }
+                } else if (paymentFlag === 'success') {
+                    setError('Payment is still confirming. Refresh this page in a moment, or check My Orders.');
+                    setStep(2);
+                } else if (paymentFlag === 'failed') {
+                    setError('Payment failed or was cancelled. Your order is saved as unpaid — you can retry from a new checkout.');
+                    setStep(2);
+                }
+            } catch (err) {
+                if (!cancelled) setError(err.message || 'Could not confirm payment status');
+            } finally {
+                // Clear query so refresh doesn't re-trigger
+                const next = new URLSearchParams(searchParams);
+                next.delete('payment');
+                next.delete('orderId');
+                next.delete('paymentId');
+                next.delete('reason');
+                setSearchParams(next, { replace: true });
+            }
+        };
+        resume();
+        return () => { cancelled = true; };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    /** Create pending order first (server computes amount). Never send paymentStatus=paid. */
+    const placeOrder = async ({ paymentMethodLabel }) => {
+        const productsPayload = cart.map(item => ({
+            productId: item._id,
+            productName: item.name,
+            quantity: item.qty,
+            price: item.sellingPrice,
+            vendorId: item.vendor?._id || item.vendor || item.vendorId || null
+        }));
+
+        if (selectedAddressId === 'new' && saveAddressToBook && customer && customer._id) {
+            try {
+                await fetch(`${GATEWAY_URL}/customers/${customer._id}/addresses`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-store-id': storeId
+                    },
+                    body: JSON.stringify({
+                        fullName: form.name,
+                        phoneNumber: form.phone,
+                        addressLine1: form.address,
+                        city: form.city,
+                        state: form.state,
+                        postalCode: form.pincode,
+                        country: 'India',
+                        isDefault: savedAddresses.length === 0
+                    })
+                });
+            } catch (err) {
+                console.error('Error saving new address from checkout:', err);
+            }
+        }
+
+        const res = await fetch(`${GATEWAY_URL}/orders`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-store-id': storeId
+            },
+            body: JSON.stringify({
+                customerId: customer?._id || null,
+                customerName: form.name,
+                customerEmail: form.email,
+                customerPhone: form.phone,
+                shippingAddress: {
+                    address: form.address,
+                    city: form.city,
+                    state: form.state,
+                    pincode: form.pincode
+                },
+                products: productsPayload,
+                couponCode: appliedCoupon?.code || null,
+                status: 'pending',
+                paymentMethod: paymentMethodLabel,
+                storeId: storeId,
+                vendorId: vendorIdFromCart || null
+            })
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+            throw new Error(data.message || 'Failed to place order. Please try again.');
+        }
+        return data;
+    };
+
+    const createPaymentForOrder = async (order, gateway) => {
+        const frontendReturnUrl = `${window.location.origin}${window.location.pathname}`;
+        const createRes = await fetch(`${GATEWAY_URL}/checkout/create-payment`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                storeId,
+                vendorId: vendorIdFromCart ? String(vendorIdFromCart) : null,
+                gateway,
+                orderId: order._id,
+                idempotencyKey: `${order._id}:${gateway}`,
+                customer: {
+                    id: customer?._id,
+                    name: form.name,
+                    email: form.email,
+                    phone: form.phone
+                },
+                returnUrl: frontendReturnUrl,
+                notes: { productinfo: 'Storefront Order' }
+            })
+        });
+        const paymentData = await createRes.json();
+        if (!createRes.ok) {
+            throw new Error(paymentData.message || 'Failed to create payment');
+        }
+        return paymentData;
+    };
+
+    const refreshOrder = async (orderId) => {
+        const res = await fetch(`${GATEWAY_URL}/orders/${orderId}`);
+        const data = await res.json();
+        return data.order || data;
+    };
+
+    const handleOnlinePayment = async (gateway) => {
+        if (isMixedVendorCart) {
+            throw new Error('Cart me multiple vendors ke products hain. Online payment ke liye ek vendor ke products hi checkout karein.');
+        }
+
+        // Order-first: money can never succeed without an order row
+        const order = await placeOrder({ paymentMethodLabel: gateway });
+        const paymentData = await createPaymentForOrder(order, gateway);
+
+        if (gateway === 'razorpay') {
+            const ok = await loadRazorpayScript();
+            if (!ok) throw new Error('Failed to load Razorpay checkout');
+
+            return new Promise((resolve, reject) => {
+                const rzp = new window.Razorpay({
+                    key: paymentData.publicKey,
+                    amount: paymentData.amount,
+                    currency: paymentData.currency || 'INR',
+                    name: storeInfo?.storeName || 'Store',
+                    description: 'Order Payment',
+                    order_id: paymentData.gatewayOrderId,
+                    prefill: {
+                        name: form.name,
+                        email: form.email,
+                        contact: form.phone
+                    },
+                    handler: async (response) => {
+                        try {
+                            const verifyRes = await fetch(`${GATEWAY_URL}/checkout/verify-payment`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    paymentId: paymentData.paymentId,
+                                    gateway: 'razorpay',
+                                    razorpay_order_id: response.razorpay_order_id,
+                                    razorpay_payment_id: response.razorpay_payment_id,
+                                    razorpay_signature: response.razorpay_signature
+                                })
+                            });
+                            const verifyData = await verifyRes.json();
+                            if (!verifyRes.ok || !verifyData.success) {
+                                reject(new Error(verifyData.message || 'Payment verification failed'));
+                                return;
+                            }
+                            const paidOrder = await refreshOrder(order._id);
+                            resolve(paidOrder);
+                        } catch (err) {
+                            reject(err);
+                        }
+                    },
+                    modal: {
+                        ondismiss: () => reject(new Error('Payment cancelled. Your order is saved as unpaid.'))
+                    }
+                });
+                rzp.on('payment.failed', (resp) => {
+                    reject(new Error(resp?.error?.description || 'Payment failure'));
+                });
+                rzp.open();
+            });
+        }
+
+        if (gateway === 'payu' && paymentData.form && paymentData.paymentUrl) {
+            const formEl = document.createElement('form');
+            formEl.method = 'POST';
+            formEl.action = paymentData.paymentUrl;
+            Object.entries(paymentData.form).forEach(([key, value]) => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = value ?? '';
+                formEl.appendChild(input);
+            });
+            document.body.appendChild(formEl);
+            formEl.submit();
+            return null; // redirect away
+        }
+
+        throw new Error('This payment method is not available for checkout yet. Please use Razorpay or PayU.');
+    };
+
     const handleSubmitOrder = async (e) => {
         e.preventDefault();
         if (cart.length === 0) return;
@@ -210,78 +515,21 @@ const StorefrontCheckout = ({ cart, cartCount, onClearCart, customer, onLogout, 
         setError('');
         setSubmitting(true);
 
-        const productsPayload = cart.map(item => ({
-            productId: item._id,
-            productName: item.name,
-            quantity: item.qty,
-            price: item.sellingPrice
-        }));
-
         try {
-            // Save new address to address book if checkbox is ticked
-            if (selectedAddressId === 'new' && saveAddressToBook && customer && customer._id) {
-                try {
-                    await fetch(`${GATEWAY_URL}/customers/${customer._id}/addresses`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'x-store-id': storeId
-                        },
-                        body: JSON.stringify({
-                            fullName: form.name,
-                            phoneNumber: form.phone,
-                            addressLine1: form.address,
-                            city: form.city,
-                            state: form.state,
-                            postalCode: form.pincode,
-                            country: 'India',
-                            isDefault: savedAddresses.length === 0
-                        })
-                    });
-                } catch (err) {
-                    console.error('Error saving new address from checkout:', err);
-                }
+            let data;
+            if (paymentMethod === 'COD' || paymentMethod === 'cod') {
+                data = await placeOrder({ paymentMethodLabel: 'COD' });
+            } else {
+                data = await handleOnlinePayment(paymentMethod);
             }
 
-            const res = await fetch(`${GATEWAY_URL}/orders`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-store-id': storeId
-                },
-                body: JSON.stringify({
-                    customerId: customer?._id || null,
-                    customerName: form.name,
-                    customerEmail: form.email,
-                    customerPhone: form.phone,
-                    shippingAddress: {
-                        address: form.address,
-                        city: form.city,
-                        state: form.state,
-                        pincode: form.pincode
-                    },
-                    products: productsPayload,
-                    subtotal: subtotal,
-                    gstAmount: gstAmount,
-                    platformCommissionAmount: platformCommissionAmount,
-                    totalAmount: totalAmount,
-                    status: 'pending',
-                    paymentStatus: paymentMethod === 'Razorpay' ? 'paid' : 'pending',
-                    paymentMethod: paymentMethod,
-                    storeId: storeId
-                })
-            });
-
-            const data = await res.json();
-            if (res.ok) {
+            if (data) {
                 setOrderSuccess(data);
                 onClearCart();
-            } else {
-                setError(data.message || 'Failed to place order. Please try again.');
             }
         } catch (err) {
             console.error('Error placing storefront order:', err);
-            setError('Network error while placing order. Please check connection.');
+            setError(err.message || 'Network error while placing order. Please check connection.');
         } finally {
             setSubmitting(false);
         }
@@ -309,9 +557,14 @@ const StorefrontCheckout = ({ cart, cartCount, onClearCart, customer, onLogout, 
                             <span className="text-zinc-900 uppercase font-bold">{paymentMethod}</span>
                         </p>
                         <p className="flex justify-between">
-                            <span>Amount Paid</span>
+                            <span>{orderSuccess.paymentStatus === 'paid' ? 'Amount Paid' : 'Amount Due'}</span>
                             <span className="text-zinc-900 font-bold">₹{(orderSuccess.totalAmount || totalAmount).toLocaleString()}</span>
                         </p>
+                        {orderSuccess.paymentStatus && orderSuccess.paymentStatus !== 'paid' && paymentMethod !== 'COD' && (
+                            <p className="text-[10px] text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-2 py-1.5">
+                                Payment status: {orderSuccess.paymentStatus}. Complete payment if still pending.
+                            </p>
+                        )}
                     </div>
                     <Link 
                         to={getStorePath(storeId, '/catalog')} 
@@ -567,82 +820,75 @@ const StorefrontCheckout = ({ cart, cartCount, onClearCart, customer, onLogout, 
                                     </div>
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        {/* COD */}
-                                        {isCodEnabled && (
-                                            <label className={`border rounded-2xl p-4 flex items-center justify-between cursor-pointer transition-all duration-350 ${
-                                                paymentMethod === 'COD' 
-                                                ? 'border-[var(--color-primary)] bg-[var(--color-primary-light)]' 
-                                                : 'border-zinc-200 hover:border-zinc-300'
-                                            }`}>
-                                                <div className="flex items-center gap-3">
-                                                    <input 
-                                                        type="radio" 
-                                                        name="paymentMethod" 
-                                                        value="COD" 
-                                                        checked={paymentMethod === 'COD'}
-                                                        onChange={() => setPaymentMethod('COD')}
-                                                        className="text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
-                                                    />
-                                                    <div className="text-left">
-                                                        <p className="text-xs font-black text-zinc-800 uppercase tracking-wide">Cash on Delivery</p>
-                                                        <p className="text-[9px] text-zinc-400 font-semibold mt-0.5">Pay with cash upon delivery</p>
-                                                    </div>
-                                                </div>
-                                                <svg className="w-5 h-5 text-zinc-550" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-                                                    <rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect>
-                                                    <line x1="2" y1="10" x2="22" y2="10"></line>
-                                                </svg>
-                                            </label>
+                                        {loadingPayments && (
+                                            <div className="sm:col-span-2 text-center text-xs text-zinc-400 font-semibold py-4">
+                                                Loading payment methods…
+                                            </div>
                                         )}
 
-                                        {/* Razorpay */}
-                                        {isOnlineEnabled && (
-                                            <label className={`border rounded-2xl p-4 flex items-center justify-between cursor-pointer transition-all duration-350 ${
-                                                paymentMethod === 'Razorpay' 
-                                                ? 'border-[var(--color-primary)] bg-[var(--color-primary-light)]' 
-                                                : 'border-zinc-200 hover:border-zinc-300'
-                                            }`}>
-                                                <div className="flex items-center gap-3">
-                                                    <input 
-                                                        type="radio" 
-                                                        name="paymentMethod" 
-                                                        value="Razorpay" 
-                                                        checked={paymentMethod === 'Razorpay'}
-                                                        onChange={() => setPaymentMethod('Razorpay')}
-                                                        className="text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
-                                                    />
-                                                    <div className="text-left">
-                                                        <p className="text-xs font-black text-zinc-800 uppercase tracking-wide">Razorpay (Cards/UPI)</p>
-                                                        <p className="text-[9px] text-zinc-400 font-semibold mt-0.5">Fully secure online checkout</p>
-                                                    </div>
-                                                </div>
-                                                <svg className="w-5 h-5 text-zinc-550" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-                                                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
-                                                    <line x1="1" y1="10" x2="23" y2="10"></line>
-                                                </svg>
-                                            </label>
+                                        {!loadingPayments && vendorGatewayError && onlineOptions.length === 0 && (
+                                            <div className="sm:col-span-2 p-4 bg-red-50 border border-red-100 text-red-800 text-xs font-bold rounded-xl text-center">
+                                                {vendorGatewayError}
+                                            </div>
                                         )}
 
-                                        {!isCodEnabled && !isOnlineEnabled && (
+                                        {!loadingPayments && paymentOptions.map((opt) => {
+                                            const value = opt.gateway === 'cod' ? 'COD' : opt.gateway;
+                                            const selected = paymentMethod === value || (value === 'COD' && paymentMethod === 'cod');
+                                            return (
+                                                <label
+                                                    key={opt.gateway}
+                                                    className={`border rounded-2xl p-4 flex items-center justify-between cursor-pointer transition-all duration-350 ${
+                                                        selected
+                                                            ? 'border-[var(--color-primary)] bg-[var(--color-primary-light)]'
+                                                            : 'border-zinc-200 hover:border-zinc-300'
+                                                    }`}
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <input
+                                                            type="radio"
+                                                            name="paymentMethod"
+                                                            value={value}
+                                                            checked={selected}
+                                                            onChange={() => setPaymentMethod(value)}
+                                                            className="text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
+                                                        />
+                                                        <div className="text-left">
+                                                            <p className="text-xs font-black text-zinc-800 uppercase tracking-wide">{opt.name}</p>
+                                                            <p className="text-[9px] text-zinc-400 font-semibold mt-0.5">
+                                                                {opt.description || (opt.gateway === 'cod' ? 'Pay with cash upon delivery' : 'Secure online checkout')}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <svg className="w-5 h-5 text-zinc-550" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                                                        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                                                        <line x1="1" y1="10" x2="23" y2="10"></line>
+                                                    </svg>
+                                                </label>
+                                            );
+                                        })}
+
+                                        {!loadingPayments && paymentOptions.length === 0 && (
                                             <div className="sm:col-span-2 p-4 bg-amber-50 border border-amber-100 text-amber-800 text-xs font-bold rounded-xl text-center">
                                                 No payment methods configured.
                                             </div>
                                         )}
                                     </div>
 
-                                    {paymentMethod === 'Razorpay' && (
-                                        <div className="bg-zinc-50 border border-zinc-150 p-4.5 rounded-2xl space-y-4 animate-scale-in">
-                                            <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Demo Online Gateway</p>
-                                            <div className="p-3 bg-emerald-50 border border-emerald-100 text-emerald-800 text-[10px] font-bold rounded-xl flex items-center gap-2">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
-                                                Razorpay Sandbox sandbox simulation is active.
-                                            </div>
+                                    {paymentMethod && paymentMethod !== 'COD' && paymentMethod !== 'cod' && (
+                                        <div className="bg-zinc-50 border border-zinc-150 p-4.5 rounded-2xl space-y-2 animate-scale-in">
+                                            <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">
+                                                {String(paymentMethod).toUpperCase()} Checkout
+                                            </p>
+                                            <p className="text-[10px] text-zinc-500 font-semibold">
+                                                You will complete payment securely through the selected gateway.
+                                            </p>
                                         </div>
                                     )}
 
                                     <button 
                                         type="submit"
-                                        disabled={submitting || (!isCodEnabled && !isOnlineEnabled)}
+                                        disabled={submitting || loadingPayments || paymentOptions.length === 0}
                                         className="w-full py-4 text-center text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all active:scale-[0.98] shadow-md hover:opacity-95 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 btn-premium"
                                         style={{ backgroundColor: 'var(--color-primary)', borderRadius: 'var(--border-radius)' }}
                                     >
