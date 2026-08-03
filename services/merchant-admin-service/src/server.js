@@ -14,26 +14,31 @@ dotenv.config();
 const PORT = process.env.PORT || 5002;
 
 const startServer = async () => {
-    await connectDB(mongoose);
-    initTransactionalEmail(mongoose);
-    await seedPlans();
-    await seedMerchants();
-    await seedThemeStore();
+    try {
+        await connectDB(mongoose);
+        initTransactionalEmail(mongoose);
+        await seedPlans();
+        await seedMerchants();
+        await seedThemeStore();
 
-    // Load built-in themes from /themes directory
-    themeService.loadThemes().then(() => {
-        console.log('[Server] Built-in themes initialized');
-    });
+        // Load built-in themes from /themes directory
+        themeService.loadThemes().then(() => {
+            console.log('[Server] Built-in themes initialized');
+        });
 
-    const server = app.listen(PORT, () => {
-        console.log(`Merchant Admin service running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
-    });
+        const server = app.listen(PORT, () => {
+            console.log(`Merchant Admin service running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+        });
 
-    // Handle unhandled promise rejections
-    process.on('unhandledRejection', (err) => {
-        console.error(`Merchant Admin Service Error: ${err.message}`);
-        server.close(() => process.exit(1));
-    });
+        // Handle unhandled promise rejections
+        process.on('unhandledRejection', (err) => {
+            console.error(`Merchant Admin Service Error: ${err.message}`);
+            server.close(() => process.exit(1));
+        });
+    } catch (err) {
+        console.error('Merchant Admin failed to start:', err);
+        process.exit(1);
+    }
 };
 
 startServer();
