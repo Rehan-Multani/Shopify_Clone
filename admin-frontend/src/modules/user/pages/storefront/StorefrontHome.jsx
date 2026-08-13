@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import StorefrontLayout from '../../components/storefront/StorefrontLayout';
 import SectionRenderer from '../../components/storefront/SectionRenderer';
-import BannerSection from '../../components/storefront/sections/BannerSection';
 import { getStorePath } from '../../components/storefront/storeUrlHelper';
+
+const BannerSection = lazy(() => import('../../components/storefront/sections/BannerSection'));
 
 const GATEWAY_URL = import.meta.env.VITE_API_BASE_URL;
 const ASSETS_BASE_URL = GATEWAY_URL.replace('/api', '');
@@ -62,13 +63,24 @@ const StorefrontHome = ({ cartCount, onAddToCart, customer, onLogout, storeInfo 
                 const previewThemeId = searchParams.get('previewThemeId') || searchParams.get('themeId') || '';
                 const cleanPreview = searchParams.get('cleanPreview') || '';
                 const folder = searchParams.get('folder') || '';
+                const previewToken = searchParams.get('previewToken') || '';
+                const wantDraft = searchParams.get('draft') === 'true' && !!previewToken;
 
                 let url = `${GATEWAY_URL}/store-pages/home?storeId=${storeId}`;
-                if (previewThemeId) url += `&previewThemeId=${previewThemeId}`;
-                if (cleanPreview) url += `&cleanPreview=${cleanPreview}`;
-                if (folder) url += `&folder=${folder}`;
+                if (previewThemeId) url += `&previewThemeId=${encodeURIComponent(previewThemeId)}`;
+                if (cleanPreview) url += `&cleanPreview=${encodeURIComponent(cleanPreview)}`;
+                if (folder) url += `&folder=${encodeURIComponent(folder)}`;
+                if (wantDraft) {
+                    url += `&draft=true&preview=true&previewToken=${encodeURIComponent(previewToken)}`;
+                }
 
-                const res = await fetch(url);
+                const headers = {};
+                const merchantToken = localStorage.getItem('merchantToken');
+                if (merchantToken && (wantDraft || cleanPreview === 'true')) {
+                    headers.Authorization = `Bearer ${merchantToken}`;
+                }
+
+                const res = await fetch(url, { headers });
                 const data = await res.json();
                 if (data.success && data.page?.sections) {
                     const sorted = (data.page.sections || []).sort((a, b) => (a.order || 0) - (b.order || 0));
@@ -132,7 +144,9 @@ const StorefrontHome = ({ cartCount, onAddToCart, customer, onLogout, storeInfo 
             <div className="space-y-0 animate-fade-in">
                 {/* Render banners at the top of the homepage by default if not explicitly added in customized layout */}
                 {hasBanners && !pageSections.some(s => s.type === 'banners' || s.type === 'hero' || s.type === 'image-banner' || s.type === 'video-banner') && (
-                    <BannerSection storeId={storeId} />
+                    <Suspense fallback={<div className="w-full aspect-[21/9] animate-pulse bg-zinc-100" />}>
+                        <BannerSection storeId={storeId} />
+                    </Suspense>
                 )}
                 {pageSections.map((section, idx) => (
                     <div key={section.sectionId || section._id || idx}>

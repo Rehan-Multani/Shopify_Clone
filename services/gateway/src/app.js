@@ -5,9 +5,19 @@ import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import path from 'path';
+import fs from 'fs';
 import { gatewayAuthMiddleware } from './middleware/auth.js';
+import rateLimit from 'express-rate-limit';
 
 const app = express();
+
+const previewTokenLimiter = rateLimit({
+    windowMs: 10 * 60 * 1000,
+    max: 40,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, message: 'Too many preview token requests. Try again later.' },
+});
 
 const allowedOrigins = [
     'http://localhost:5173', 
@@ -23,7 +33,15 @@ const allowedOrigins = [
 // Global Middlewares (No body parser here to avoid proxy issues with POST/PUT requests)
 app.use(cors({
     origin: (origin, callback) => {
-        callback(null, true);
+        // Production: allow only known admin/storefront origins (plus no-origin tools)
+        if (process.env.NODE_ENV === 'production') {
+            if (!origin || allowedOrigins.includes(origin)) {
+                return callback(null, true);
+            }
+            return callback(new Error('Not allowed by CORS'));
+        }
+        // Development: keep permissive for local tooling
+        return callback(null, true);
     },
     credentials: true,
 }));
@@ -32,12 +50,37 @@ app.use(helmet({
     crossOriginResourcePolicy: false // Allow loading local assets in frontend
 }));
 
-app.use(morgan('dev'));
+// Redact preview tokens from access logs (never log secrets)
+morgan.token('url-safe', (req) => {
+    const raw = req.originalUrl || req.url || '';
+    return String(raw).replace(/([?&]previewToken=)[^&]*/gi, '$1[REDACTED]');
+});
+app.use(morgan(':method :url-safe :status :response-time ms'));
 app.use(cookieParser());
 
 // Serve uploaded images statically
 // We point this to the shared uploads folder in the gateway's public directory
 app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
+
+// Serve theme pack assets (CSS/JS/thumbnails) for ThemeLoader
+const themeAssetCandidates = [
+    path.resolve(process.cwd(), '..', 'themes'),
+    path.resolve(process.cwd(), '..', '..', 'themes'),
+    path.resolve(process.cwd(), 'themes'),
+];
+const themesStaticRoot = themeAssetCandidates.find((p) => {
+    try {
+        return fs.existsSync(p);
+    } catch {
+        return false;
+    }
+});
+if (themesStaticRoot) {
+    app.use('/themes', express.static(themesStaticRoot, {
+        maxAge: '1d',
+        fallthrough: true,
+    }));
+}
 
 // Gateway Health check
 app.get('/api/health', (req, res) => {
@@ -46,6 +89,14 @@ app.get('/api/health', (req, res) => {
 
 // Authentication middleware applied globally to /api routes (except health check)
 app.use('/api', gatewayAuthMiddleware);
+
+// Wave 6 — rate limit preview token minting at the gateway
+app.use('/api/themes/preview-token', (req, res, next) => {
+    if (req.method === 'POST' && !String(req.originalUrl || '').includes('revoke')) {
+        return previewTokenLimiter(req, res, next);
+    }
+    return next();
+});
 
 // Define service URLs
 const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || 'http://localhost:5001';
@@ -200,10 +251,28 @@ app.use('/api/master-admin/overview', createServiceProxy(MERCHANT_ADMIN_SERVICE_
 }));
 
 
-// Theme Routes (maps public /api/themes to merchant-admin-service /api/admin/themes)
-app.use('/api/themes', createServiceProxy(MERCHANT_ADMIN_SERVICE_URL, (path, req) => {
+// Theme catalog (merchant-admin) vs store theme runtime (store-service)
+const merchantThemeCatalogProxy = createServiceProxy(MERCHANT_ADMIN_SERVICE_URL, (path, req) => {
     return req.originalUrl.replace('/api/themes', '/api/admin/themes');
-}));
+});
+const storeThemeRuntimeProxy = createServiceProxy(STORE_SERVICE_URL);
+
+const isMerchantThemeCatalogRequest = (req) => {
+    const pathOnly = String(req.originalUrl || '').split('?')[0];
+    if (pathOnly.startsWith('/api/themes/marketplace') || pathOnly.startsWith('/api/themes/admin')) {
+        return true;
+    }
+    if (req.method === 'GET' && pathOnly === '/api/themes') return true;
+    if (req.method === 'GET' && /^\/api\/themes\/[a-f0-9]{24}$/i.test(pathOnly)) return true;
+    return false;
+};
+
+app.use('/api/themes', (req, res, next) => {
+    if (isMerchantThemeCatalogRequest(req)) {
+        return merchantThemeCatalogProxy(req, res, next);
+    }
+    return storeThemeRuntimeProxy(req, res, next);
+});
 
 app.use('/api/admin', createServiceProxy(MERCHANT_ADMIN_SERVICE_URL));
 

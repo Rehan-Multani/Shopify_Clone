@@ -72,12 +72,22 @@ export default function ThemeSettingsPanel({ themeSettings = {}, onChange, schem
 
     // Render dynamic schema if present
     if (schema && schema.settings && schema.settings.length > 0) {
+        const groupLabel = (name) => {
+            const map = {
+                Colors: 'Appearance · Colors',
+                'Layout Engine': 'Layout',
+                'Typography & Motion': 'Typography & Animation',
+                Header: 'Header',
+                Footer: 'Footer',
+            };
+            return map[name] || name;
+        };
         return (
-            <div className="space-y-6">
+            <div className="space-y-6" aria-label="Theme settings">
                 {schema.settings.map((group, gIdx) => (
                     <div key={gIdx} className="space-y-4">
                         <h4 className="text-xs font-black text-zinc-400 uppercase tracking-widest border-b pb-1.5 mb-2">
-                            {group.name}
+                            {groupLabel(group.name)}
                         </h4>
                         <div className="space-y-3">
                             {group.settings.map((field, fIdx) => {

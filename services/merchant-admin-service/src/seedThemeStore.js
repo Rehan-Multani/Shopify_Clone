@@ -53,13 +53,21 @@ export const seedThemeStore = async () => {
                 existing.shortDescription = theme.shortDescription;
                 existing.longDescription = theme.longDescription || theme.shortDescription;
                 existing.features = theme.features || [];
+                existing.category = theme.category || existing.category || '';
+                existing.supportedSections = theme.supportedSections || existing.supportedSections || [];
+                existing.capabilities = theme.capabilities || existing.capabilities || {};
                 existing.status = 'published';
                 existing.visibility = 'visible';
                 existing.version = theme.version || '1.0.0';
                 await existing.save();
                 updated++;
             } else {
-                await Theme.create(theme);
+                await Theme.create({
+                    ...theme,
+                    category: theme.category || '',
+                    supportedSections: theme.supportedSections || [],
+                    capabilities: theme.capabilities || {},
+                });
                 created++;
             }
         }

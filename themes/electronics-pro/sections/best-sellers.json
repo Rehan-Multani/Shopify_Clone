@@ -1,0 +1,10 @@
+{
+  "name": "Best Sellers",
+  "type": "best-sellers",
+  "component": "BestSellers",
+  "settings": {
+    "title": "Best Sellers",
+    "source": "best_sellers",
+    "limit": 8
+  }
+}

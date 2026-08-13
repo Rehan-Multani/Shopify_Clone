@@ -1,0 +1,29 @@
+/* Electronics Pro — tech density tokens */
+:root {
+  --theme-primary: #0b5fff;
+  --theme-secondary: #f4f7fb;
+  --theme-accent: #ff3d00;
+  --theme-heading: "IBM Plex Sans", system-ui, sans-serif;
+  --theme-body: "IBM Plex Sans", system-ui, sans-serif;
+  --theme-radius: 12px;
+  --theme-container: 1280px;
+}
+
+[data-theme="electronics-pro"] .theme-hero--promo {
+  letter-spacing: -0.03em;
+}
+
+[data-theme="electronics-pro"] .theme-product-grid {
+  gap: 0.85rem;
+}
+
+[data-theme="electronics-pro"][data-motion="slide"] .theme-reveal {
+  transform: translateY(16px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="electronics-pro"] * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

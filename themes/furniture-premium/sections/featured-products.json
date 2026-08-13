@@ -1,0 +1,16 @@
+{
+  "name": "Featured Products",
+  "type": "featured-products",
+  "component": "FeaturedProducts",
+  "settings": {
+    "title": "Selected Pieces",
+    "subtitle": "Large imagery, quiet details",
+    "source": "featured",
+    "limit": 6,
+    "columns": { "desktop": 3, "tablet": 2, "mobile": 1 },
+    "layout": "grid",
+    "cardStyle": "furniture",
+    "showPrice": true,
+    "showWishlist": true
+  }
+}

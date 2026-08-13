@@ -97,7 +97,19 @@ export const gatewayAuthMiddleware = async (req, res, next) => {
     } else if (path.startsWith('/api/themes/admin')) {
         requiredAuth = 'admin';
     } else if (path.startsWith('/api/themes')) {
-        if (method === 'GET' && (path === '/api/themes' || path === '/api/themes/marketplace' || path.match(/^\/api\/themes\/marketplace\/[a-zA-Z0-9_-]+(\/.*)?$/))) {
+        if (
+            (method === 'GET' && (
+                path === '/api/themes'
+                || path === '/api/themes/marketplace'
+                || path.match(/^\/api\/themes\/marketplace\/[a-zA-Z0-9_-]+(\/.*)?$/)
+                || path === '/api/themes/experiments/active'
+            ))
+            || (method === 'POST' && (
+                path === '/api/themes/analytics/events'
+                || path === '/api/themes/consent'
+                || path === '/api/themes/experiments/assign'
+            ))
+        ) {
             requiredAuth = null;
         } else {
             requiredAuth = 'merchant';

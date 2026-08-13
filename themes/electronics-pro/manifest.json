@@ -1,0 +1,39 @@
+{
+  "id": "electronics-pro",
+  "name": "Electronics Pro",
+  "version": "1.0.0",
+  "industry": "Electronics",
+  "category": "Technology",
+  "type": "free",
+  "price": 0,
+  "thumbnail": "thumbnail.webp",
+  "schema": "schema.json",
+  "supportedSections": [
+    "hero", "category-grid", "featured-products", "product-slider", "best-sellers",
+    "image-banner", "features-grid", "newsletter", "testimonials", "countdown"
+  ],
+  "capabilities": {
+    "responsive": true,
+    "animations": true,
+    "productCards": true,
+    "megaMenu": true,
+    "quickView": true,
+    "wishlist": true
+  },
+  "supports": {
+    "announcementBar": true,
+    "megaMenu": true,
+    "quickView": true,
+    "wishlist": true,
+    "productReviews": true,
+    "countdown": true
+  },
+  "templates": {
+    "404": true,
+    "home": true,
+    "product": true,
+    "collection": true,
+    "cart": true,
+    "search": true
+  }
+}

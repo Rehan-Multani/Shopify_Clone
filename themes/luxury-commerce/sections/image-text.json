@@ -1,0 +1,15 @@
+{
+  "name": "Image + Text",
+  "type": "image-text",
+  "component": "ImageText",
+  "settings": {
+    "eyebrow": "The Atelier",
+    "title": "Made to be kept",
+    "subtitle": "Craft & Material",
+    "content": "Every piece begins with considered materials and ends with finishing that rewards closer inspection. Luxury Commerce is built for merchants who sell with intention.",
+    "imageUrl": "https://images.unsplash.com/photo-1558171813-4c088753af8f?w=1400&q=80",
+    "imagePosition": "right",
+    "buttonLabel": "Our Story",
+    "buttonLink": "/pages/about-us"
+  }
+}

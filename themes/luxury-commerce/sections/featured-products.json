@@ -1,0 +1,15 @@
+{
+  "name": "Featured Products",
+  "type": "featured-products",
+  "component": "FeaturedProducts",
+  "settings": {
+    "title": "Featured Pieces",
+    "subtitle": "Selected for their craftsmanship and quiet confidence",
+    "source": "featured",
+    "limit": 8,
+    "columns": 4,
+    "cardStyle": "luxury",
+    "showPrice": true,
+    "showWishlist": true
+  }
+}

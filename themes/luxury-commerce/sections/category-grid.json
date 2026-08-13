@@ -1,0 +1,11 @@
+{
+  "name": "Featured Categories",
+  "type": "category-grid",
+  "component": "FeaturedCategories",
+  "settings": {
+    "title": "Shop by Collection",
+    "subtitle": "Curated edits for every mood",
+    "limit": 6,
+    "columns": 3
+  }
+}

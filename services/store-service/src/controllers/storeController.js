@@ -212,11 +212,30 @@ export const getStoreById = async (req, res) => {
                 publishedThemeSettings: mergeThemeSettings(folder, defaultSettings)
             }];
         } else if (Array.isArray(storeObj.installedThemes)) {
-            storeObj.installedThemes = storeObj.installedThemes.map((install) => ({
-                ...install,
-                publishedThemeSettings: mergeThemeSettings(install.folder, install.publishedThemeSettings || {}),
-                draftThemeSettings: mergeThemeSettings(install.folder, install.draftThemeSettings || {}),
-            }));
+            const canSeeDraft = !!(req.merchant || req.previewAuth);
+            storeObj.installedThemes = storeObj.installedThemes.map((install) => {
+                const published = mergeThemeSettings(install.folder, install.publishedThemeSettings || {});
+                const draft = mergeThemeSettings(install.folder, install.draftThemeSettings || {});
+                return {
+                    ...install,
+                    publishedThemeSettings: published,
+                    // Wave 5 — never leak draft theme settings publicly
+                    draftThemeSettings: canSeeDraft ? draft : published,
+                };
+            });
+        }
+
+        if (req.previewAuthError && (req.query.draft === 'true' || req.query.previewToken)) {
+            return res.status(req.previewAuthError.status || 401).json({
+                success: false,
+                message: req.previewAuthError.message || 'Invalid preview token',
+            });
+        }
+        if (req.previewAuth && String(req.previewAuth.storeId) !== String(req.params.id)) {
+            return res.status(403).json({
+                success: false,
+                message: 'Preview token store mismatch',
+            });
         }
 
         res.json(storeObj);

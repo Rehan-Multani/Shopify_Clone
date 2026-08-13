@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ThemeProductCard from '../themeEngine/ThemeProductCard';
+import { filterProductsBySource, normalizeProductList } from '../themeEngine/productSource';
 
 const CATALOG_API_URL = import.meta.env.VITE_CATALOG_API_URL;
 
@@ -10,6 +11,7 @@ const BestSellerSection = ({ settings = {}, storeId: propStoreId, onAddToCart, c
 
     const storeId = propStoreId || localStorage.getItem('activeStoreId') || '';
     const token = localStorage.getItem('merchantToken') || '';
+    const sourceKey = [settings.source, settings.categoryId, settings.productIds, limit].join('|');
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -19,9 +21,12 @@ const BestSellerSection = ({ settings = {}, storeId: propStoreId, onAddToCart, c
                 if (token) headers.Authorization = `Bearer ${token}`;
                 const res = await fetch(`${CATALOG_API_URL}/products?storeId=${storeId}`, { headers });
                 const data = await res.json();
-                const list = data.products || (Array.isArray(data) ? data : []);
-                const sorted = [...list].sort((a, b) => (b.salesCount || 0) - (a.salesCount || 0));
-                setProducts(sorted.slice(0, parseInt(limit)));
+                const list = normalizeProductList(data);
+                setProducts(filterProductsBySource(list, {
+                    ...settings,
+                    source: settings.source || 'best_sellers',
+                    limit,
+                }));
             } catch (err) {
                 console.error('Error fetching best seller products:', err);
             } finally {
@@ -29,7 +34,7 @@ const BestSellerSection = ({ settings = {}, storeId: propStoreId, onAddToCart, c
             }
         };
         fetchProducts();
-    }, [storeId, token, limit]);
+    }, [storeId, token, sourceKey]);
 
     if (loading) {
         return (

@@ -1,0 +1,10 @@
+{
+  "name": "Lookbook",
+  "type": "lookbook",
+  "component": "Gallery",
+  "settings": {
+    "title": "Room Stories",
+    "subtitle": "Tap a detail to discover the piece",
+    "imageUrl": "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1600&q=80"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "name": "Flash Sale",
+  "type": "countdown",
+  "settings": {
+    "title": "Flash Sale Ends Soon"
+  }
+}

@@ -1,20 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React, { Suspense, lazy, useState, useEffect } from 'react';
 import { useParams, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import StorefrontHome from '../../pages/storefront/StorefrontHome';
-import StorefrontCatalog from '../../pages/storefront/StorefrontCatalog';
-import StorefrontProductDetails from '../../pages/storefront/StorefrontProductDetails';
-import StorefrontCart from '../../pages/storefront/StorefrontCart';
-import StorefrontCheckout from '../../pages/storefront/StorefrontCheckout';
-import StorefrontAuth from '../../pages/storefront/StorefrontAuth';
-import StorefrontPage from '../../pages/storefront/StorefrontPage';
-import StorefrontWishlist from '../../pages/storefront/StorefrontWishlist';
-import StorefrontAccount from '../../pages/storefront/StorefrontAccount';
-import StorefrontOrderTrack from '../../pages/storefront/StorefrontOrderTrack';
 import { getStorePath } from './storeUrlHelper';
 import { ThemeProvider } from './themeEngine/ThemeContext';
 import ThemeExperience from './themeEngine/ThemeExperience';
+import { trackThemeAnalyticsEvent, assignStoreExperiment, getOrCreateSessionKey } from './themeEngine/themeAnalytics';
+import ConsentBanner from './ConsentBanner';
 
 const GATEWAY_URL = import.meta.env.VITE_API_BASE_URL;
+
+// Wave 6 — route-level code splitting (home does not pull cart/checkout/product)
+const StorefrontHome = lazy(() => import('../../pages/storefront/StorefrontHome'));
+const StorefrontCatalog = lazy(() => import('../../pages/storefront/StorefrontCatalog'));
+const StorefrontProductDetails = lazy(() => import('../../pages/storefront/StorefrontProductDetails'));
+const StorefrontCart = lazy(() => import('../../pages/storefront/StorefrontCart'));
+const StorefrontCheckout = lazy(() => import('../../pages/storefront/StorefrontCheckout'));
+const StorefrontAuth = lazy(() => import('../../pages/storefront/StorefrontAuth'));
+const StorefrontPage = lazy(() => import('../../pages/storefront/StorefrontPage'));
+const StorefrontWishlist = lazy(() => import('../../pages/storefront/StorefrontWishlist'));
+const StorefrontAccount = lazy(() => import('../../pages/storefront/StorefrontAccount'));
+const StorefrontOrderTrack = lazy(() => import('../../pages/storefront/StorefrontOrderTrack'));
+
+const RouteFallback = () => (
+    <div className="min-h-[40vh] flex items-center justify-center text-sm text-zinc-400">Loading…</div>
+);
 
 const PageSlugRedirect = () => {
     const { storeId, slug } = useParams();
@@ -53,17 +61,30 @@ const StorefrontContainer = ({ resolvedStoreId }) => {
                 const cleanPreview = searchParams.get('cleanPreview') || '';
                 const folder = searchParams.get('folder') || '';
                 const previewThemeId = searchParams.get('previewThemeId') || searchParams.get('themeId') || '';
+                const previewToken = searchParams.get('previewToken') || '';
+                const wantDraft = searchParams.get('draft') === 'true' && !!previewToken;
+                const merchantToken = localStorage.getItem('merchantToken') || '';
 
                 let storeUrl = `${GATEWAY_URL}/stores/${storeId}`;
                 const queryParts = [];
                 if (cleanPreview) queryParts.push(`cleanPreview=${cleanPreview}`);
                 if (folder) queryParts.push(`folder=${folder}`);
                 if (previewThemeId) queryParts.push(`themeId=${previewThemeId}`);
+                if (wantDraft) {
+                    queryParts.push('draft=true');
+                    queryParts.push(`previewToken=${encodeURIComponent(previewToken)}`);
+                }
                 if (queryParts.length > 0) {
                     storeUrl += `?${queryParts.join('&')}`;
                 }
 
-                const res = await fetch(storeUrl);
+                const headers = {};
+                // Prefer dedicated preview token over merchant JWT for draft reads
+                if (merchantToken && cleanPreview === 'true' && !wantDraft) {
+                    headers.Authorization = `Bearer ${merchantToken}`;
+                }
+
+                const res = await fetch(storeUrl, { headers });
                 if (res.ok) {
                     const data = await res.json();
                     
@@ -75,11 +96,15 @@ const StorefrontContainer = ({ resolvedStoreId }) => {
                         }
                     }
 
-                    // If previewing, load draftThemeSettings
+                    // Draft preview only when authorized (preview token) or clean catalog preview
                     if (previewThemeId && data.installedThemes) {
                         const previewInstall = data.installedThemes.find(t => t.themeId === previewThemeId);
                         if (previewInstall) {
-                            activeSettings = previewInstall.draftThemeSettings || previewInstall.publishedThemeSettings || {};
+                            if (wantDraft || cleanPreview === 'true') {
+                                activeSettings = previewInstall.draftThemeSettings
+                                    || previewInstall.publishedThemeSettings
+                                    || {};
+                            }
                         }
                     }
 
@@ -89,8 +114,36 @@ const StorefrontContainer = ({ resolvedStoreId }) => {
                     const themeFolder = activeInstall?.folder || data.activeTheme?.folder || activeSettings.themeFolder || '';
                     const themeSlug = themeFolder || activeSettings.themeId || 'default';
                     const catalogThemeId = previewThemeId || data.activeTheme?.themeId || activeSettings.themeId || 'default';
+
+                    let experimentMeta = { experimentId: '', variantKey: '' };
+                    const sessionKey = getOrCreateSessionKey(storeId);
+                    // Presentation-only experiment assignment (skip draft preview; requires consent)
+                    if (!wantDraft && !cleanPreview) {
+                        const assigned = await assignStoreExperiment(storeId);
+                        if (assigned?.presentation) {
+                            experimentMeta = {
+                                experimentId: assigned.experimentId || '',
+                                variantKey: assigned.variantKey || '',
+                            };
+                            if (assigned.themeFolder || assigned.themeId) {
+                                const expInstall = data.installedThemes?.find((t) =>
+                                    t.themeId === assigned.themeId
+                                    || t.folder === assigned.themeFolder
+                                    || t.folder === assigned.themeId
+                                );
+                                if (expInstall) {
+                                    activeSettings = {
+                                        ...(expInstall.publishedThemeSettings || activeSettings),
+                                        themeVersion: assigned.themeVersion || expInstall.version || activeSettings.themeVersion,
+                                    };
+                                }
+                            }
+                        }
+                    }
+
                     setStoreInfo({
                         ...data,
+                        experimentMeta,
                         themeSettings: {
                             ...activeSettings,
                             themeId: themeSlug,
@@ -99,6 +152,55 @@ const StorefrontContainer = ({ resolvedStoreId }) => {
                             designLanguage: activeSettings.designLanguage || themeSlug,
                         }
                     });
+                    try {
+                        localStorage.setItem(`_theme_meta_${storeId}`, JSON.stringify({
+                            themeId: themeFolder || themeSlug,
+                            themeFolder,
+                            themeVersion: activeSettings.themeVersion || activeSettings.version || '',
+                            experimentId: experimentMeta.experimentId,
+                            variantKey: experimentMeta.variantKey,
+                        }));
+                    } catch { /* ignore */ }
+
+                    trackThemeAnalyticsEvent({
+                        storeId,
+                        themeId: themeFolder || themeSlug,
+                        themeVersion: activeSettings.themeVersion || activeSettings.version || '',
+                        eventType: wantDraft ? 'theme_preview' : 'page_view',
+                        experimentId: experimentMeta.experimentId,
+                        variantKey: experimentMeta.variantKey,
+                        sessionKey,
+                    });
+                    if (!wantDraft) {
+                        trackThemeAnalyticsEvent({
+                            storeId,
+                            themeId: themeFolder || themeSlug,
+                            themeVersion: activeSettings.themeVersion || activeSettings.version || '',
+                            eventType: 'session_start',
+                            experimentId: experimentMeta.experimentId,
+                            variantKey: experimentMeta.variantKey,
+                            sessionKey,
+                        });
+                    }
+
+                    if (typeof performance !== 'undefined' && performance.now) {
+                        const started = performance.now();
+                        requestAnimationFrame(() => {
+                            trackThemeAnalyticsEvent({
+                                storeId,
+                                themeId: themeFolder || themeSlug,
+                                themeVersion: activeSettings.themeVersion || activeSettings.version || '',
+                                eventType: 'theme_load',
+                                experimentId: experimentMeta.experimentId,
+                                variantKey: experimentMeta.variantKey,
+                                sessionKey,
+                                metrics: {
+                                    themeLoadMs: Math.round(performance.now() - started),
+                                    firstRenderMs: Math.round(performance.now()),
+                                },
+                            });
+                        });
+                    }
                 }
             } catch (err) {
                 console.error('Error fetching storefront store details:', err);
@@ -236,6 +338,8 @@ const StorefrontContainer = ({ resolvedStoreId }) => {
             onUpdateCartQty={handleUpdateCartQty}
             onRemoveFromCart={handleRemoveFromCart}
         >
+        <ConsentBanner storeId={storeId} />
+        <Suspense fallback={<RouteFallback />}>
         <Routes>
             <Route path="/" element={
                 <StorefrontHome 
@@ -335,6 +439,7 @@ const StorefrontContainer = ({ resolvedStoreId }) => {
                 </ProtectedRoute>
             } />
         </Routes>
+        </Suspense>
         </ThemeExperience>
         </ThemeProvider>
     );

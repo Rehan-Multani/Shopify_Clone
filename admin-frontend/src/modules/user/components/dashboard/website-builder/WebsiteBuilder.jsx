@@ -7,10 +7,15 @@ import SettingsPanel from './SettingsPanel';
 import HeaderBuilder from './HeaderBuilder';
 import FooterBuilder from './FooterBuilder';
 import ThemeSettingsPanel from './ThemeSettingsPanel';
+import CompatibilityAssistant from './CompatibilityAssistant';
 import useBuilderHistory from './useBuilderHistory';
 import SectionRenderer from '../../storefront/SectionRenderer';
+import { getSectionSchema, getSchemaDefaults } from '../../storefront/themeEngine/sectionSchemas';
+import { FEATURE_FLAGS } from './featureFlags';
 
 const STORE_API_URL = import.meta.env.VITE_STORE_API_URL;
+const AUTOSAVE_ENABLED = FEATURE_FLAGS.THEME_BUILDER_AUTOSAVE;
+const AUTOSAVE_MS = 1500;
 
 const formatText = (text) => {
     if (!text || typeof text !== 'string') return text;
@@ -30,6 +35,7 @@ export default function WebsiteBuilder() {
 
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [saveStatus, setSaveStatus] = useState('saved'); // 'saved' | 'unsaved' | 'saving'
     const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
     
     // Core Layout States
@@ -38,6 +44,9 @@ export default function WebsiteBuilder() {
     const [selectedSectionId, setSelectedSectionId] = useState(null);
     const [pageSlug, setPageSlug] = useState('home');
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [mobileSheet, setMobileSheet] = useState(null); // null | 'sections' | 'settings'
+    const [showCompat, setShowCompat] = useState(true);
+    const [autosaveLabel, setAutosaveLabel] = useState(''); // Saving... | Saved | Offline | Retrying...
 
     // Store Pages and Theme States
     const [pages, setPages] = useState([]);
@@ -49,6 +58,7 @@ export default function WebsiteBuilder() {
     const {
         state: historyState,
         pushState,
+        pushStateImmediate,
         undo,
         redo,
         resetHistory,
@@ -167,21 +177,97 @@ export default function WebsiteBuilder() {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [undo, redo]);
 
-    // Update activePage sections and push history state
-    const updateActivePageSections = (newSections) => {
+    // Structural edits (add/remove/reorder) commit immediately; setting keystrokes debounce.
+    const updateActivePageSections = (newSections, { immediate = true } = {}) => {
         setActivePage(prev => ({ ...prev, sections: newSections }));
-        pushState(newSections, themeSettings);
+        if (immediate) pushStateImmediate(newSections, themeSettings);
+        else pushState(newSections, themeSettings);
+        setSaveStatus('unsaved');
     };
 
-    // Update themeSettings and push history state
+    // Theme settings: debounce unless structural nested replace wants immediate
     const updateThemeSettings = (newTheme) => {
         setThemeSettings(newTheme);
         pushState(activePage.sections, newTheme);
+        setSaveStatus('unsaved');
+    };
+
+    // Warn on browser leave with unsaved changes
+    useEffect(() => {
+        const onBeforeUnload = (e) => {
+            if (saveStatus === 'unsaved') {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        };
+        window.addEventListener('beforeunload', onBeforeUnload);
+        return () => window.removeEventListener('beforeunload', onBeforeUnload);
+    }, [saveStatus]);
+
+    // Escape closes mobile sheet / selected settings focus trap affordance
+    useEffect(() => {
+        const onKey = (e) => {
+            if (e.key === 'Escape') {
+                if (mobileSheet) setMobileSheet(null);
+            }
+        };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, [mobileSheet]);
+
+    // Optional autosave (draft only) — off by default
+    useEffect(() => {
+        if (!AUTOSAVE_ENABLED || saveStatus !== 'unsaved' || loading) return undefined;
+        setAutosaveLabel('Saving...');
+        const t = setTimeout(async () => {
+            try {
+                setSaveStatus('saving');
+                const ok = await saveCurrentState();
+                if (ok) {
+                    setSaveStatus('saved');
+                    setAutosaveLabel('Saved');
+                } else {
+                    setSaveStatus('unsaved');
+                    setAutosaveLabel('Retrying...');
+                }
+            } catch {
+                setSaveStatus('unsaved');
+                setAutosaveLabel('Offline');
+            }
+        }, AUTOSAVE_MS);
+        return () => clearTimeout(t);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [AUTOSAVE_ENABLED, saveStatus, activePage.sections, themeSettings, loading]);
+
+    const confirmLeaveIfDirty = () => {
+        if (saveStatus !== 'unsaved') return true;
+        return window.confirm('You have unsaved changes. Leave without saving?');
+    };
+
+    const handleApplyRemap = ({ remapped, originalBackup }) => {
+        setActivePage((prev) => {
+            const nextSections = prev.sections.map((s) => {
+                const id = s.sectionId || s._id;
+                if (id === (originalBackup.sectionId || originalBackup._id)) {
+                    // Keep original as disabled backup; insert remapped after
+                    return { ...s, enabled: false, _preservedBackup: true };
+                }
+                return s;
+            });
+            const withRemap = [...nextSections, remapped];
+            pushStateImmediate(withRemap, themeSettings);
+            return { ...prev, sections: withRemap };
+        });
+        setSaveStatus('unsaved');
+        setShowCompat(true);
+        showToast('Remap created — original preserved (hidden). Review then save draft.');
     };
 
     // 2. Element palette add operations
     const handleAddComponent = (type, label) => {
-        const defaultSettings = type === 'hero' ? { backgroundImage: '', textAlignment: 'center', overlayOpacity: 0.45, height: '480px' }
+        const schema = getSectionSchema(type);
+        const schemaDefaults = schema ? getSchemaDefaults(schema) : {};
+        const legacyDefaults = type === 'hero' ? { backgroundImage: '', textAlignment: 'center', overlayOpacity: 0.45, height: '480px' }
                               : type === 'image-banner' ? { imageUrl: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800', title: 'Summer Collection', subtitle: 'Grab the latest designs at 30% discount', buttonLabel: 'Shop Now', buttonLink: '#' }
                               : type === 'rich-text' ? { title: 'Our Brand Mission', content: 'We make top tier garments for comfort, active lifestyle, and everyday minimal elegance. All products are verified organic.', alignment: 'center' }
                               : type === 'spacer' ? { height: 40 }
@@ -198,6 +284,8 @@ export default function WebsiteBuilder() {
                               : type === 'button' ? { label: 'Click Me', link: '#', style: { backgroundColor: '#008060', textColor: '#ffffff', hoverBgColor: '#006e52', hoverTextColor: '#ffffff', borderRadius: '8px', paddingX: 20, paddingY: 10, fontSize: 13, shadow: 'sm', textAlign: 'center' } }
                               : type === 'image' ? { imageUrl: 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=600', style: { width: '100%', height: 'auto', objectFit: 'cover', borderRadius: '8px' } }
                               : { title: label };
+
+        const defaultSettings = { ...schemaDefaults, ...legacyDefaults };
 
         const defaultBlocks = type === 'hero' ? [
             { blockId: Math.random().toString(36).substr(2, 9), type: 'heading', settings: { text: 'Premium Outerwear' } },
@@ -245,10 +333,11 @@ export default function WebsiteBuilder() {
     const handleRemoveSection = (id) => {
         setActivePage(prev => {
             const filtered = prev.sections.filter((s, idx) => getSectionId(s, idx) !== id);
-            pushState(filtered, themeSettings);
+            pushStateImmediate(filtered, themeSettings);
             return { ...prev, sections: filtered };
         });
         if (selectedSectionId === id) setSelectedSectionId(null);
+        setSaveStatus('unsaved');
         showToast('Section removed');
     };
 
@@ -265,9 +354,10 @@ export default function WebsiteBuilder() {
             };
 
             const newSections = [...prev.sections, duplicated];
-            pushState(newSections, themeSettings);
+            pushStateImmediate(newSections, themeSettings);
             return { ...prev, sections: newSections };
         });
+        setSaveStatus('unsaved');
         showToast('Section duplicated');
     };
 
@@ -279,9 +369,10 @@ export default function WebsiteBuilder() {
                 }
                 return s;
             });
-            pushState(updated, themeSettings);
+            pushStateImmediate(updated, themeSettings);
             return { ...prev, sections: updated };
         });
+        setSaveStatus('unsaved');
     };
 
     const handleToggleLock = (id) => {
@@ -316,6 +407,7 @@ export default function WebsiteBuilder() {
             pushState(updated, themeSettings);
             return { ...prev, sections: updated };
         });
+        setSaveStatus('unsaved');
     };
 
     // Block-level updates (inside sections like hero)
@@ -341,6 +433,7 @@ export default function WebsiteBuilder() {
             pushState(updated, themeSettings);
             return { ...prev, sections: updated };
         });
+        setSaveStatus('unsaved');
     };
 
     const handleUpdateBlockSetting = (secId, blockId, key, value) => {
@@ -363,6 +456,7 @@ export default function WebsiteBuilder() {
             pushState(updated, themeSettings);
             return { ...prev, sections: updated };
         });
+        setSaveStatus('unsaved');
     };
 
     const handleRemoveBlock = (secId, blockId) => {
@@ -380,13 +474,16 @@ export default function WebsiteBuilder() {
             pushState(updated, themeSettings);
             return { ...prev, sections: updated };
         });
+        setSaveStatus('unsaved');
     };
 
     // 5. Page Management & Creation
     const handlePageChange = (slug) => {
+        if (!confirmLeaveIfDirty()) return;
         setPageSlug(slug);
         setSelectedSectionId(null);
         fetchData(slug);
+        setSaveStatus('saved');
     };
 
     const handleCreatePageSubmit = async (e) => {
@@ -480,7 +577,7 @@ export default function WebsiteBuilder() {
                 title: activePage.title,
                 sections: activePage.sections,
                 seo: activePage.seo || {},
-                visibility: activePage.visibility || 'published',
+                visibility: 'draft',
                 publishDate: activePage.publishDate || new Date(),
                 password: activePage.password || ''
             })
@@ -492,51 +589,72 @@ export default function WebsiteBuilder() {
     // 6. DB Persistence Save Button (Saves to Draft)
     const handleSaveBuilder = async () => {
         setSaving(true);
+        setSaveStatus('saving');
         try {
             const success = await saveCurrentState();
             if (success) {
+                setSaveStatus('saved');
                 showToast('Draft changes saved successfully!', 'success');
             } else {
+                setSaveStatus('unsaved');
                 showToast('Failed to save builder changes.', 'error');
             }
         } catch (err) {
             console.error('Error saving builder:', err);
+            setSaveStatus('unsaved');
             showToast('Connection error. Failed to save.', 'error');
         } finally {
             setSaving(false);
         }
     };
 
-    // 6b. DB Persistence Publish Button (Copies Draft -> Published Settings)
+    // 6b. Publish: save drafts then promote theme + page to published
     const handlePublishBuilder = async () => {
         setSaving(true);
+        setSaveStatus('saving');
         try {
             const saveSuccess = await saveCurrentState();
             if (!saveSuccess) {
                 showToast('Failed to save changes before publishing.', 'error');
                 setSaving(false);
+                setSaveStatus('unsaved');
                 return;
             }
 
             const searchParams = new URLSearchParams(location.search);
             const themeId = searchParams.get('themeId') || '';
             const publishUrl = `${STORE_API_URL}/themes/publish?themeId=${themeId}`;
+            const pagePublishUrl = themeId
+                ? `${STORE_API_URL}/store-pages/${activePage.slug}/publish?themeId=${themeId}`
+                : `${STORE_API_URL}/store-pages/${activePage.slug}/publish`;
 
-            const res = await fetch(publishUrl, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'x-store-id': storeId
-                }
-            });
+            const [themeRes, pageRes] = await Promise.all([
+                fetch(publishUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'x-store-id': storeId
+                    }
+                }),
+                fetch(pagePublishUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'x-store-id': storeId
+                    }
+                })
+            ]);
 
-            if (res.ok) {
+            if (themeRes.ok && pageRes.ok) {
+                setSaveStatus('saved');
                 showToast('All customizer changes published to live storefront!', 'success');
             } else {
+                setSaveStatus('unsaved');
                 showToast('Publish failed.', 'error');
             }
         } catch (err) {
             console.error('Error publishing theme settings:', err);
+            setSaveStatus('unsaved');
             showToast('Connection error. Failed to publish.', 'error');
         } finally {
             setSaving(false);
@@ -1182,13 +1300,34 @@ export default function WebsiteBuilder() {
             <div className="h-14 premium-builder-header text-white flex items-center justify-between px-6 z-30 select-none">
                 <div className="flex items-center gap-4">
                     <button 
-                        onClick={() => navigate('/dashboard/websites')}
+                        onClick={() => {
+                            if (!confirmLeaveIfDirty()) return;
+                            navigate('/dashboard/websites');
+                        }}
                         className="px-3 py-1.5 hover:bg-white/10 rounded-lg text-zinc-350 hover:text-white font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer"
                         title="Back to themes"
                     >
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
                         Exit Customizer
                     </button>
+                    <div className="h-5 w-[1px] bg-zinc-800/80"></div>
+                    <span
+                        className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full ${
+                            saveStatus === 'unsaved'
+                                ? 'bg-amber-500/20 text-amber-300'
+                                : saveStatus === 'saving'
+                                    ? 'bg-sky-500/20 text-sky-300'
+                                    : 'bg-emerald-500/15 text-emerald-300'
+                        }`}
+                    >
+                        {AUTOSAVE_ENABLED && autosaveLabel
+                            ? autosaveLabel
+                            : saveStatus === 'unsaved'
+                                ? 'Unsaved Changes'
+                                : saveStatus === 'saving'
+                                    ? 'Saving...'
+                                    : 'Saved'}
+                    </span>
                     <div className="h-5 w-[1px] bg-zinc-800/80"></div>
                     <div className="flex items-center gap-2">
                         {/* Page Selector dropdown */}
@@ -1279,7 +1418,7 @@ export default function WebsiteBuilder() {
                             disabled={saving}
                             className="premium-btn-secondary"
                         >
-                            {saving ? 'Saving...' : 'Save Draft'}
+                            {saving || saveStatus === 'saving' ? 'Saving...' : saveStatus === 'unsaved' ? 'Save Draft' : 'Saved'}
                         </button>
                         <button
                             onClick={handlePublishBuilder}
@@ -1294,9 +1433,9 @@ export default function WebsiteBuilder() {
             </div>
 
             {/* 2. Main Builder Workspace Layout */}
-            <div className="flex-1 flex overflow-hidden relative">
-                {/* A. Left Workspace Live Preview Canvas */}
-                <div className="flex-1 overflow-hidden h-full flex flex-col">
+            <div className="flex-1 flex overflow-hidden relative flex-col md:flex-row">
+                {/* A. Live Preview Canvas — primary on mobile */}
+                <div className="flex-1 overflow-hidden h-full flex flex-col min-h-0 order-1">
                     <BuilderCanvas 
                         sections={activePage.sections}
                         selectedId={selectedSectionId}
@@ -1304,11 +1443,14 @@ export default function WebsiteBuilder() {
                             if (id === 'header') {
                                 setActiveTab('header');
                                 setSelectedSectionId(null);
+                                setMobileSheet('settings');
                             } else if (id === 'footer') {
                                 setActiveTab('footer');
                                 setSelectedSectionId(null);
+                                setMobileSheet('settings');
                             } else {
                                 setSelectedSectionId(id);
+                                setMobileSheet('settings');
                             }
                         }}
                         viewport={viewport}
@@ -1317,8 +1459,8 @@ export default function WebsiteBuilder() {
                     />
                 </div>
 
-                {/* B. Right Sidebar Controls with Open/Close Toggle Button */}
-                <div className={`relative flex flex-col premium-builder-sidebar transition-all duration-300 ${isSidebarOpen ? 'w-80' : 'w-0 border-l-0'}`}>
+                {/* B. Right Sidebar — desktop; drawers on mobile */}
+                <div className={`relative flex-col premium-builder-sidebar transition-all duration-300 hidden md:flex ${isSidebarOpen ? 'w-80' : 'w-0 border-l-0'}`}>
                     {/* Toggle Button on the vertical border edge */}
                     <button
                         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -1410,16 +1552,33 @@ export default function WebsiteBuilder() {
                                         <ComponentLibrary onAddComponent={handleAddComponent} />
                                     )}
                                     {activeTab === 'sections' && (
-                                        <SectionTree 
-                                            sections={activePage.sections}
-                                            selectedId={selectedSectionId}
-                                            onSelect={setSelectedSectionId}
-                                            onReorder={handleReorderSections}
-                                            onRemove={handleRemoveSection}
-                                            onDuplicate={handleDuplicateSection}
-                                            onToggleVisibility={handleToggleVisibility}
-                                            onToggleLock={handleToggleLock}
-                                        />
+                                        <div className="h-full flex flex-col overflow-hidden">
+                                            {showCompat && (
+                                                <div className="overflow-y-auto max-h-[40%] shrink-0">
+                                                    <CompatibilityAssistant
+                                                        sections={activePage.sections}
+                                                        supportedSections={themeSettings.supportedSections}
+                                                        onApplyRemap={handleApplyRemap}
+                                                        onDismiss={() => setShowCompat(false)}
+                                                    />
+                                                </div>
+                                            )}
+                                            <div className="flex-1 overflow-hidden">
+                                                <SectionTree
+                                                    sections={activePage.sections}
+                                                    selectedId={selectedSectionId}
+                                                    onSelect={(id) => {
+                                                        setSelectedSectionId(id);
+                                                        setMobileSheet('settings');
+                                                    }}
+                                                    onReorder={handleReorderSections}
+                                                    onRemove={handleRemoveSection}
+                                                    onDuplicate={handleDuplicateSection}
+                                                    onToggleVisibility={handleToggleVisibility}
+                                                    onToggleLock={handleToggleLock}
+                                                />
+                                            </div>
+                                        </div>
                                     )}
                                     {activeTab === 'header' && (
                                         <div className="h-full overflow-y-auto p-4 storefront-scrollbar bg-white">
@@ -1563,12 +1722,72 @@ export default function WebsiteBuilder() {
                 </div>
             )}
 
+            {/* Mobile builder chrome */}
+            <div className="md:hidden shrink-0 border-t border-zinc-200 bg-white flex" role="toolbar" aria-label="Builder panels">
+                <button type="button" onClick={() => { setActiveTab('sections'); setMobileSheet('sections'); setIsSidebarOpen(true); }}
+                    className={`flex-1 py-3 text-[10px] font-black uppercase tracking-wide focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008060] ${mobileSheet === 'sections' ? 'text-[#008060]' : 'text-zinc-500'}`}>
+                    Sections
+                </button>
+                <button type="button" onClick={() => { setActiveTab(selectedSectionId ? 'sections' : 'settings'); setMobileSheet('settings'); }}
+                    className={`flex-1 py-3 text-[10px] font-black uppercase tracking-wide focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008060] ${mobileSheet === 'settings' ? 'text-[#008060]' : 'text-zinc-500'}`}>
+                    Settings
+                </button>
+                <button type="button" onClick={() => setMobileSheet(null)}
+                    className="flex-1 py-3 text-[10px] font-black uppercase tracking-wide text-zinc-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008060]">
+                    Preview
+                </button>
+            </div>
+
+            {mobileSheet && (
+                <div className="md:hidden fixed inset-0 z-[180] flex flex-col justify-end bg-black/40" role="dialog" aria-modal="true"
+                    onClick={(e) => { if (e.target === e.currentTarget) setMobileSheet(null); }}>
+                    <div className="bg-white rounded-t-3xl max-h-[75vh] flex flex-col shadow-2xl">
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-100">
+                            <p className="text-xs font-black uppercase tracking-wider text-zinc-500">
+                                {mobileSheet === 'sections' ? 'Sections' : 'Settings'}
+                            </p>
+                            <button type="button" onClick={() => setMobileSheet(null)}
+                                className="text-xs font-bold text-zinc-600 px-2 py-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008060] rounded"
+                                aria-label="Close panel">Close</button>
+                        </div>
+                        <div className="overflow-y-auto flex-1 min-h-[40vh]">
+                            {mobileSheet === 'sections' && (
+                                <SectionTree
+                                    sections={activePage.sections}
+                                    selectedId={selectedSectionId}
+                                    onSelect={(id) => { setSelectedSectionId(id); setMobileSheet('settings'); }}
+                                    onReorder={handleReorderSections}
+                                    onRemove={handleRemoveSection}
+                                    onDuplicate={handleDuplicateSection}
+                                    onToggleVisibility={handleToggleVisibility}
+                                    onToggleLock={handleToggleLock}
+                                />
+                            )}
+                            {mobileSheet === 'settings' && (
+                                <div className="p-4">
+                                    {selectedSectionId ? (
+                                        <SettingsPanel
+                                            section={activePage.sections.find((s, i) => (s.sectionId || s._id || `sec-${i}`) === selectedSectionId) || {}}
+                                            onChangeSettings={handleUpdateSectionSettings}
+                                            onAddBlock={handleAddBlock}
+                                            onUpdateBlock={handleUpdateBlockSetting}
+                                            onRemoveBlock={handleRemoveBlock}
+                                        />
+                                    ) : (
+                                        <ThemeSettingsPanel themeSettings={themeSettings} onChange={updateThemeSettings} schema={schema} />
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* 4. Global Toast notifications */}
             {toast.show && (
-                <div className={`fixed bottom-6 right-6 px-5 py-3 rounded-2xl shadow-xl text-xs font-bold z-50 flex items-center gap-2 border animate-toast-in ${
+                <div className={`fixed bottom-20 md:bottom-6 right-6 px-5 py-3 rounded-2xl shadow-xl text-xs font-bold z-50 flex items-center gap-2 border animate-toast-in ${
                     toast.type === 'error' ? 'bg-red-50 text-red-700 border-red-200' : 'bg-zinc-900 text-white border-zinc-800'
-                }`}>
-                    <span>{toast.type === 'error' ? '⚠️' : '✨'}</span>
+                }`} role="status">
                     <span>{toast.message}</span>
                 </div>
             )}

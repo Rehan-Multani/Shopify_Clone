@@ -1,0 +1,11 @@
+{
+  "name": "Featured Collections",
+  "type": "category-grid",
+  "component": "FeaturedCategories",
+  "settings": {
+    "title": "Collections",
+    "subtitle": "Living, dining, and rest — composed with intention",
+    "limit": 4,
+    "columns": 4
+  }
+}

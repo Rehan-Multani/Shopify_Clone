@@ -379,7 +379,25 @@ const StorefrontCheckout = ({ cart, cartCount, onClearCart, customer, onLogout, 
                 status: 'pending',
                 paymentMethod: paymentMethodLabel,
                 storeId: storeId,
-                vendorId: vendorIdFromCart || null
+                vendorId: vendorIdFromCart || null,
+                // Wave 7 — anonymous theme attribution only (no PII)
+                themeAttribution: (() => {
+                    try {
+                        const raw = localStorage.getItem(`_theme_meta_${storeId}`);
+                        const meta = raw ? JSON.parse(raw) : {};
+                        const sessionKey = sessionStorage.getItem(`theme_session_${storeId}`) || '';
+                        return {
+                            themeId: meta.themeId || meta.themeFolder || '',
+                            themeVersion: meta.themeVersion || '',
+                            experimentId: meta.experimentId || '',
+                            variantKey: meta.variantKey || '',
+                            sessionKey,
+                            currency: 'INR',
+                        };
+                    } catch {
+                        return {};
+                    }
+                })(),
             })
         });
 

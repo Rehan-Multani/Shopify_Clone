@@ -10,6 +10,8 @@ const tabLabels = {
     coupons: 'Coupons',
     analytics: 'Analytics',
     reports: 'Reports',
+    experiments: 'Experiments',
+    'theme-activity': 'Theme Activity',
     pages: 'Pages',
     websites: 'Website',
     profile: 'Profile',

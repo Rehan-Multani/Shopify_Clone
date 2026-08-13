@@ -50,9 +50,21 @@ const themeSchema = new mongoose.Schema({
     features: [{
         type: String
     }],
+    category: {
+        type: String,
+        default: '',
+        trim: true
+    },
+    supportedSections: [{
+        type: String
+    }],
+    capabilities: {
+        type: mongoose.Schema.Types.Mixed,
+        default: {}
+    },
     status: {
         type: String,
-        enum: ['draft', 'published', 'archived'],
+        enum: ['draft', 'published', 'archived', 'review', 'deprecated'],
         default: 'draft',
         required: true
     },
@@ -66,7 +78,21 @@ const themeSchema = new mongoose.Schema({
         type: String,
         required: true,
         trim: true
-    }
+    },
+    // Wave 7 — marketplace author / vendor foundation (no revenue share yet)
+    authorId: { type: String, default: '', trim: true },
+    authorName: { type: String, default: '', trim: true },
+    license: { type: String, default: 'proprietary', trim: true },
+    versionHistory: [{
+        version: String,
+        changelog: String,
+        releasedAt: { type: Date, default: Date.now },
+    }],
+    submissionStatus: {
+        type: String,
+        enum: ['', 'draft', 'review', 'published', 'deprecated'],
+        default: '',
+    },
 }, {
     timestamps: true
 });

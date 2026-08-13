@@ -1,0 +1,59 @@
+{
+  "name": "Editorial Hero",
+  "type": "hero",
+  "component": "Hero",
+  "settings": {
+    "backgroundImage": "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=1800&q=80",
+    "alignment": "center",
+    "overlayOpacity": "0.4",
+    "height": "920px",
+    "heroStyle": "cinematic",
+    "showTrustBadges": true,
+    "badge1Text": "Handcrafted",
+    "badge2Text": "Worldwide Shipping",
+    "badge3Text": "Lifetime Care"
+  },
+  "blocks": [
+    {
+      "type": "heading",
+      "settings": {
+        "text": "Quiet Luxury,<br/>Bold Presence",
+        "style": {
+          "tag": "h1",
+          "fontSize": 72,
+          "color": "#ffffff",
+          "fontWeight": "500",
+          "textAlign": "center"
+        }
+      }
+    },
+    {
+      "type": "subheading",
+      "settings": {
+        "text": "The new season edit — refined silhouettes for modern living",
+        "style": {
+          "fontSize": 14,
+          "color": "#ffffff",
+          "fontWeight": "500",
+          "textAlign": "center"
+        }
+      }
+    },
+    {
+      "type": "button",
+      "settings": {
+        "label": "Shop Collection",
+        "link": "/catalog",
+        "style": {
+          "backgroundColor": "#ffffff",
+          "textColor": "#111111",
+          "borderRadius": "0px",
+          "paddingY": 16,
+          "paddingX": 36,
+          "fontSize": 11,
+          "shadow": "lg"
+        }
+      }
+    }
+  ]
+}

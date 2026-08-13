@@ -1,0 +1,10 @@
+{
+  "name": "Newsletter",
+  "type": "newsletter",
+  "component": "Newsletter",
+  "settings": {
+    "title": "Deal alerts in your inbox",
+    "subtitle": "Get flash-sale drops and restock notices first.",
+    "buttonLabel": "Subscribe"
+  }
+}

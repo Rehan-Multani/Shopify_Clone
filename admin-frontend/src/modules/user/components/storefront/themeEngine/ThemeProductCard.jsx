@@ -14,12 +14,12 @@ const getImageUrl = (path) => {
 };
 
 /**
- * Theme-aware product card — visual composition changes by productCardStyle.
+ * Theme-aware product card — visual composition changes by productCardStyle / cardVariant.
  */
-export default function ThemeProductCard({ product, storeId, onAddToCart, cardShape, customer }) {
+export default function ThemeProductCard({ product, storeId, onAddToCart, cardShape, customer, cardVariant }) {
     const theme = useTheme();
     const cartUi = useCartUI();
-    const style = theme.productCardStyle || 'standard';
+    const style = cardVariant || theme.productCardStyle || 'standard';
     const [hovered, setHovered] = useState(false);
     const [adding, setAdding] = useState(false);
     const [wishlisted, setWishlisted] = useState(false);
@@ -101,7 +101,7 @@ export default function ThemeProductCard({ product, storeId, onAddToCart, cardSh
         : theme.borderRadius || '8px';
 
     const link = getStorePath(storeId, `/product/${product._id}`);
-    const priceColor = ['luxury', 'editorial', 'minimal'].includes(style) ? 'var(--color-text)' : 'var(--color-primary)';
+    const priceColor = ['luxury', 'editorial', 'minimal', 'furniture'].includes(style) ? 'var(--color-text)' : 'var(--color-primary)';
     const price = (
         <div className="flex items-baseline gap-2 flex-wrap">
             <span className="font-bold" style={{ color: priceColor, fontFamily: 'var(--theme-price-font)' }}>
@@ -110,17 +110,19 @@ export default function ThemeProductCard({ product, storeId, onAddToCart, cardSh
             {discount > 0 && (
                 <>
                     <span className="text-xs text-zinc-400 line-through">₹{Number(product.actualPrice).toLocaleString()}</span>
-                    {style === 'sale' && <span className="text-[10px] font-black text-red-600">-{discount}%</span>}
+                    {(style === 'sale' || style === 'electronics') && (
+                        <span className="text-[10px] font-black text-red-600">-{discount}%</span>
+                    )}
                 </>
             )}
         </div>
     );
 
-    const badge = discount > 0 && !['luxury', 'editorial', 'minimal'].includes(style) && (
+    const badge = discount > 0 && !['luxury', 'editorial', 'minimal', 'furniture'].includes(style) && (
         <span className={`absolute top-3 left-3 z-10 px-2 py-1 text-[9px] font-black uppercase tracking-wider ${
             style === 'sale' ? 'bg-red-600 text-white' : style === 'quickAdd' ? 'bg-black text-white' : 'text-white'
         }`} style={style === 'sale' || style === 'quickAdd' ? undefined : { background: 'var(--color-accent)' }}>
-            {style === 'sale' ? `${discount}% OFF` : `−${discount}%`}
+            {style === 'sale' || style === 'electronics' ? `${discount}% OFF` : `−${discount}%`}
         </span>
     );
 
@@ -160,6 +162,92 @@ export default function ThemeProductCard({ product, storeId, onAddToCart, cardSh
                     {product.name}
                 </Link>
                 <div className="text-sm opacity-80">{price}</div>
+            </div>
+        );
+    }
+
+    if (style === 'furniture') {
+        return (
+            <div data-theme-card data-card-style="furniture" className="group flex flex-col" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
+                <Link to={link} className="relative block aspect-[4/5] overflow-hidden bg-[#ebe6df] mb-5" style={{ borderRadius: radius }}>
+                    {wishlistBtn}{stockOverlay}
+                    {img1 ? (
+                        <img
+                            src={hovered && img2 ? img2 : img1}
+                            alt={product.name}
+                            loading="lazy"
+                            className="w-full h-full object-cover transition-transform duration-[900ms] ease-out group-hover:scale-[1.04]"
+                        />
+                    ) : (
+                        <div className="w-full h-full bg-[#ebe6df]" />
+                    )}
+                </Link>
+                {product.brandName && (
+                    <span className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-1">{product.brandName}</span>
+                )}
+                <Link to={link} className="text-base font-medium tracking-tight mb-2" style={{ fontFamily: 'var(--heading-font)' }}>
+                    {product.name}
+                </Link>
+                <div className="text-sm opacity-80">{price}</div>
+            </div>
+        );
+    }
+
+    if (style === 'electronics') {
+        const rating = Number(product.rating || product.avgRating || 0);
+        return (
+            <div
+                data-theme-card
+                data-card-style="electronics"
+                className="group store-card bg-white flex flex-col h-full overflow-hidden border border-zinc-100 transition-transform duration-200 hover:-translate-y-1 hover:shadow-md"
+                style={{ borderRadius: radius }}
+                onMouseEnter={() => setHovered(true)}
+                onMouseLeave={() => setHovered(false)}
+            >
+                <Link to={link} className="relative block aspect-square bg-zinc-50 overflow-hidden">
+                    {badge}{wishlistBtn}{stockOverlay}
+                    {img1 ? (
+                        <img
+                            src={hovered && img2 ? img2 : img1}
+                            alt={product.name}
+                            loading="lazy"
+                            className="w-full h-full object-contain p-4 transition-transform duration-200 group-hover:scale-105"
+                        />
+                    ) : (
+                        <div className="w-full h-full bg-zinc-100" />
+                    )}
+                    <div className="absolute inset-x-0 bottom-0 p-2 flex gap-2 translate-y-full group-hover:translate-y-0 transition-transform duration-200">
+                        <button
+                            type="button"
+                            onClick={(e) => { e.preventDefault(); handleAdd(e); }}
+                            disabled={outOfStock}
+                            className="flex-1 py-2 text-[10px] font-bold uppercase tracking-wide text-white disabled:opacity-40"
+                            style={{ background: 'var(--color-primary)', borderRadius: radius }}
+                        >
+                            {addLabel}
+                        </button>
+                        <Link
+                            to={link}
+                            className="px-3 py-2 text-[10px] font-bold uppercase tracking-wide bg-white text-zinc-800 border border-zinc-200"
+                            style={{ borderRadius: radius }}
+                            aria-label={`Quick view ${product.name}`}
+                        >
+                            View
+                        </Link>
+                    </div>
+                </Link>
+                <div className="p-3 pt-2.5 flex-1 flex flex-col gap-1">
+                    {product.brandName && (
+                        <span className="text-[9px] uppercase tracking-wider text-zinc-400 font-bold">{product.brandName}</span>
+                    )}
+                    <Link to={link} className="text-sm font-semibold line-clamp-2 leading-snug">{product.name}</Link>
+                    {rating > 0 && (
+                        <span className="text-[10px] font-bold text-amber-600" aria-label={`Rating ${rating} of 5`}>
+                            ★ {rating.toFixed(1)}
+                        </span>
+                    )}
+                    {price}
+                </div>
             </div>
         );
     }

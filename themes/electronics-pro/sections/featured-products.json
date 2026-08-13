@@ -1,0 +1,18 @@
+{
+  "name": "Featured Products",
+  "type": "featured-products",
+  "component": "FeaturedProducts",
+  "settings": {
+    "title": "Top Picks",
+    "subtitle": "High-demand gadgets with verified ratings",
+    "source": "featured",
+    "limit": 8,
+    "columns": { "desktop": 4, "tablet": 3, "mobile": 2 },
+    "layout": "grid",
+    "cardStyle": "electronics",
+    "showPrice": true,
+    "showRating": true,
+    "showWishlist": true,
+    "showQuickView": true
+  }
+}

@@ -3,48 +3,11 @@ import { Link, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { getStorePath } from './storeUrlHelper';
 import ThemeHeader from './themeEngine/ThemeHeader';
 import { useTheme } from './themeEngine/ThemeContext';
+import { resolveDesignTokens, isDarkColor } from './themeEngine/DesignTokens';
+import ThemeLoader from './themeEngine/ThemeLoader';
 
 const GATEWAY_URL = import.meta.env.VITE_API_BASE_URL;
 const ASSETS_BASE_URL = GATEWAY_URL.replace('/api', '');
-
-const isDarkColor = (hex) => {
-    try {
-        const cleanHex = (hex || '').replace('#', '');
-        let r, g, b;
-        if (cleanHex.length === 3) {
-            r = parseInt(cleanHex[0] + cleanHex[0], 16);
-            g = parseInt(cleanHex[1] + cleanHex[1], 16);
-            b = parseInt(cleanHex[2] + cleanHex[2], 16);
-        } else {
-            r = parseInt(cleanHex.substring(0, 2), 16);
-            g = parseInt(cleanHex.substring(2, 4), 16);
-            b = parseInt(cleanHex.substring(4, 6), 16);
-        }
-        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-        return brightness < 128;
-    } catch (e) {
-        return false;
-    }
-};
-
-const hexToRgba = (hex, alpha) => {
-    try {
-        const cleanHex = (hex || '').replace('#', '');
-        let r, g, b;
-        if (cleanHex.length === 3) {
-            r = parseInt(cleanHex[0] + cleanHex[0], 16);
-            g = parseInt(cleanHex[1] + cleanHex[1], 16);
-            b = parseInt(cleanHex[2] + cleanHex[2], 16);
-        } else {
-            r = parseInt(cleanHex.substring(0, 2), 16);
-            g = parseInt(cleanHex.substring(2, 4), 16);
-            b = parseInt(cleanHex.substring(4, 6), 16);
-        }
-        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-    } catch (e) {
-        return `rgba(255, 255, 255, ${alpha})`;
-    }
-};
 
 const StorefrontLayout = ({ children, cartCount, customer, onLogout, storeInfo }) => {
     const { storeId: paramStoreId } = useParams();
@@ -136,23 +99,45 @@ const StorefrontLayout = ({ children, cartCount, customer, onLogout, storeInfo }
     const footerTextMuted = isFooterDark ? '#a1a1aa' : '#52525b';
     const footerBorder = isFooterDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
     const footerCardBg = isFooterDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)';
+    const designTokenStyle = {
+        ...resolveDesignTokens({
+            ...(storeInfo?.themeSettings || {}),
+            primaryColor: storeInfo?.themeSettings?.primaryColor || theme.primaryColor,
+            secondaryColor: storeInfo?.themeSettings?.secondaryColor || theme.secondaryColor,
+            accentColor: storeInfo?.themeSettings?.accentColor || theme.accentColor,
+            borderRadius: storeInfo?.themeSettings?.borderRadius || theme.borderRadius,
+            headingFont: storeInfo?.themeSettings?.headingFont || storeInfo?.themeSettings?.fontFamily || theme.headingFont,
+            bodyFont: storeInfo?.themeSettings?.bodyFont || storeInfo?.themeSettings?.fontFamily || theme.bodyFont,
+            fontFamily: storeInfo?.themeSettings?.fontFamily || theme.fontFamily,
+            buttonFont: storeInfo?.themeSettings?.buttonFont || theme.buttonFont,
+            navigationFont: storeInfo?.themeSettings?.navigationFont || theme.navigationFont,
+            priceFont: storeInfo?.themeSettings?.priceFont || theme.priceFont,
+            headingLetterSpacing: storeInfo?.themeSettings?.headingLetterSpacing || theme.headingLetterSpacing,
+            bodyLineHeight: storeInfo?.themeSettings?.bodyLineHeight || theme.bodyLineHeight,
+            spacingScale: storeInfo?.themeSettings?.spacingScale || theme.spacingScale,
+            buttonStyle: storeInfo?.themeSettings?.buttonStyle || theme.buttonStyle,
+            containerWidth: storeInfo?.themeSettings?.containerWidth || theme.containerWidth,
+            animationPreset: storeInfo?.themeSettings?.animationPreset || storeInfo?.themeSettings?.motionPreset || theme.animationPreset,
+            motionPreset: storeInfo?.themeSettings?.motionPreset || theme.motionPreset,
+            shadowPreset: storeInfo?.themeSettings?.shadowPreset || theme.shadowPreset,
+            headerStyle: storeInfo?.themeSettings?.headerStyle || theme.headerStyle,
+            footerStyle: storeInfo?.themeSettings?.footerStyle || theme.footerStyle,
+            productCardStyle: storeInfo?.themeSettings?.productCardStyle || theme.productCardStyle,
+            themeFolder: storeInfo?.themeSettings?.themeFolder || theme.themeFolder,
+            themeId: storeInfo?.themeSettings?.themeId || theme.themeId,
+        }),
+        ...(theme.cssVars || {}),
+    };
 
     return (
         <>
+            <ThemeLoader
+                settings={storeInfo?.themeSettings || theme.raw || {}}
+                themeFolder={storeInfo?.themeSettings?.themeFolder || theme.themeFolder}
+            />
             <div 
                 className="flex flex-col min-h-screen w-full overflow-x-hidden bg-[var(--color-secondary)] selection:bg-[var(--color-primary-semi)] selection:text-[var(--color-primary-dark)] text-[var(--color-text)]"
-                style={{
-                    '--color-primary': storeInfo?.themeSettings?.primaryColor || '#008060',
-                    '--color-secondary': storeInfo?.themeSettings?.secondaryColor || '#ffffff',
-                    '--color-accent': storeInfo?.themeSettings?.accentColor || '#14B8A6',
-                    '--border-radius': storeInfo?.themeSettings?.borderRadius || '14px',
-                    '--color-primary-light': hexToRgba(storeInfo?.themeSettings?.primaryColor || '#008060', 0.1),
-                    '--color-primary-semi': hexToRgba(storeInfo?.themeSettings?.primaryColor || '#008060', 0.25),
-                    '--color-primary-dark': hexToRgba(storeInfo?.themeSettings?.primaryColor || '#008060', 0.8),
-                    '--color-text': isDarkColor(storeInfo?.themeSettings?.secondaryColor || '#ffffff') ? '#ffffff' : '#18181b',
-                    '--heading-font': storeInfo?.themeSettings?.headingFont || storeInfo?.themeSettings?.fontFamily || '"Playfair Display", Georgia, serif',
-                    fontFamily: storeInfo?.themeSettings?.fontFamily || '"DM Sans", "Segoe UI", sans-serif'
-                }}
+                style={designTokenStyle}
             >
                 {/* Dynamic Announcement Bar & Header */}
                 {storeInfo?.themeSettings?.headerConfig?.enabled !== false && (

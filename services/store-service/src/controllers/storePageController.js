@@ -1,9 +1,51 @@
 import StorePage from '../models/StorePage.js';
 import Store from '../models/Store.js';
 import { DEFAULT_HOME_SECTIONS } from '../data/defaultSections.js';
+import { validateAndSanitizeSections, sanitizeThemeSettings } from '../utils/themeValidation.js';
 import mongoose from 'mongoose';
 import fs from 'fs';
 import path from 'path';
+
+const cloneSections = (sections = []) => JSON.parse(JSON.stringify(sections || []));
+
+/**
+ * Pick draft vs published sections with legacy `sections` migration.
+ */
+const pickPageSections = (pageObj, { preferDraft = false } = {}) => {
+    const legacy = Array.isArray(pageObj.sections) ? pageObj.sections : [];
+    let draft = Array.isArray(pageObj.draftSections) ? pageObj.draftSections : [];
+    let published = Array.isArray(pageObj.publishedSections) ? pageObj.publishedSections : [];
+
+    if (draft.length === 0 && legacy.length > 0) draft = legacy;
+    if (published.length === 0 && legacy.length > 0) published = legacy;
+    if (draft.length === 0 && published.length > 0) draft = published;
+    if (published.length === 0 && draft.length > 0 && pageObj.visibility === 'published') {
+        published = draft;
+    }
+
+    return preferDraft ? draft : published;
+};
+
+const wantsDraftView = (req) => {
+    // Explicit public catalog preview (disk defaults only — handled separately)
+    if (req.query.cleanPreview === 'true') return false;
+
+    // Wave 5 — dedicated preview token (validated in app.js)
+    if (req.previewAuth && req.previewAuth.purpose === 'theme-preview') {
+        if (req.query.draft === 'true' || req.query.preview === 'true') return true;
+        return true; // preview token implies draft intent for theme pages
+    }
+    if (req.previewAuthError && (req.query.draft === 'true' || req.query.previewToken)) {
+        // Invalid token attempting draft — treat as unauthorized (caller checks)
+        return false;
+    }
+
+    // Merchant session may see drafts
+    if (req.merchant) return true;
+
+    // Merchant JWT alone in URL is no longer accepted
+    return false;
+};
 
 // Helper to read JSON safely
 const readJsonFile = (filePath) => {
@@ -392,10 +434,11 @@ export const getPages = async (req, res) => {
             pages = await StorePage.find({ ...baseFilter, themeId: '' });
         }
 
+        const preferDraft = wantsDraftView(req);
         const formattedPages = await Promise.all(pages.map(async p => {
             const obj = p.toObject();
             const isDef = DEFAULT_PAGES.some(d => d.slug === obj.slug);
-            let sectionsList = obj.sections || [];
+            let sectionsList = pickPageSections(obj, { preferDraft });
             // Prefer saved HTML content for CMS pages; only fall back to section templates when empty
             if (sectionsList.length === 0 && (!obj.content || obj.slug === 'home')) {
                 sectionsList = await getDefaultPageSections(obj.slug, storeId, themeId);
@@ -403,6 +446,8 @@ export const getPages = async (req, res) => {
             return {
                 ...obj,
                 sections: sectionsList,
+                draftSections: pickPageSections(obj, { preferDraft: true }),
+                publishedSections: pickPageSections(obj, { preferDraft: false }),
                 isDefault: isDef,
                 isNew: false
             };
@@ -442,6 +487,28 @@ export const getPageBySlug = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Store ID is required' });
         }
 
+        // Wave 5 — reject invalid/mismatched preview tokens when requesting draft
+        if (req.query.previewToken || req.query.draft === 'true') {
+            if (req.previewAuthError) {
+                return res.status(req.previewAuthError.status || 401).json({
+                    success: false,
+                    message: req.previewAuthError.message || 'Invalid preview token',
+                });
+            }
+            if (req.previewAuth && String(req.previewAuth.storeId) !== String(storeId)) {
+                return res.status(403).json({ success: false, message: 'Preview token store mismatch' });
+            }
+            if (req.previewAuth?.themeId && (req.query.themeId || req.query.previewThemeId)) {
+                const tid = req.query.themeId || req.query.previewThemeId;
+                if (String(req.previewAuth.themeId) !== String(tid)) {
+                    return res.status(403).json({ success: false, message: 'Preview token theme mismatch' });
+                }
+            }
+            if (!req.previewAuth && !req.merchant && req.query.draft === 'true') {
+                return res.status(401).json({ success: false, message: 'Preview token required for draft' });
+            }
+        }
+
         const useCleanPreview = req.query.cleanPreview === 'true';
         const store = await Store.findById(storeId);
         const themeId = req.query.themeId || req.query.previewThemeId || (store && store.activeTheme ? store.activeTheme.themeId : '');
@@ -472,13 +539,16 @@ export const getPageBySlug = async (req, res) => {
         } else {
             const obj = page.toObject();
             const isDef = DEFAULT_PAGES.some(d => d.slug === obj.slug);
-            let sectionsList = obj.sections || [];
+            const preferDraft = wantsDraftView(req);
+            let sectionsList = pickPageSections(obj, { preferDraft });
             if (sectionsList.length === 0 && (!obj.content || obj.slug === 'home')) {
                 sectionsList = await getDefaultPageSections(obj.slug, storeId, themeId, req.query.folder);
             }
             page = {
                 ...obj,
                 sections: sectionsList,
+                draftSections: pickPageSections(obj, { preferDraft: true }),
+                publishedSections: pickPageSections(obj, { preferDraft: false }),
                 isDefault: isDef,
                 isNew: false
             };
@@ -501,17 +571,26 @@ export const getPageBySlug = async (req, res) => {
     }
 };
 
-// @desc    Update or create a store page
+// @desc    Update or create a store page (writes DRAFT sections only)
 // @route   PUT /api/store-pages/:slug
 // @access  Private (Merchant)
 export const updatePage = async (req, res) => {
     try {
         const { slug } = req.params;
-        const { content, title, sections, isHomePage, seo, visibility, publishDate, password } = req.body;
+        const { content, title, sections, isHomePage, seo, visibility, publishDate, password, publish } = req.body;
         const merchantId = req.merchant._id;
         const storeId = req.headers['x-store-id'];
         if (!storeId) {
             return res.status(400).json({ success: false, message: 'Store ID (x-store-id) is required' });
+        }
+
+        let sanitizedSections;
+        if (sections !== undefined) {
+            const result = validateAndSanitizeSections(sections);
+            if (!result.ok) {
+                return res.status(400).json({ success: false, message: result.message });
+            }
+            sanitizedSections = result.sections;
         }
 
         const store = await Store.findById(storeId);
@@ -521,21 +600,36 @@ export const updatePage = async (req, res) => {
         if (page) {
             page.content = content !== undefined ? content : page.content;
             page.title = title !== undefined ? title : page.title;
-            if (sections !== undefined) page.sections = sections;
+            if (sanitizedSections !== undefined) {
+                page.draftSections = sanitizedSections;
+                // Do NOT overwrite publishedSections unless explicitly publishing
+                if (publish === true) {
+                    page.publishedSections = cloneSections(sanitizedSections);
+                    page.sections = cloneSections(sanitizedSections);
+                    page.visibility = 'published';
+                }
+            }
             if (isHomePage !== undefined) page.isHomePage = isHomePage;
             if (seo !== undefined) page.seo = seo;
-            if (visibility !== undefined) page.visibility = visibility;
+            if (visibility !== undefined && publish !== true) page.visibility = visibility;
             if (publishDate !== undefined) page.publishDate = publishDate;
             if (password !== undefined) page.password = password;
+            page.markModified('draftSections');
+            if (publish === true) {
+                page.markModified('publishedSections');
+                page.markModified('sections');
+            }
             await page.save();
         } else {
             const defaultPage = DEFAULT_PAGES.find(p => p.slug === slug);
-            let themeSections = sections;
+            let themeSections = sanitizedSections;
             if (themeSections === undefined) {
                 if (slug === 'home') {
                     themeSections = await getThemeDefaultSections(storeId, themeId);
                 }
             }
+            const draft = themeSections || [];
+            const shouldPublish = publish === true || visibility === 'published';
 
             page = await StorePage.create({
                 merchantId,
@@ -545,21 +639,74 @@ export const updatePage = async (req, res) => {
                 title: title || (defaultPage ? defaultPage.title : slug),
                 content: content || '',
                 isHomePage: isHomePage !== undefined ? isHomePage : (defaultPage ? !!defaultPage.isHomePage : false),
-                sections: themeSections || [],
+                draftSections: draft,
+                publishedSections: shouldPublish ? cloneSections(draft) : [],
+                sections: shouldPublish ? cloneSections(draft) : [],
                 seo: seo || {},
-                visibility: visibility || 'published',
+                visibility: shouldPublish ? 'published' : (visibility || 'draft'),
                 publishDate: publishDate || Date.now(),
                 password: password || ''
             });
         }
 
+        const obj = page.toObject ? page.toObject() : page;
         res.status(200).json({
             success: true,
-            message: 'Page saved successfully',
-            page
+            message: 'Page draft saved successfully',
+            page: {
+                ...obj,
+                sections: pickPageSections(obj, { preferDraft: true })
+            }
         });
     } catch (error) {
         console.error('Error updating store page:', error);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
+// @desc    Publish draft page sections to live storefront
+// @route   POST /api/store-pages/:slug/publish
+// @access  Private (Merchant)
+export const publishPage = async (req, res) => {
+    try {
+        const { slug } = req.params;
+        const merchantId = req.merchant._id;
+        const storeId = req.headers['x-store-id'];
+        if (!storeId) {
+            return res.status(400).json({ success: false, message: 'Store ID (x-store-id) is required' });
+        }
+
+        const store = await Store.findById(storeId);
+        const themeId = req.query.themeId || req.body.themeId || (store && store.activeTheme ? store.activeTheme.themeId : '');
+        const page = await StorePage.findOne({ merchantId, storeId, slug, themeId });
+
+        if (!page) {
+            return res.status(404).json({ success: false, message: 'Page not found' });
+        }
+
+        const draft = pickPageSections(page.toObject(), { preferDraft: true });
+        const result = validateAndSanitizeSections(draft);
+        if (!result.ok) {
+            return res.status(400).json({ success: false, message: result.message });
+        }
+
+        page.draftSections = result.sections;
+        page.publishedSections = cloneSections(result.sections);
+        page.sections = cloneSections(result.sections);
+        page.visibility = 'published';
+        page.publishDate = new Date();
+        page.markModified('draftSections');
+        page.markModified('publishedSections');
+        page.markModified('sections');
+        await page.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Page published successfully',
+            page
+        });
+    } catch (error) {
+        console.error('Error publishing store page:', error);
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };
@@ -609,6 +756,12 @@ export const updatePageSections = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Sections must be an array' });
         }
 
+        const result = validateAndSanitizeSections(sections);
+        if (!result.ok) {
+            return res.status(400).json({ success: false, message: result.message });
+        }
+        const sanitizedSections = result.sections;
+
         const store = await Store.findById(storeId);
         const themeId = req.query.themeId || req.body.themeId || (store && store.activeTheme ? store.activeTheme.themeId : '');
         const filter = { merchantId, storeId, slug, themeId };
@@ -624,10 +777,13 @@ export const updatePageSections = async (req, res) => {
                 slug,
                 title: defaultPage ? defaultPage.title : slug,
                 isHomePage: defaultPage ? !!defaultPage.isHomePage : slug === 'home',
-                sections: sections
+                draftSections: sanitizedSections,
+                publishedSections: [],
+                sections: []
             });
         } else {
-            page.sections = sections;
+            page.draftSections = sanitizedSections;
+            page.markModified('draftSections');
             await page.save();
         }
 
@@ -665,19 +821,25 @@ export const updateSectionSettings = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Page not found' });
         }
 
-        const section = page.sections.find(sec => sec.sectionId.toString() === sectionId || sec._id.toString() === sectionId);
+        const section = (page.draftSections || page.sections || []).find(sec =>
+            (sec.sectionId && sec.sectionId.toString() === sectionId)
+            || (sec._id && sec._id.toString() === sectionId)
+        );
         if (!section) {
             return res.status(404).json({ success: false, message: 'Section not found' });
         }
 
         if (settings !== undefined) {
-            section.settings = { ...section.settings, ...settings };
+            section.settings = { ...section.settings, ...sanitizeThemeSettings(settings) };
         }
         if (enabled !== undefined) {
             section.enabled = enabled;
         }
 
-        page.markModified('sections');
+        if (!page.draftSections || page.draftSections.length === 0) {
+            page.draftSections = page.sections || [];
+        }
+        page.markModified('draftSections');
         await page.save();
 
         res.status(200).json({
@@ -722,9 +884,11 @@ export const createPage = async (req, res) => {
             title,
             content: content || '',
             isHomePage: !!isHomePage,
-            sections: sections || [],
+            draftSections: sections || [],
+            publishedSections: visibility === 'published' ? (sections || []) : [],
+            sections: visibility === 'published' ? (sections || []) : [],
             seo: seo || {},
-            visibility: visibility || 'published',
+            visibility: visibility || 'draft',
             publishDate: publishDate || Date.now(),
             password: password || ''
         });

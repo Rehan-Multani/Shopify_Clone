@@ -7,8 +7,8 @@ const GATEWAY_URL = import.meta.env.VITE_API_BASE_URL;
 const ASSETS_BASE_URL = GATEWAY_URL?.replace('/api', '') || 'http://localhost:5000';
 
 const CATEGORIES = [
-    'All Themes', 'Free', 'Premium', 'Fashion', 'Electronics', 'Beauty', 'Food',
-    'Home & Living', 'Sports', 'Kids', 'Handmade', 'Luxury', 'General Store',
+    'All Themes', 'Free', 'Premium', 'Fashion', 'Electronics', 'Furniture', 'Beauty', 'Food',
+    'Home & Living', 'Sports', 'Kids', 'Handmade', 'Luxury', 'Minimal', 'General Store',
 ];
 
 const SORT_OPTIONS = [
@@ -61,6 +61,11 @@ export default function ThemesTab() {
     const [sort, setSort] = useState('recommended');
     const [viewTheme, setViewTheme] = useState(null);
     const [publishConfirm, setPublishConfirm] = useState(null);
+    const [updates, setUpdates] = useState([]);
+    const [hasRollback, setHasRollback] = useState(false);
+    const [upgradePreview, setUpgradePreview] = useState(null);
+    const [pendingTheme, setPendingTheme] = useState(null);
+    const [libraryTab, setLibraryTab] = useState('my-themes'); // my-themes | theme-store | updates
 
     const showToast = (msg, type = 'success') => setToast({ msg, type });
 
@@ -98,6 +103,16 @@ export default function ThemesTab() {
             });
             if (purchasesRes.ok) {
                 setPurchases(await purchasesRes.json());
+            }
+
+            const updatesRes = await fetch(`${STORE_API_URL}/themes/updates`, { headers: authHeaders });
+            if (updatesRes.ok) {
+                const updatesJson = await updatesRes.json();
+                if (updatesJson.success) {
+                    setUpdates(updatesJson.updates || []);
+                    setHasRollback(!!updatesJson.hasRollback);
+                    setPendingTheme(updatesJson.pendingTheme || null);
+                }
             }
         } catch (error) {
             console.error(error);
@@ -152,7 +167,7 @@ export default function ThemesTab() {
         return t.startsWith('http') ? t : `${ASSETS_BASE_URL}${t}`;
     };
 
-    const handleInstallTheme = async (theme) => {
+    const handleInstallTheme = async (theme, mode = 'draft') => {
         try {
             setBusyId(theme._id);
             const res = await fetch(`${STORE_API_URL}/themes/install`, {
@@ -162,13 +177,23 @@ export default function ThemesTab() {
                     themeId: theme._id,
                     folder: theme.folder,
                     version: theme.version || '1.0.0',
+                    mode,
                 }),
             });
             const json = await res.json();
             if (res.ok && json.success) {
-                showToast(`"${theme.displayName}" added to library & published`);
+                showToast(
+                    mode === 'draft'
+                        ? `"${theme.displayName}" prepared as draft — preview then publish`
+                        : mode === 'library'
+                            ? `"${theme.displayName}" added to library`
+                            : `"${theme.displayName}" activated`
+                );
                 setViewTheme(null);
                 fetchThemeData();
+                if (mode === 'draft') {
+                    navigate(`/dashboard/store-preview/${storeId}?themeId=${theme._id}&folder=${theme.folder}`);
+                }
             } else if (res.status === 402 || json.code === 'THEME_PURCHASE_REQUIRED') {
                 showToast(json.message || 'Purchase required', 'error');
                 await handlePurchaseTheme(theme);
@@ -180,6 +205,84 @@ export default function ThemesTab() {
         } finally {
             setBusyId(null);
         }
+    };
+
+    const openPreview = (theme, { clean = false } = {}) => {
+        const q = new URLSearchParams();
+        if (theme?._id) q.set('themeId', theme._id);
+        if (theme?.folder) q.set('folder', theme.folder);
+        if (clean) q.set('cleanPreview', 'true');
+        navigate(`/dashboard/store-preview/${storeId}?${q.toString()}`);
+    };
+
+    const handlePreviewUpgrade = async (update) => {
+        try {
+            setBusyId(update.themeId);
+            const res = await fetch(`${STORE_API_URL}/themes/upgrade/preview`, {
+                method: 'POST',
+                headers: authHeaders,
+                body: JSON.stringify({ themeId: update.themeId, toVersion: update.availableVersion }),
+            });
+            const json = await res.json();
+            if (res.ok && json.success !== false) {
+                setUpgradePreview({ ...json, update });
+            } else {
+                showToast(json.message || 'Could not preview upgrade', 'error');
+            }
+        } catch {
+            showToast('Network error previewing upgrade', 'error');
+        } finally {
+            setBusyId(null);
+        }
+    };
+
+    const handleUpgradeTheme = async (update) => {
+        try {
+            setBusyId(update.themeId);
+            const res = await fetch(`${STORE_API_URL}/themes/upgrade`, {
+                method: 'POST',
+                headers: authHeaders,
+                body: JSON.stringify({ themeId: update.themeId, toVersion: update.availableVersion }),
+            });
+            const json = await res.json();
+            if (res.ok && json.success) {
+                showToast('Upgrade applied to draft — review & publish when ready');
+                setUpgradePreview(null);
+                fetchThemeData();
+                navigate(`/dashboard/theme-customizer?themeId=${update.themeId}`);
+            } else {
+                showToast(json.message || 'Upgrade failed', 'error');
+            }
+        } catch {
+            showToast('Network error upgrading theme', 'error');
+        } finally {
+            setBusyId(null);
+        }
+    };
+
+    const handleRollback = async () => {
+        try {
+            setBusyId('rollback');
+            const res = await fetch(`${STORE_API_URL}/themes/rollback`, {
+                method: 'POST',
+                headers: authHeaders,
+            });
+            const json = await res.json();
+            if (res.ok && json.success) {
+                showToast('Rolled back to previous published theme');
+                fetchThemeData();
+            } else {
+                showToast(json.message || 'Rollback failed', 'error');
+            }
+        } catch {
+            showToast('Network error during rollback', 'error');
+        } finally {
+            setBusyId(null);
+        }
+    };
+
+    const handleInstallThemeLegacy = async (theme) => {
+        await handleInstallTheme(theme, 'draft');
     };
 
     const handlePurchaseTheme = async (theme) => {
@@ -229,7 +332,7 @@ export default function ThemesTab() {
                     if (verifyRes.ok) {
                         showToast('Purchase successful! Adding to library…');
                         await fetchThemeData();
-                        await handleInstallTheme(theme);
+                        await handleInstallTheme(theme, 'library');
                     } else {
                         showToast(verifyData.message || 'Payment verification failed', 'error');
                     }
@@ -251,7 +354,46 @@ export default function ThemesTab() {
 
     const confirmPublish = async (theme) => {
         setPublishConfirm(null);
-        await handleInstallTheme(theme);
+        await handleInstallTheme(theme, 'live');
+    };
+
+    const handleActivate = async (themeId) => {
+        setBusyId(themeId);
+        try {
+            const res = await fetch(`${STORE_API_URL}/themes/activate`, {
+                method: 'POST',
+                headers: authHeaders,
+                body: JSON.stringify({ themeId }),
+            });
+            const json = await res.json();
+            if (!res.ok) throw new Error(json.message || 'Activate failed');
+            showToast(json.message || 'Theme prepared as draft');
+            await fetchThemeData();
+        } catch (err) {
+            showToast(err.message || 'Activate failed', 'error');
+        } finally {
+            setBusyId(null);
+        }
+    };
+
+    const handleRemove = async (themeId) => {
+        if (!window.confirm('Remove this theme from your library?')) return;
+        setBusyId(themeId);
+        try {
+            const res = await fetch(`${STORE_API_URL}/themes/remove`, {
+                method: 'POST',
+                headers: authHeaders,
+                body: JSON.stringify({ themeId }),
+            });
+            const json = await res.json();
+            if (!res.ok) throw new Error(json.message || 'Remove failed');
+            showToast('Theme removed');
+            await fetchThemeData();
+        } catch (err) {
+            showToast(err.message || 'Remove failed', 'error');
+        } finally {
+            setBusyId(null);
+        }
     };
 
     if (loading) {
@@ -272,7 +414,71 @@ export default function ThemesTab() {
         <div className="space-y-8 pb-10">
             {toast && <Toast msg={toast.msg} type={toast.type} onDone={() => setToast(null)} />}
 
+            <div className="flex flex-wrap gap-2">
+                {[
+                    { id: 'my-themes', label: 'My Themes' },
+                    { id: 'theme-store', label: 'Theme Store' },
+                    { id: 'updates', label: 'Updates' },
+                ].map((t) => (
+                    <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => setLibraryTab(t.id)}
+                        className={`px-4 py-2 text-xs font-bold rounded-xl border ${libraryTab === t.id ? 'bg-zinc-900 text-white border-zinc-900' : 'border-zinc-200 text-zinc-600'}`}
+                    >
+                        {t.label}
+                    </button>
+                ))}
+            </div>
+
+            {/* Theme updates + rollback */}
+            {(libraryTab === 'updates' || libraryTab === 'my-themes') && (updates.length > 0 || hasRollback || pendingTheme?.themeId) && (
+                <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm space-y-4">
+                    <h2 className="text-sm font-bold text-zinc-900 uppercase tracking-wider">Theme Updates</h2>
+                    {pendingTheme?.themeId && (
+                        <div className="p-3 rounded-xl bg-sky-50 border border-sky-100 text-xs text-sky-900">
+                            Draft pending ({pendingTheme.mode || 'switch'}): version {pendingTheme.version}. Preview and publish from the customizer when ready.
+                            <div className="mt-2 flex gap-2">
+                                <button type="button" onClick={() => navigate(`/dashboard/store-preview/${storeId}?themeId=${pendingTheme.themeId}&folder=${pendingTheme.folder}`)}
+                                    className="px-3 py-1.5 bg-white border border-sky-200 rounded-lg font-bold">Preview Draft</button>
+                                <button type="button" onClick={() => navigate(`/dashboard/theme-customizer?themeId=${pendingTheme.themeId}`)}
+                                    className="px-3 py-1.5 bg-sky-600 text-white rounded-lg font-bold">Review & Publish</button>
+                            </div>
+                        </div>
+                    )}
+                    {updates.map((u) => (
+                        <div key={u.themeId} className="p-4 rounded-xl border border-amber-100 bg-amber-50/50 flex flex-col md:flex-row md:items-center gap-4 justify-between">
+                            <div>
+                                <p className="text-sm font-bold text-zinc-900">{u.displayName}</p>
+                                <p className="text-xs text-zinc-600 mt-1">
+                                    Current <span className="font-bold">v{u.currentVersion}</span>
+                                    {' → '}
+                                    Available <span className="font-bold text-amber-800">v{u.availableVersion}</span>
+                                </p>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                                <button type="button" onClick={() => handlePreviewUpgrade(u)} disabled={busyId === u.themeId}
+                                    className="px-3 py-2 border border-zinc-200 bg-white rounded-xl text-[11px] font-bold">View Changes</button>
+                                <button type="button" onClick={() => openPreview({ _id: u.themeId, folder: u.folder })}
+                                    className="px-3 py-2 border border-zinc-200 bg-white rounded-xl text-[11px] font-bold">Preview Update</button>
+                                <button type="button" onClick={() => handleUpgradeTheme(u)} disabled={busyId === u.themeId}
+                                    className="px-3 py-2 bg-zinc-900 text-white rounded-xl text-[11px] font-bold disabled:opacity-50">
+                                    Upgrade Theme
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                    {hasRollback && (
+                        <button type="button" onClick={handleRollback} disabled={busyId === 'rollback'}
+                            className="px-4 py-2 border border-zinc-200 rounded-xl text-xs font-bold text-zinc-700 hover:bg-zinc-50">
+                            Rollback to previous published theme
+                        </button>
+                    )}
+                </div>
+            )}
+
             {/* Header */}
+            {(libraryTab === 'theme-store') && (
             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-zinc-950">Theme Store</h1>
@@ -287,8 +493,10 @@ export default function ThemesTab() {
                     </span>
                 </div>
             </div>
+            )}
 
             {/* Live / Library */}
+            {(libraryTab === 'my-themes') && (
             <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm">
                 <h2 className="text-sm font-bold text-zinc-900 uppercase tracking-wider mb-4">Theme Library</h2>
                 {activeTheme?.themeId ? (
@@ -308,7 +516,7 @@ export default function ThemesTab() {
                             <div className="flex flex-wrap gap-2 mt-4">
                                 <button onClick={() => navigate(`/dashboard/theme-customizer?themeId=${activeTheme.themeId}`)}
                                     className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold">Customize</button>
-                                <a href={`/store/${storeId}?themeId=${activeTheme.themeId}`} target="_blank" rel="noreferrer"
+                                <a href={`/dashboard/store-preview/${storeId}?themeId=${activeTheme.themeId}&folder=${activeTheme.folder || ''}`}
                                     className="px-4 py-2 border border-zinc-200 bg-white text-zinc-700 rounded-xl text-xs font-semibold">Preview</a>
                             </div>
                         </div>
@@ -330,11 +538,13 @@ export default function ThemesTab() {
                                         <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-600">INSTALLED</span>
                                         <h4 className="text-sm font-bold text-zinc-900">{theme.details?.displayName || theme.folder}</h4>
                                     </div>
-                                    <div className="flex gap-2 mt-3">
-                                        <button onClick={() => setPublishConfirm(theme.details || theme)}
-                                            className="flex-1 py-1.5 text-[11px] font-bold border border-zinc-200 rounded-lg hover:bg-emerald-50">Publish</button>
+                                    <div className="flex flex-wrap gap-2 mt-3">
+                                        <button onClick={() => handleActivate(theme.themeId)} disabled={busyId === theme.themeId}
+                                            className="flex-1 py-1.5 text-[11px] font-bold border border-zinc-200 rounded-lg hover:bg-emerald-50">Activate</button>
                                         <button onClick={() => navigate(`/dashboard/theme-customizer?themeId=${theme.themeId}`)}
                                             className="flex-1 py-1.5 text-[11px] font-bold bg-zinc-900 text-white rounded-lg">Customize</button>
+                                        <button onClick={() => handleRemove(theme.themeId)} disabled={busyId === theme.themeId}
+                                            className="px-2 py-1.5 text-[11px] font-bold text-red-600 border border-red-100 rounded-lg">Remove</button>
                                     </div>
                                 </div>
                             </div>
@@ -342,8 +552,11 @@ export default function ThemesTab() {
                     </div>
                 )}
             </div>
+            )}
 
-            {/* Filters */}
+            {/* Filters + Theme Store */}
+            {libraryTab === 'theme-store' && (
+            <>
             <div className="space-y-4">
                 <div className="flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
                     <div className="relative flex-1 max-w-md">
@@ -410,14 +623,20 @@ export default function ThemesTab() {
                                 <div className="p-4 flex-1 flex flex-col">
                                     <h3 className="font-bold text-zinc-900 text-lg">{theme.displayName}</h3>
                                     <p className="text-[11px] text-zinc-400 font-bold uppercase tracking-wider mt-0.5 mb-2">
-                                        {theme.industry} • {premium ? 'Premium' : 'Free'}
+                                        {theme.industry || theme.category || 'General'} • v{theme.version || '1.0.0'} • {premium ? 'Premium' : 'Free'}
                                     </p>
                                     <p className="text-xs text-zinc-500 line-clamp-2 leading-relaxed flex-1">{theme.shortDescription}</p>
+                                    <p className="text-[10px] text-zinc-400 mt-2">
+                                        {(theme.supportedSections || []).length
+                                            ? `${theme.supportedSections.length} sections`
+                                            : 'Theme pack'}
+                                        {theme.capabilities?.responsive ? ' · Responsive' : ''}
+                                    </p>
                                     <div className="flex flex-wrap gap-2 mt-4">
-                                        <a href={`/store/${storeId}?themeId=${theme._id}&folder=${theme.folder}`} target="_blank" rel="noreferrer"
+                                        <button type="button" onClick={() => openPreview(theme, { clean: !installed })}
                                             className="px-3 py-2 border border-zinc-200 rounded-xl text-[11px] font-bold text-zinc-700 hover:bg-zinc-50">
-                                            Live Preview
-                                        </a>
+                                            Preview
+                                        </button>
                                         <button onClick={() => setViewTheme(theme)}
                                             className="px-3 py-2 border border-zinc-200 rounded-xl text-[11px] font-bold text-zinc-700 hover:bg-zinc-50">
                                             View Details
@@ -433,10 +652,10 @@ export default function ThemesTab() {
                                                 {busyId === theme._id ? '…' : `Purchase ₹${theme.price}`}
                                             </button>
                                         ) : (
-                                            <button onClick={() => (installed ? setPublishConfirm(theme) : handleInstallTheme(theme))}
+                                            <button onClick={() => (installed ? handleInstallTheme(theme, 'draft') : handleInstallTheme(theme, 'library'))}
                                                 disabled={busyId === theme._id}
                                                 className="flex-1 px-3 py-2 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl text-[11px] font-bold disabled:opacity-50">
-                                                {busyId === theme._id ? '…' : installed ? 'Publish' : 'Add to Library'}
+                                                {busyId === theme._id ? '…' : installed ? 'Use Theme' : 'Add to Library'}
                                             </button>
                                         )}
                                     </div>
@@ -445,6 +664,8 @@ export default function ThemesTab() {
                         );
                     })}
                 </div>
+            )}
+            </>
             )}
 
             {/* Details modal */}
@@ -479,9 +700,9 @@ export default function ThemesTab() {
                                     <button onClick={() => { setViewTheme(null); handlePurchaseTheme(viewTheme); }}
                                         className="flex-1 py-2.5 bg-amber-500 text-white rounded-xl text-sm font-bold">Purchase</button>
                                 ) : (
-                                    <button onClick={() => { setViewTheme(null); handleInstallTheme(viewTheme); }}
+                                    <button onClick={() => { setViewTheme(null); handleInstallTheme(viewTheme, isInstalled(viewTheme._id) ? 'draft' : 'library'); }}
                                         className="flex-1 py-2.5 bg-zinc-900 text-white rounded-xl text-sm font-bold">
-                                        {isActive(viewTheme._id) ? 'Customize' : 'Add to Library'}
+                                        {isActive(viewTheme._id) ? 'Customize' : isInstalled(viewTheme._id) ? 'Use Theme' : 'Add to Library'}
                                     </button>
                                 )}
                             </div>
@@ -490,13 +711,77 @@ export default function ThemesTab() {
                 </div>
             )}
 
+            {/* Upgrade changes modal */}
+            {upgradePreview && (
+                <div className="fixed inset-0 z-[210] flex items-center justify-center p-4 bg-black/50"
+                    onClick={(e) => e.target === e.currentTarget && setUpgradePreview(null)}
+                    role="dialog" aria-modal="true" aria-label="Theme update details">
+                    <div className="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto">
+                        <h3 className="text-lg font-bold text-zinc-900">Theme Update</h3>
+                        <p className="text-sm text-zinc-600">
+                            Version {upgradePreview.fromVersion} → {upgradePreview.toVersion}
+                        </p>
+                        {upgradePreview.impact && (
+                            <div className="text-xs space-y-2">
+                                <p className="font-bold text-zinc-800">
+                                    Overall:{' '}
+                                    <span className={
+                                        upgradePreview.impact.overall === 'SAFE' ? 'text-emerald-700'
+                                            : upgradePreview.impact.overall === 'WARNING' ? 'text-amber-700'
+                                                : 'text-red-700'
+                                    }>
+                                        {upgradePreview.impact.overall}
+                                    </span>
+                                    {upgradePreview.impact.summary?.requiresAction
+                                        ? ` · ${upgradePreview.impact.summary.requiresAction} need review`
+                                        : ''}
+                                </p>
+                                <ul className="divide-y divide-zinc-100 border border-zinc-100 rounded-xl overflow-hidden">
+                                    {(upgradePreview.impact.sections || []).map((s) => (
+                                        <li key={s.sectionId || s.name} className="px-3 py-2 bg-zinc-50/50">
+                                            <div className="flex items-center justify-between gap-2">
+                                                <span className="font-bold text-zinc-800">{s.name}</span>
+                                                <span className={`text-[9px] font-black uppercase ${
+                                                    s.status === 'SAFE' ? 'text-emerald-600'
+                                                        : s.status === 'WARNING' ? 'text-amber-600'
+                                                            : 'text-red-600'
+                                                }`}>{s.status}</span>
+                                            </div>
+                                            <ul className="mt-1 text-[10px] text-zinc-600 space-y-0.5">
+                                                {(s.notes || []).map((n) => <li key={n}>• {n}</li>)}
+                                            </ul>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+                        <div>
+                            <p className="text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-2">Changelog</p>
+                            <ul className="space-y-1.5">
+                                {(upgradePreview.changelog || []).map((c) => (
+                                    <li key={c} className="text-xs text-zinc-700">✓ {c}</li>
+                                ))}
+                            </ul>
+                        </div>
+                        <p className="text-[11px] text-zinc-500">Published configuration stays unchanged until you publish.</p>
+                        <div className="flex gap-2">
+                            <button type="button" onClick={() => setUpgradePreview(null)}
+                                className="flex-1 py-2.5 border border-zinc-200 rounded-xl text-sm font-semibold">Close</button>
+                            <button type="button" onClick={() => handleUpgradeTheme(upgradePreview.update)}
+                                className="flex-1 py-2.5 bg-zinc-900 text-white rounded-xl text-sm font-bold">Upgrade Theme</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Publish confirm */}
             {publishConfirm && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/50"
-                    onClick={(e) => e.target === e.currentTarget && setPublishConfirm(null)}>
+                    onClick={(e) => e.target === e.currentTarget && setPublishConfirm(null)}
+                    role="dialog" aria-modal="true">
                     <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
-                        <h3 className="text-lg font-bold text-zinc-900">Publish this theme?</h3>
-                        <p className="text-sm text-zinc-500">Your current live theme will be replaced by <strong>{publishConfirm.displayName || publishConfirm.folder}</strong>.</p>
+                        <h3 className="text-lg font-bold text-zinc-900">Publish this theme live?</h3>
+                        <p className="text-sm text-zinc-500">Your current live theme will be replaced by <strong>{publishConfirm.displayName || publishConfirm.folder}</strong>. A rollback snapshot will be saved.</p>
                         <div className="flex gap-2 pt-2">
                             <button onClick={() => setPublishConfirm(null)} className="flex-1 py-2.5 border border-zinc-200 rounded-xl text-sm font-semibold">Cancel</button>
                             <button onClick={() => confirmPublish(publishConfirm)} className="flex-1 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-bold">Publish Theme</button>

@@ -1,0 +1,31 @@
+{
+  "name": "Testimonials",
+  "type": "testimonials",
+  "component": "Testimonials",
+  "settings": {
+    "title": "Words from our clients"
+  },
+  "blocks": [
+    {
+      "type": "testimonial",
+      "settings": {
+        "author": "Amelia R.",
+        "text": "The presentation feels editorial without being cold — our conversion rate improved the week we switched."
+      }
+    },
+    {
+      "type": "testimonial",
+      "settings": {
+        "author": "James K.",
+        "text": "Finally a theme that looks premium on mobile. The page builder made customization effortless."
+      }
+    },
+    {
+      "type": "testimonial",
+      "settings": {
+        "author": "Sofia M.",
+        "text": "Quiet luxury done right. Our brand finally looks like the products we sell."
+      }
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "Why Shop With Us",
+  "type": "features-grid",
+  "settings": {
+    "title": "Built for Power Users",
+    "subtitle": "Fast fulfillment, certified devices, and easy returns."
+  },
+  "blocks": [
+    { "type": "feature", "settings": { "icon": "lightning", "title": "Lightning Delivery", "text": "Same-day dispatch on stocked SKUs." } },
+    { "type": "feature", "settings": { "icon": "shield-check", "title": "Genuine Warranty", "text": "Authorized sellers with full manufacturer cover." } },
+    { "type": "feature", "settings": { "icon": "rotate-ccw", "title": "Easy Returns", "text": "7-day hassle-free exchanges on eligible items." } }
+  ]
+}

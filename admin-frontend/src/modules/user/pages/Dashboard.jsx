@@ -61,12 +61,27 @@ import AnalyticsTab from '../components/dashboard/AnalyticsTab';
 import SupportTab from '../components/dashboard/SupportTab';
 import BannersTab from '../components/dashboard/BannersTab';
 import AddBanner from '../components/dashboard/AddBanner';
-import WebsiteBuilder from '../components/dashboard/website-builder/WebsiteBuilder';
-import ThemesTab from '../components/dashboard/ThemesTab';
 import DomainsTab from '../components/dashboard/DomainsTab';
 import VendorsTabSingle from '../components/dashboard/VendorsTabSingle';
 import AddVendorSingle from '../components/dashboard/AddVendorSingle';
 import VendorDetailWrapper from '../components/dashboard/VendorDetailWrapper';
+
+const WebsiteBuilder = React.lazy(() => import('../components/dashboard/website-builder/WebsiteBuilder'));
+const ThemesTab = React.lazy(() => import('../components/dashboard/ThemesTab'));
+const ExperimentsTab = React.lazy(() => import('../components/dashboard/ExperimentsTab'));
+const ThemeActivityTab = React.lazy(() => import('../components/dashboard/ThemeActivityTab'));
+
+const BuilderSuspense = ({ children }) => (
+    <React.Suspense
+        fallback={
+            <div className="flex items-center justify-center py-24 text-sm text-zinc-500">
+                Loading theme tools…
+            </div>
+        }
+    >
+        {children}
+    </React.Suspense>
+);
 
 const Dashboard = () => {
     const { tab } = useParams();
@@ -120,11 +135,27 @@ const Dashboard = () => {
         }
 
         if (tab === 'analytics') {
-            return <Navigate to="/dashboard" replace />;
+            return <AnalyticsTab />;
         }
 
         if (tab === 'reports') {
             return <ReportsTab />;
+        }
+
+        if (tab === 'experiments') {
+            return (
+                <BuilderSuspense>
+                    <ExperimentsTab />
+                </BuilderSuspense>
+            );
+        }
+
+        if (tab === 'theme-activity') {
+            return (
+                <BuilderSuspense>
+                    <ThemeActivityTab />
+                </BuilderSuspense>
+            );
         }
 
         if (tab === 'pages') {
@@ -134,11 +165,19 @@ const Dashboard = () => {
         }
 
         if (tab === 'websites') {
-            return <ThemesTab />;
+            return (
+                <BuilderSuspense>
+                    <ThemesTab />
+                </BuilderSuspense>
+            );
         }
 
         if (tab === 'theme-customizer' || tab === 'website-builder') {
-            return <WebsiteBuilder />;
+            return (
+                <BuilderSuspense>
+                    <WebsiteBuilder />
+                </BuilderSuspense>
+            );
         }
 
         if (tab === 'merchant-profile') {
@@ -251,7 +290,11 @@ const Dashboard = () => {
     };
 
     if (tab === 'theme-customizer' || tab === 'website-builder') {
-        return <WebsiteBuilder />;
+        return (
+            <BuilderSuspense>
+                <WebsiteBuilder />
+            </BuilderSuspense>
+        );
     }
 
     const isFullFocusPage = location.pathname.endsWith('/content/metaobjects/new');

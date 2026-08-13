@@ -1,5 +1,6 @@
-import React from 'react';
-import BannerSection from '../../storefront/sections/BannerSection';
+import React, { Suspense, lazy } from 'react';
+
+const BannerSection = lazy(() => import('../../storefront/sections/BannerSection'));
 
 export default function BuilderCanvas({
     sections,
@@ -182,7 +183,9 @@ export default function BuilderCanvas({
                 {/* 3. Sections Content Canvas */}
                 <div className="flex-grow py-4 px-2 space-y-6 min-h-[400px] bg-transparent">
                     {!sections.some(s => s.type === 'banners' || s.type === 'hero' || s.type === 'image-banner' || s.type === 'video-banner') && (
-                        <BannerSection storeId={localStorage.getItem('activeStoreId') || ''} />
+                        <Suspense fallback={<div className="w-full h-40 animate-pulse bg-zinc-100 rounded-2xl" />}>
+                            <BannerSection storeId={localStorage.getItem('activeStoreId') || ''} />
+                        </Suspense>
                     )}
                     {sections.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-20 text-center">

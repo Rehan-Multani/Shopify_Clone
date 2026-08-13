@@ -1,0 +1,36 @@
+{
+  "name": "Editorial Hero",
+  "type": "hero",
+  "component": "Hero",
+  "settings": {
+    "backgroundImage": "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=1600&q=80",
+    "heroStyle": "split",
+    "layout": "split",
+    "height": "680px",
+    "showTrustBadges": false
+  },
+  "blocks": [
+    {
+      "type": "heading",
+      "settings": {
+        "text": "Spaces made to linger",
+        "style": { "tag": "h1", "fontSize": 56, "color": "#3F3A34", "fontWeight": "500", "textAlign": "left" }
+      }
+    },
+    {
+      "type": "subheading",
+      "settings": {
+        "text": "Furniture with quiet presence and lasting craft",
+        "style": { "fontSize": 14, "color": "#6b645c", "textAlign": "left" }
+      }
+    },
+    {
+      "type": "button",
+      "settings": {
+        "label": "Explore Collection",
+        "link": "/catalog",
+        "style": { "backgroundColor": "#3F3A34", "textColor": "#F7F3EE", "borderRadius": "0px", "paddingY": 14, "paddingX": 28, "fontSize": 11 }
+      }
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "name": "Product Slider",
+  "type": "product-slider",
+  "component": "ProductSlider",
+  "settings": {
+    "title": "New Arrivals",
+    "source": "latest",
+    "limit": 10,
+    "layout": "carousel",
+    "cardStyle": "electronics"
+  }
+}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import ThemePerformancePanel from './ThemePerformancePanel';
 
 const STORE_API_URL = import.meta.env.VITE_STORE_API_URL;
 
@@ -52,8 +53,11 @@ const AnalyticsTab = () => {
 
     if (!analytics) {
         return (
-            <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
-                <p className="text-gray-500">Failed to load analytics data.</p>
+            <div className="space-y-6 pb-12">
+                <ThemePerformancePanel storeId={selectedStore} />
+                <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
+                    <p className="text-gray-500">Store order analytics unavailable.</p>
+                </div>
             </div>
         );
     }
@@ -104,6 +108,8 @@ const AnalyticsTab = () => {
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
+            <ThemePerformancePanel storeId={selectedStore} />
+
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">

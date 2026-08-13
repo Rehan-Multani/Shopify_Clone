@@ -1,0 +1,13 @@
+{
+  "name": "Product Slider",
+  "type": "product-slider",
+  "component": "ProductSlider",
+  "settings": {
+    "title": "Just Arrived",
+    "subtitle": "Fresh from the atelier",
+    "source": "latest",
+    "limit": 10,
+    "layout": "carousel",
+    "cardStyle": "luxury"
+  }
+}

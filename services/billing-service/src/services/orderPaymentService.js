@@ -70,6 +70,34 @@ export async function markOrderPaid({
         await Store.findByIdAndUpdate(order.storeId, {
             $inc: { revenue: order.totalAmount }
         });
+
+        // Wave 7 — theme revenue attribution (no PII)
+        try {
+            const storeApi = process.env.STORE_SERVICE_URL || 'http://localhost:5004';
+            const attr = order.themeAttribution || order.themeMeta || {};
+            await fetch(`${storeApi}/api/themes/analytics/events`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-store-id': String(order.storeId),
+                },
+                body: JSON.stringify({
+                    storeId: String(order.storeId),
+                    eventType: 'purchase',
+                    themeId: attr.themeId || attr.themeFolder || '',
+                    themeVersion: attr.themeVersion || '',
+                    experimentId: attr.experimentId || '',
+                    variantKey: attr.variantKey || '',
+                    sessionKey: attr.sessionKey || '',
+                    revenue: order.totalAmount,
+                    currency: attr.currency || 'INR',
+                    orderId: String(order._id),
+                    meta: { source: 'order_paid' },
+                }),
+            });
+        } catch (attrErr) {
+            console.warn('[orderPayment] theme attribution:', attrErr.message);
+        }
     } else {
         let dirty = false;
         if (gatewayPaymentId && !order.gatewayPaymentId) {

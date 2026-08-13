@@ -96,7 +96,7 @@ const ThemeExperience = ({
             <div
                 className="theme-experience"
                 data-theme={theme.themeSlug || theme.themeFolder || theme.themeId}
-                data-motion={theme.motionPreset}
+                data-motion={theme.animationPreset || theme.motionPreset}
                 data-hover={theme.hoverPreset}
                 data-image={theme.imageTreatment}
                 data-sections={theme.sectionStyle}
@@ -112,6 +112,7 @@ const ThemeExperience = ({
                     '--theme-price-font': theme.priceFont,
                     '--theme-heading-tracking': theme.headingLetterSpacing,
                     '--theme-body-leading': theme.bodyLineHeight,
+                    ...(theme.cssVars || {}),
                 }}
             >
                 {children}

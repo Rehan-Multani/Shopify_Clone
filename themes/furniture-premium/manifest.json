@@ -1,0 +1,39 @@
+{
+  "id": "furniture-premium",
+  "name": "Furniture Premium",
+  "version": "1.0.0",
+  "industry": "Furniture",
+  "category": "Home",
+  "type": "free",
+  "price": 0,
+  "thumbnail": "thumbnail.webp",
+  "schema": "schema.json",
+  "supportedSections": [
+    "hero", "category-grid", "image-text", "featured-products", "lookbook",
+    "image-banner", "testimonials", "newsletter", "storytelling"
+  ],
+  "capabilities": {
+    "responsive": true,
+    "animations": true,
+    "productCards": true,
+    "megaMenu": false,
+    "quickView": false,
+    "wishlist": true
+  },
+  "supports": {
+    "announcementBar": false,
+    "megaMenu": false,
+    "quickView": false,
+    "wishlist": true,
+    "productReviews": true,
+    "countdown": false
+  },
+  "templates": {
+    "404": true,
+    "home": true,
+    "product": true,
+    "collection": true,
+    "cart": true,
+    "search": true
+  }
+}

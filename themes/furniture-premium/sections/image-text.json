@@ -1,0 +1,15 @@
+{
+  "name": "Editorial Image Text",
+  "type": "image-text",
+  "component": "ImageText",
+  "settings": {
+    "eyebrow": "Craft",
+    "title": "Material honesty",
+    "subtitle": "Wood · Linen · Stone",
+    "content": "Every silhouette is designed to calm a room — generous proportions, soft edges, and finishes that age with dignity.",
+    "imageUrl": "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=1400&q=80",
+    "imagePosition": "left",
+    "buttonLabel": "View Living Room",
+    "buttonLink": "/catalog"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "name": "Hero Carousel",
+  "type": "hero",
+  "component": "Hero",
+  "settings": {
+    "backgroundImage": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=1800&q=80",
+    "heroStyle": "promo",
+    "layout": "full",
+    "height": "620px",
+    "showTrustBadges": true,
+    "badge1Text": "Next-Day Ship",
+    "badge2Text": "EMI Available",
+    "badge3Text": "1-Year Warranty"
+  },
+  "blocks": [
+    {
+      "type": "heading",
+      "settings": {
+        "text": "Power Up Your Setup",
+        "style": { "tag": "h1", "fontSize": 56, "color": "#ffffff", "fontWeight": "700", "textAlign": "left" }
+      }
+    },
+    {
+      "type": "subheading",
+      "settings": {
+        "text": "Flagship phones, audio, and accessories — live deals this week",
+        "style": { "fontSize": 14, "color": "#ffffff", "textAlign": "left" }
+      }
+    },
+    {
+      "type": "button",
+      "settings": {
+        "label": "Shop Deals",
+        "link": "/catalog",
+        "style": { "backgroundColor": "#FF3D00", "textColor": "#ffffff", "borderRadius": "12px", "paddingY": 14, "paddingX": 28, "fontSize": 12 }
+      }
+    }
+  ]
+}

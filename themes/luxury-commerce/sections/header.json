@@ -1,0 +1,8 @@
+{
+  "name": "Header",
+  "type": "header",
+  "settings": {
+    "sticky": true,
+    "transparent": true
+  }
+}

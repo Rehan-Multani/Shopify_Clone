@@ -1,25 +1,32 @@
-import React, { useState, useEffect } from 'react';
+import React, { Suspense, lazy, useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './modules/user/pages/Home';
 import Pricing from './modules/user/pages/Pricing';
 import Enterprise from './modules/user/pages/Enterprise';
 import Login from './modules/user/pages/Login';
-import Dashboard from './modules/user/pages/Dashboard';
-import PickPlan from './modules/user/pages/PickPlan';
 import Signup from './modules/user/pages/Signup';
-import Subscribe from './modules/user/pages/Subscribe';
 import MerchantProtectedRoute from './modules/user/components/MerchantProtectedRoute';
 import ForgotPassword from './modules/user/pages/ForgotPassword';
-import StorefrontContainer from './modules/user/components/storefront/StorefrontContainer';
 import NotFound from './modules/user/pages/NotFound';
 import VendorLogin from './modules/user/pages/VendorLogin';
 import VendorProtectedRoute from './modules/user/components/VendorProtectedRoute';
-import VendorDashboard from './modules/user/pages/VendorDashboard';
 import AboutUs from './modules/user/pages/AboutUs';
 import ContactUs from './modules/user/pages/ContactUs';
 import PrivacyPolicy from './modules/user/pages/PrivacyPolicy';
 import RefundPolicy from './modules/user/pages/RefundPolicy';
 import TermsAndConditions from './modules/user/pages/TermsAndConditions';
+
+// Wave 5/6 — keep merchant/vendor/storefront shells out of the marketing path
+const Dashboard = lazy(() => import('./modules/user/pages/Dashboard'));
+const PickPlan = lazy(() => import('./modules/user/pages/PickPlan'));
+const Subscribe = lazy(() => import('./modules/user/pages/Subscribe'));
+const VendorDashboard = lazy(() => import('./modules/user/pages/VendorDashboard'));
+const ThemePreviewPage = lazy(() => import('./modules/user/pages/ThemePreviewPage'));
+const StorefrontContainer = lazy(() => import('./modules/user/components/storefront/StorefrontContainer'));
+
+const RouteFallback = ({ label = 'Loading…' }) => (
+  <div className="min-h-screen flex items-center justify-center text-sm text-zinc-500">{label}</div>
+);
 
 function App() {
   const [resolvedStore, setResolvedStore] = useState(null);
@@ -75,7 +82,11 @@ function App() {
     return (
       <Router>
         <Routes>
-          <Route path="/*" element={<StorefrontContainer resolvedStoreId={resolvedStore} />} />
+          <Route path="/*" element={
+            <Suspense fallback={<RouteFallback label="Loading store…" />}>
+              <StorefrontContainer resolvedStoreId={resolvedStore} />
+            </Suspense>
+          } />
         </Routes>
       </Router>
     );
@@ -96,33 +107,52 @@ function App() {
         <Route path="/admin/login" element={<Login />} />
         <Route path="/dashboard" element={
           <MerchantProtectedRoute>
-            <Dashboard />
+            <Suspense fallback={<RouteFallback label="Loading dashboard…" />}>
+              <Dashboard />
+            </Suspense>
           </MerchantProtectedRoute>
         } />
         <Route path="/dashboard/plan" element={
           <MerchantProtectedRoute>
-            <PickPlan />
+            <Suspense fallback={<RouteFallback label="Loading plan…" />}>
+              <PickPlan />
+            </Suspense>
           </MerchantProtectedRoute>
         } />
         <Route path="/dashboard/plan/subscribe" element={
           <MerchantProtectedRoute>
-            <Subscribe />
+            <Suspense fallback={<RouteFallback label="Loading…" />}>
+              <Subscribe />
+            </Suspense>
+          </MerchantProtectedRoute>
+        } />
+        <Route path="/dashboard/store-preview/:storeId" element={
+          <MerchantProtectedRoute>
+            <Suspense fallback={<RouteFallback label="Loading preview…" />}>
+              <ThemePreviewPage />
+            </Suspense>
           </MerchantProtectedRoute>
         } />
         <Route path="/dashboard/:tab/*" element={
           <MerchantProtectedRoute>
-            <Dashboard />
+            <Suspense fallback={<RouteFallback label="Loading dashboard…" />}>
+              <Dashboard />
+            </Suspense>
           </MerchantProtectedRoute>
         } />
         <Route path="/vendor/login" element={<VendorLogin />} />
         <Route path="/vendor/dashboard" element={
           <VendorProtectedRoute>
-            <VendorDashboard />
+            <Suspense fallback={<RouteFallback label="Loading vendor dashboard…" />}>
+              <VendorDashboard />
+            </Suspense>
           </VendorProtectedRoute>
         } />
         <Route path="/vendor/dashboard/:tab/*" element={
           <VendorProtectedRoute>
-            <VendorDashboard />
+            <Suspense fallback={<RouteFallback label="Loading vendor dashboard…" />}>
+              <VendorDashboard />
+            </Suspense>
           </VendorProtectedRoute>
         } />
         <Route path="/signup" element={<Signup />} />
@@ -130,7 +160,11 @@ function App() {
         <Route path="/vendor/forgot-password" element={<ForgotPassword />} />
         
         {/* Customer Storefront Routes */}
-        <Route path="/store/:storeId/*" element={<StorefrontContainer />} />
+        <Route path="/store/:storeId/*" element={
+          <Suspense fallback={<RouteFallback label="Loading store…" />}>
+            <StorefrontContainer />
+          </Suspense>
+        } />
 
         {/* 404 Catch-All Route */}
         <Route path="*" element={<NotFound />} />

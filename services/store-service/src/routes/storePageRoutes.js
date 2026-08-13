@@ -6,7 +6,8 @@ import {
     deletePage, 
     updatePageSections, 
     updateSectionSettings,
-    createPage
+    createPage,
+    publishPage
 } from '../controllers/storePageController.js';
 
 const router = express.Router();
@@ -14,6 +15,8 @@ const router = express.Router();
 router.route('/')
     .get(getPages)
     .post(createPage);
+
+router.post('/:slug/publish', publishPage);
 
 router.route('/:slug')
     .get(getPageBySlug)

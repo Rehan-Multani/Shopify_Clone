@@ -107,6 +107,26 @@ const storeSchema = new mongoose.Schema({
         version: { type: String, default: '' },
         installedAt: { type: Date }
     },
+    /** Draft theme switch / upgrade target — not live until publish */
+    pendingTheme: {
+        themeId: { type: String, default: '' },
+        folder: { type: String, default: '' },
+        version: { type: String, default: '' },
+        mode: { type: String, enum: ['switch', 'upgrade', ''], default: '' },
+        preparedAt: { type: Date }
+    },
+    /** Lightweight rollback snapshot of last published theme */
+    previousPublishedTheme: {
+        themeId: { type: String, default: '' },
+        folder: { type: String, default: '' },
+        version: { type: String, default: '' },
+        snapshotAt: { type: Date }
+    },
+    previousPublishedConfig: {
+        themeSettings: { type: mongoose.Schema.Types.Mixed, default: null },
+        homeSections: { type: mongoose.Schema.Types.Mixed, default: null },
+        themeId: { type: String, default: '' }
+    },
     installedThemes: [{
         themeId: { type: String },
         folder: { type: String },

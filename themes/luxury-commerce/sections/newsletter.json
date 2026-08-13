@@ -1,0 +1,10 @@
+{
+  "name": "Newsletter",
+  "type": "newsletter",
+  "component": "Newsletter",
+  "settings": {
+    "title": "Join the inner circle",
+    "subtitle": "Private drops, styling notes, and early access — once a week.",
+    "buttonLabel": "Subscribe"
+  }
+}

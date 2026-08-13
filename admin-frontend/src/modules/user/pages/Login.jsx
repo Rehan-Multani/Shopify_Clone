@@ -366,7 +366,7 @@ const Login = () => {
               }}
               className={`flex-1 py-2 text-xs font-bold rounded-md transition-all cursor-pointer ${
                 email.trim().toLowerCase() === 'multi@storify.com'
-                  ? 'bg-blue-600 text-white shadow-sm'
+                  ? 'bg-emerald-600 text-white shadow-sm'
                   : 'text-gray-400 hover:text-white'
               }`}
             >

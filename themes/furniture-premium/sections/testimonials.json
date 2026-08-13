@@ -1,0 +1,13 @@
+{
+  "name": "Testimonials",
+  "type": "testimonials",
+  "component": "Testimonials",
+  "settings": {
+    "title": "Lived-in praise"
+  },
+  "blocks": [
+    { "type": "testimonial", "settings": { "author": "Nora P.", "text": "The proportions feel architectural without being cold — our living room finally breathes." } },
+    { "type": "testimonial", "settings": { "author": "Eli M.", "text": "Photography-first layout sold the pieces better than any spec sheet." } },
+    { "type": "testimonial", "settings": { "author": "Clara V.", "text": "Soft transitions and generous whitespace match the brand perfectly." } }
+  ]
+}

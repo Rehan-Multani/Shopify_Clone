@@ -1,6 +1,6 @@
 import React from 'react';
 
-const TestimonialsSection = ({ settings = {} }) => {
+const TestimonialsSection = ({ settings = {}, blocks = [] }) => {
     const {
         title = 'What Our Customers Say',
         testimonials = [
@@ -9,6 +9,13 @@ const TestimonialsSection = ({ settings = {} }) => {
             { author: 'Emily R.', text: 'Outstanding customer service and premium quality items.' }
         ]
     } = settings;
+
+    const list = blocks.length > 0
+        ? blocks.map((b) => ({
+            author: b.settings?.author || b.author || 'Happy Customer',
+            text: b.settings?.text || b.text || '',
+        }))
+        : testimonials;
 
     return (
         <section className="py-20 md:py-28 px-4 sm:px-6 md:px-10 lg:px-14 w-full space-y-14">
@@ -26,7 +33,7 @@ const TestimonialsSection = ({ settings = {} }) => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-7 max-w-6xl mx-auto">
-                {testimonials.map((t, idx) => (
+                {list.map((t, idx) => (
                     <article
                         key={idx}
                         className="store-card relative bg-white p-8 md:p-9 flex flex-col justify-between gap-8 overflow-hidden"

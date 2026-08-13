@@ -1,0 +1,31 @@
+/* Furniture Premium — editorial whitespace */
+:root {
+  --theme-primary: #3f3a34;
+  --theme-secondary: #f7f3ee;
+  --theme-accent: #8b7355;
+  --theme-heading: "Fraunces", Georgia, serif;
+  --theme-body: "Libre Franklin", system-ui, sans-serif;
+  --theme-radius: 4px;
+  --theme-container: 1200px;
+  --theme-section-space: 7.5rem;
+}
+
+[data-theme="furniture-premium"] .theme-hero--split {
+  padding-block: 5rem;
+}
+
+[data-theme="furniture-premium"] .theme-image-text {
+  letter-spacing: -0.02em;
+}
+
+[data-theme="furniture-premium"][data-motion="fade"] .theme-reveal {
+  transform: none;
+  opacity: 0.01;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="furniture-premium"] * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

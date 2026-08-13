@@ -1,0 +1,11 @@
+{
+  "name": "Category Icons",
+  "type": "category-grid",
+  "component": "FeaturedCategories",
+  "settings": {
+    "title": "Shop by Category",
+    "subtitle": "Phones, audio, wearables, and more",
+    "limit": 8,
+    "columns": 4
+  }
+}

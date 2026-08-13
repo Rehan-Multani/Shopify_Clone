@@ -1,0 +1,10 @@
+{
+  "name": "Newsletter",
+  "type": "newsletter",
+  "component": "Newsletter",
+  "settings": {
+    "title": "Journal & new arrivals",
+    "subtitle": "Occasional notes on materials, makers, and new collections.",
+    "buttonLabel": "Join"
+  }
+}

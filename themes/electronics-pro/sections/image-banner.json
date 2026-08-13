@@ -1,0 +1,14 @@
+{
+  "name": "Promo Banner",
+  "type": "image-banner",
+  "component": "PromoBanner",
+  "settings": {
+    "imageUrl": "https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=1600&q=80",
+    "title": "Audio Week",
+    "subtitle": "Up to 40% off headphones and speakers",
+    "buttonLabel": "Browse Audio",
+    "buttonLink": "/catalog",
+    "alignment": "left",
+    "overlay": 0.5
+  }
+}

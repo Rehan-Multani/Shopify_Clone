@@ -1,0 +1,37 @@
+/* Luxury Commerce — premium editorial tokens */
+:root {
+  --theme-primary: #111111;
+  --theme-secondary: #faf8f5;
+  --theme-accent: #c9a227;
+  --theme-heading: "Cormorant Garamond", Georgia, serif;
+  --theme-body: "Manrope", "Segoe UI", sans-serif;
+  --theme-radius: 0px;
+  --theme-container: 1280px;
+  --theme-section-space: 7rem;
+}
+
+[data-theme="luxury-commerce"] .theme-hero--cinematic {
+  letter-spacing: -0.03em;
+}
+
+[data-theme="luxury-commerce"] .theme-hero-cta {
+  letter-spacing: 0.2em;
+}
+
+[data-theme="luxury-commerce"] .theme-product-grid .store-card,
+[data-theme="luxury-commerce"] .theme-product-grid article {
+  box-shadow: none;
+  border: 0;
+}
+
+[data-theme="luxury-commerce"] .theme-image-text h2 {
+  font-weight: 500;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="luxury-commerce"] * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
