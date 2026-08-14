@@ -1,12 +1,10 @@
-import dotenv from 'dotenv';
+import './utils/loadEnv.js';
 import mongoose from 'mongoose';
 import connectDB from '../../shared/connectDB.js';
 import { initTransactionalEmail } from '../../shared/transactionalEmail.js';
 import app from './app.js';
 import { assertProductionEnvOrExit } from './utils/prodEnv.js';
 
-// Load env vars (updated with JWT secret)
-dotenv.config();
 assertProductionEnvOrExit();
 
 // Connect to database

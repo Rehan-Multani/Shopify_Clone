@@ -3,10 +3,8 @@
  * Production: REDIS_URL required for preview-token / distributed state.
  * Development: memory TTL fallback allowed.
  */
-import dotenv from 'dotenv';
+import './loadEnv.js';
 import Redis from 'ioredis';
-
-dotenv.config();
 
 const memory = new Map();
 
