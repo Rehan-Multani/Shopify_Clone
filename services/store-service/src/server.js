@@ -34,8 +34,7 @@ const server = app.listen(PORT, async () => {
     }
 });
 
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (err, promise) => {
-    console.error(`Store Service Error: ${err.message}`);
-    server.close(() => process.exit(1));
+// Log rejections — do not kill store-service (Redis/BullMQ blips must not 502 my-stores)
+process.on('unhandledRejection', (err) => {
+    console.error(`Store Service unhandledRejection: ${err?.message || err}`);
 });

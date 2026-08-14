@@ -37,8 +37,8 @@ const run = async () => {
     delete process.env.REDIS_URL;
     delete process.env.REDIS_URI;
     const prodAudit = auditProductionEnv({ strict: true });
-    assert(!prodAudit.ok, 'production env must fail without Redis');
-    assert(prodAudit.errors.some((e) => /REDIS/i.test(e)), 'redis missing listed');
+    assert(!prodAudit.errors.some((e) => /REDIS/i.test(e)), 'missing Redis must not hard-fail store boot');
+    assert(prodAudit.warnings.some((w) => /REDIS/i.test(w)), 'redis missing listed as warning');
 
     process.env.NODE_ENV = 'development';
     const devAudit = auditProductionEnv({ strict: false });

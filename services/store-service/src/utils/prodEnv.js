@@ -24,9 +24,9 @@ export const auditProductionEnv = ({ strict = isProductionEnv() } = {}) => {
 
     if (strict) {
         if (!process.env.REDIS_URL && !process.env.REDIS_URI) {
-            errors.push('REDIS_URL is required in production');
+            warnings.push('REDIS_URL missing — preview tokens/queues fail closed; store APIs still start');
         } else if (getRedisBackend() !== 'redis') {
-            errors.push('Redis backend must be healthy in production (no memory fallback)');
+            warnings.push('Redis backend unhealthy — preview tokens fail closed (no memory fallback)');
         }
 
         if (!process.env.PREVIEW_TOKEN_SECRET && jwt) {
@@ -38,21 +38,21 @@ export const auditProductionEnv = ({ strict = isProductionEnv() } = {}) => {
 };
 
 /**
- * Call at boot. In production, exits process if critical secrets/config missing.
+ * Call at boot. Exit only when the service cannot serve stores (missing Mongo).
+ * Missing Redis must NOT take down my-stores / theme audit — preview mint already fail-closes.
  */
 export const assertProductionEnvOrExit = () => {
     const result = auditProductionEnv();
     for (const w of result.warnings) {
         console.warn('[prod-env]', w);
     }
-    if (!result.ok) {
-        for (const e of result.errors) {
-            console.error('[prod-env] CRITICAL:', e);
-        }
-        if (result.strict) {
-            console.error('[prod-env] Refusing to start with incomplete production configuration');
-            process.exit(1);
-        }
+    for (const e of result.errors) {
+        console.error('[prod-env] CRITICAL:', e);
+    }
+    const fatal = result.errors.filter((e) => /MONGODB/i.test(e));
+    if (fatal.length && result.strict) {
+        console.error('[prod-env] Refusing to start without a database URL');
+        process.exit(1);
     }
     return result;
 };

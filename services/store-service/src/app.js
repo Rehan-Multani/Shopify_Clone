@@ -9,7 +9,7 @@ import shippingRoutes from './routes/shippingRoutes.js';
 import { getThemeStore } from './controllers/themeController.js';
 import jwt from 'jsonwebtoken';
 import { verifyPreviewToken } from './utils/previewToken.js';
-import { getRedisBackend, assertPreviewTokenBackend, isProductionEnv } from './utils/redisClient.js';
+import { getRedisBackend, assertPreviewTokenBackend } from './utils/redisClient.js';
 import mongoose from 'mongoose';
 
 const app = express();
@@ -121,12 +121,14 @@ app.get('/api/store/health', (req, res) => {
     const mongoReady = mongoose.connection.readyState === 1;
     const redisBackend = getRedisBackend();
     const previewGate = assertPreviewTokenBackend();
-    const production = isProductionEnv();
-    const depsOk = mongoReady && (!production || previewGate.ok);
-    res.status(depsOk ? 200 : 503).json({
-        status: depsOk ? 'success' : 'degraded',
+    // Liveness: process is up. Do not 503 the whole store API because Redis is missing —
+    // nginx/PM2 would 502 my-stores and theme audit. Preview tokens still fail closed.
+    const alive = true;
+    const serving = mongoReady;
+    res.status(serving ? 200 : 503).json({
+        status: serving ? 'success' : 'degraded',
         message: 'Store service health',
-        alive: true,
+        alive,
         dependencies: {
             mongodb: mongoReady ? 'ok' : 'down',
             redis: redisBackend,
