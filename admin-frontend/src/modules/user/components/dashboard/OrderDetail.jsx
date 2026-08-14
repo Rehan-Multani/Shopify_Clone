@@ -292,6 +292,38 @@ const OrderDetail = ({ orderId }) => {
                                     <p className="italic text-gray-400 mt-0.5">No shipping address recorded</p>
                                 )}
                             </div>
+
+                            <div>
+                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Shipment</p>
+                                {order.shipping?.provider === 'shiprocket' ? (
+                                    <div className="mt-1 space-y-1">
+                                        <p className="text-gray-900 font-bold">Shiprocket ({order.shipping.ownerType || 'account'})</p>
+                                        {order.shipping.awb ? (
+                                            <p className="font-medium">AWB: {order.shipping.awb}</p>
+                                        ) : (
+                                            <p className="text-amber-700 font-medium">AWB pending</p>
+                                        )}
+                                        {order.shipping.courierName && (
+                                            <p className="text-gray-500">{order.shipping.courierName}</p>
+                                        )}
+                                        {order.shipping.trackingUrl && (
+                                            <a
+                                                href={order.shipping.trackingUrl}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="text-teal-700 underline font-bold"
+                                            >
+                                                Track shipment
+                                            </a>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <p className="mt-1 font-medium text-gray-600">
+                                        Manual / COD shipping
+                                        {order.shipping?.lastError ? ` — ${order.shipping.lastError}` : ''}
+                                    </p>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>

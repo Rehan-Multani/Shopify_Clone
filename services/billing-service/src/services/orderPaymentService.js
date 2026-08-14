@@ -1,6 +1,8 @@
 import Order from '../models/Order.js';
 import Store from '../models/Store.js';
 import VendorSettlement from '../models/VendorSettlement.js';
+import { emitEmail, ownerFromOrder } from '../../../shared/emailService.js';
+import { customerPaymentSuccessEmail } from '../../../shared/storefrontEmails.js';
 
 /**
  * Mark checkout payment + order paid exactly once; bump store revenue; create fallback settlement if needed.
@@ -70,6 +72,18 @@ export async function markOrderPaid({
         await Store.findByIdAndUpdate(order.storeId, {
             $inc: { revenue: order.totalAmount }
         });
+
+        try {
+            if (order.customerEmail) {
+                emitEmail({
+                    event: 'customer_payment_success',
+                    ...ownerFromOrder(order),
+                    ...customerPaymentSuccessEmail(order),
+                });
+            }
+        } catch (mailErr) {
+            console.error('[payment email]', mailErr.message);
+        }
 
         // Wave 7 — theme revenue attribution (no PII)
         try {

@@ -47,6 +47,7 @@ import MerchantProfileTab from '../components/dashboard/MerchantProfileTab';
 import StoreProfileTab from '../components/dashboard/StoreProfileTab';
 import PaymentGatewaysTab from '../components/dashboard/PaymentGatewaysTab';
 import EmailConfigurationTab from '../components/dashboard/EmailConfigurationTab';
+import ShippingConfigurationTab from '../components/dashboard/ShippingConfigurationTab';
 import CategoryTab from '../components/dashboard/CategoryTab';
 import AddCategorySingle from '../components/dashboard/AddCategory';
 import SingleVendorProductsTab from '../components/dashboard/SingleVendorProductsTab';
@@ -194,6 +195,10 @@ const Dashboard = () => {
 
         if (tab === 'email-configuration') {
             return <EmailConfigurationTab mode="merchant" />;
+        }
+
+        if (tab === 'shipping') {
+            return <ShippingConfigurationTab mode="merchant" />;
         }
 
         if (tab === 'inventory') {

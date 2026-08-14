@@ -64,14 +64,18 @@ export const gatewayAuthMiddleware = async (req, res, next) => {
     } else if (
         path.startsWith('/api/merchant/payment-gateways')
         || path.startsWith('/api/merchant/email-config')
+        || path.startsWith('/api/merchant/shipping')
         || path.startsWith('/api/marketplace/payment-settings')
     ) {
         requiredAuth = 'merchant';
     } else if (
         path.startsWith('/api/vendor/payment-gateways')
         || path.startsWith('/api/vendor/email-config')
+        || path.startsWith('/api/vendor/shipping')
     ) {
         requiredAuth = 'vendor';
+    } else if (path.startsWith('/api/shipping/webhooks')) {
+        requiredAuth = null;
     } else if (path.startsWith('/api/payments') || path.startsWith('/api/billing')) {
         // Checkout/webhook aliases under billing stay public; rest require merchant
         if (

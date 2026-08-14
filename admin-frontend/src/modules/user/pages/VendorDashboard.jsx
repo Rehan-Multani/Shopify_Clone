@@ -14,6 +14,7 @@ import ReportsTab from '../components/dashboard/ReportsTab';
 import AddVendorSingle from '../components/dashboard/AddVendorSingle';
 import VendorSettingsTab from '../components/dashboard/VendorSettingsTab';
 import EmailConfigurationTab from '../components/dashboard/EmailConfigurationTab';
+import ShippingConfigurationTab from '../components/dashboard/ShippingConfigurationTab';
 
 const CATALOG_API_URL = import.meta.env.VITE_CATALOG_API_URL;
 
@@ -152,6 +153,10 @@ const VendorDashboard = () => {
 
         if (tab === 'email-configuration') {
             return <EmailConfigurationTab mode="vendor" />;
+        }
+
+        if (tab === 'shipping') {
+            return <ShippingConfigurationTab mode="vendor" />;
         }
 
         if (tab === 'profile') {

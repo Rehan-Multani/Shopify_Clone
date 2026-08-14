@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import connectDB from '../../shared/connectDB.js';
+import { initTransactionalEmail } from '../../shared/transactionalEmail.js';
 import app from './app.js';
 
 // Load env vars
@@ -8,6 +9,7 @@ dotenv.config();
 
 // Connect to database
 connectDB(mongoose);
+initTransactionalEmail(mongoose);
 
 const PORT = process.env.PORT || 5003;
 

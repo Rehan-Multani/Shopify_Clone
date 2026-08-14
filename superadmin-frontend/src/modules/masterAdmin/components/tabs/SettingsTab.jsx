@@ -38,7 +38,8 @@ const SettingsTab = () => {
         expectedStoreIP: '76.76.21.21',
         sshUser: 'root',
         sshPassword: '',
-        availablePaymentGateways: ['razorpay', 'stripe', 'payu', 'cashfree']
+        availablePaymentGateways: ['razorpay', 'stripe', 'payu', 'cashfree'],
+        shiprocketEnabled: true
     });
     const [showSshPassword, setShowSshPassword] = useState(false);
 
@@ -57,6 +58,7 @@ const SettingsTab = () => {
     const sections = [
         { id: 'platform', label: 'Platform Config', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
         { id: 'payments', label: 'Payment Gateways', icon: 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z' },
+        { id: 'shipping', label: 'Shipping', icon: 'M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z' },
         { id: 'security', label: 'Security', icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z' },
     ];
 
@@ -105,7 +107,8 @@ const SettingsTab = () => {
                         sshPassword: data.sshPassword || '',
                         availablePaymentGateways: Array.isArray(data.availablePaymentGateways) && data.availablePaymentGateways.length
                             ? data.availablePaymentGateways
-                            : ['razorpay', 'stripe', 'payu', 'cashfree']
+                            : ['razorpay', 'stripe', 'payu', 'cashfree'],
+                        shiprocketEnabled: data.shiprocketEnabled !== false
                     });
                 }
             } catch (err) {
@@ -309,6 +312,35 @@ const SettingsTab = () => {
                                 <p className="text-[11px] text-[#9CA3AF]">
                                     Disabled gateways will not appear in Merchant or Vendor payment settings.
                                 </p>
+                                <div className="pt-2">
+                                    <button onClick={handleSave} className="px-6 py-2.5 rounded-lg text-sm font-bold text-white hover:opacity-90 transition-all" style={{ background: '#1a1c23' }}>
+                                        Save Changes
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Shipping - Super Admin platform availability */}
+                    {activeSection === 'shipping' && (
+                        <div className={card}>
+                            <SectionHeader
+                                title="Platform Shipping"
+                                desc="Enable Shiprocket so Merchants and Vendors can configure their own API keys. Super Admin does not store tenant credentials."
+                            />
+                            <div className="p-6 space-y-4">
+                                <div className="flex items-center justify-between p-4 rounded-xl border border-[#e3e3e3] bg-[#fafafa]">
+                                    <div>
+                                        <h4 className="text-sm font-bold text-[#202223]">Shiprocket</h4>
+                                        <p className="text-xs text-[#9CA3AF] mt-0.5">
+                                            When off, all stores use manual / COD shipping even if keys exist.
+                                        </p>
+                                    </div>
+                                    <Toggle
+                                        enabled={platformConfig.shiprocketEnabled !== false}
+                                        onChange={(v) => setPlatformConfig((prev) => ({ ...prev, shiprocketEnabled: v }))}
+                                    />
+                                </div>
                                 <div className="pt-2">
                                     <button onClick={handleSave} className="px-6 py-2.5 rounded-lg text-sm font-bold text-white hover:opacity-90 transition-all" style={{ background: '#1a1c23' }}>
                                         Save Changes

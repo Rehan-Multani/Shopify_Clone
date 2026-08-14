@@ -54,11 +54,14 @@ async function createMerchantAccount(payload, { status = 'trial' } = {}) {
     const createdMerchant = await merchant.save();
     const populatedMerchant = await Merchant.findById(createdMerchant._id);
 
-    await sendMerchantMail(signupWelcomeEmail({
-        name,
-        email,
-        password: rawPassword
-    }));
+    await sendMerchantMail({
+        event: 'merchant_signup',
+        ...signupWelcomeEmail({
+            name,
+            email,
+            password: rawPassword
+        })
+    });
 
     return populatedMerchant;
 }

@@ -6,6 +6,8 @@ import mongoose from 'mongoose';
 import sharp from 'sharp';
 import path from 'path';
 import fs from 'fs';
+import { emitEmail } from '../../../shared/emailService.js';
+import { customerSignupEmail } from '../../../shared/storefrontEmails.js';
 
 // @desc    Get all customers
 // @route   GET /api/customers
@@ -378,6 +380,16 @@ export const registerCustomer = async (req, res) => {
 
         const customerObj = customer.toObject();
         delete customerObj.password;
+
+        try {
+            emitEmail({
+                event: 'customer_signup',
+                merchantId,
+                ...customerSignupEmail({ name: customer.name, email: customer.email }),
+            });
+        } catch (mailErr) {
+            console.error('[customer-signup email]', mailErr.message);
+        }
 
         res.status(201).json({
             success: true,

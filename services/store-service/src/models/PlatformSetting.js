@@ -45,6 +45,11 @@ const platformSettingSchema = new mongoose.Schema({
     availablePaymentGateways: {
         type: [String],
         default: ['razorpay', 'stripe', 'payu', 'cashfree']
+    },
+    // Super Admin: allow merchants/vendors to use Shiprocket (they own the keys)
+    shiprocketEnabled: {
+        type: Boolean,
+        default: true
     }
 }, {
     timestamps: true

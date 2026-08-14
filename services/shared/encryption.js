@@ -90,7 +90,8 @@ export function maskCredentials(gateway, credentials = {}) {
         razorpay: ['keyId'],
         stripe: ['publishableKey'],
         payu: ['merchantKey'],
-        cashfree: ['appId']
+        cashfree: ['appId'],
+        shiprocket: ['email']
     };
     const allowed = publicFields[gateway] || [];
     const result = {};

@@ -170,22 +170,28 @@ const StorefrontCheckout = ({ cart, cartCount, onClearCart, customer, onLogout, 
                 if (!cancelled && res.ok) {
                     const opts = data.options || [];
                     setPaymentOptions(opts);
-                    setVendorGatewayError(data.vendorGatewayError || null);
+                    setVendorGatewayError(data.code === 'NO_PAYMENT_METHODS'
+                        ? (data.message || 'No payment methods are available.')
+                        : (data.vendorGatewayError || null));
                     const preferred = opts.find((o) => o.isDefault) || opts[0];
                     if (preferred) setPaymentMethod(preferred.gateway === 'cod' ? 'COD' : preferred.gateway);
+                    else setPaymentMethod('');
                 } else if (!cancelled) {
-                    setVendorGatewayError(null);
+                    const codOn = storeInfo?.paymentSettings?.codEnabled !== false;
                     const fallback = [];
-                    if (storeInfo?.paymentSettings?.codEnabled !== false) {
-                        fallback.push({ gateway: 'cod', name: 'Cash on Delivery' });
-                    }
+                    if (codOn) fallback.push({ gateway: 'cod', name: 'Cash on Delivery' });
                     setPaymentOptions(fallback);
-                    if (fallback[0]) setPaymentMethod('COD');
+                    setVendorGatewayError(fallback.length ? null : 'No payment methods are available.');
+                    setPaymentMethod(fallback[0] ? 'COD' : '');
                 }
             } catch {
                 if (!cancelled) {
-                    setPaymentOptions([{ gateway: 'cod', name: 'Cash on Delivery' }]);
-                    setPaymentMethod('COD');
+                    const codOn = storeInfo?.paymentSettings?.codEnabled !== false;
+                    const fallback = [];
+                    if (codOn) fallback.push({ gateway: 'cod', name: 'Cash on Delivery' });
+                    setPaymentOptions(fallback);
+                    setVendorGatewayError(fallback.length ? null : 'No payment methods are available.');
+                    setPaymentMethod(fallback[0] ? 'COD' : '');
                 }
             } finally {
                 if (!cancelled) setLoadingPayments(false);
@@ -525,6 +531,10 @@ const StorefrontCheckout = ({ cart, cartCount, onClearCart, customer, onLogout, 
     const handleSubmitOrder = async (e) => {
         e.preventDefault();
         if (cart.length === 0) return;
+        if (paymentOptions.length === 0) {
+            setError(vendorGatewayError || 'No payment methods are available. Enable Cash on Delivery or configure an online payment gateway.');
+            return;
+        }
         if (!paymentMethod) {
             setError('Please select a payment method.');
             return;
@@ -844,7 +854,7 @@ const StorefrontCheckout = ({ cart, cartCount, onClearCart, customer, onLogout, 
                                             </div>
                                         )}
 
-                                        {!loadingPayments && vendorGatewayError && onlineOptions.length === 0 && (
+                                        {!loadingPayments && vendorGatewayError && paymentOptions.length > 0 && onlineOptions.length === 0 && (
                                             <div className="sm:col-span-2 p-4 bg-red-50 border border-red-100 text-red-800 text-xs font-bold rounded-xl text-center">
                                                 {vendorGatewayError}
                                             </div>
@@ -887,8 +897,8 @@ const StorefrontCheckout = ({ cart, cartCount, onClearCart, customer, onLogout, 
                                         })}
 
                                         {!loadingPayments && paymentOptions.length === 0 && (
-                                            <div className="sm:col-span-2 p-4 bg-amber-50 border border-amber-100 text-amber-800 text-xs font-bold rounded-xl text-center">
-                                                No payment methods configured.
+                                            <div className="sm:col-span-2 p-4 bg-amber-50 border border-amber-100 text-amber-900 text-xs font-bold rounded-xl text-center">
+                                                {vendorGatewayError || 'No payment methods are available. Enable Cash on Delivery or configure an online payment gateway.'}
                                             </div>
                                         )}
                                     </div>

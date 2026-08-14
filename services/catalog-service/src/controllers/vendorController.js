@@ -2,6 +2,8 @@ import Vendor from '../models/Vendor.js';
 import sharp from 'sharp';
 import path from 'path';
 import fs from 'fs';
+import { emitEmail } from '../../../shared/emailService.js';
+import { vendorSignupEmail } from '../../../shared/storefrontEmails.js';
 
 // @desc    Get all vendors for logged-in merchant's store
 // @route   GET /api/vendors
@@ -108,6 +110,19 @@ export const createVendor = async (req, res) => {
             pincode: pincode || '',
             isActive: isActive !== undefined ? isActive : true
         });
+
+        try {
+            emitEmail({
+                event: 'vendor_signup',
+                ...vendorSignupEmail({
+                    name: vendor.name,
+                    email: vendor.email,
+                    businessName: vendor.businessName,
+                }),
+            });
+        } catch (mailErr) {
+            console.error('[vendor-signup email]', mailErr.message);
+        }
 
         res.status(201).json(vendor);
     } catch (error) {

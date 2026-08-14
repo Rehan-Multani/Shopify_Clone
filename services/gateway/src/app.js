@@ -301,6 +301,9 @@ app.use('/api/merchant/payment-gateways', createServiceProxy(BILLING_SERVICE_URL
 app.use('/api/vendor/payment-gateways', createServiceProxy(BILLING_SERVICE_URL));
 app.use('/api/merchant/email-config', createServiceProxy(BILLING_SERVICE_URL));
 app.use('/api/vendor/email-config', createServiceProxy(BILLING_SERVICE_URL));
+app.use('/api/merchant/shipping', createServiceProxy(STORE_SERVICE_URL));
+app.use('/api/vendor/shipping', createServiceProxy(STORE_SERVICE_URL));
+app.use('/api/shipping', createServiceProxy(STORE_SERVICE_URL));
 app.use('/api/marketplace/payment-settings', createServiceProxy(BILLING_SERVICE_URL));
 app.use('/api/checkout', createServiceProxy(BILLING_SERVICE_URL));
 app.use('/api/webhooks', createServiceProxy(BILLING_SERVICE_URL));

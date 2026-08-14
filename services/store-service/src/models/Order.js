@@ -111,6 +111,23 @@ const orderSchema = new mongoose.Schema({
         state: { type: String, default: '' },
         pincode: { type: String, default: '' }
     },
+    shipping: {
+        provider: { type: String, enum: ['shiprocket', 'manual'], default: 'manual' },
+        ownerType: { type: String, default: '' },
+        status: {
+            type: String,
+            enum: ['manual', 'pending', 'created', 'awb_generated', 'in_transit', 'delivered', 'failed'],
+            default: 'manual',
+        },
+        shiprocketOrderId: { type: String, default: '' },
+        shipmentId: { type: String, default: '' },
+        awb: { type: String, default: '', index: true },
+        courierName: { type: String, default: '' },
+        trackingUrl: { type: String, default: '' },
+        lastError: { type: String, default: '' },
+        fallbackReason: { type: String, default: '' },
+        lastSyncedAt: { type: Date, default: null },
+    },
     trackingStatus: [{
         status: { type: String, required: true },
         updatedAt: { type: Date, default: Date.now },

@@ -1042,7 +1042,7 @@ export const updatePlatformSettings = async (req, res) => {
         if (!settings) {
             settings = new PlatformSetting();
         }
-        const { expectedStoreIP, sshUser, sshPassword, platformName, supportEmail, adminEmail, maxStoresPerMerchant, trialDays, defaultCurrency, maintenanceMode, availablePaymentGateways } = req.body;
+        const { expectedStoreIP, sshUser, sshPassword, platformName, supportEmail, adminEmail, maxStoresPerMerchant, trialDays, defaultCurrency, maintenanceMode, availablePaymentGateways, shiprocketEnabled } = req.body;
 
         if (expectedStoreIP !== undefined) settings.expectedStoreIP = expectedStoreIP.trim();
         if (sshUser !== undefined) settings.sshUser = sshUser.trim();
@@ -1059,6 +1059,9 @@ export const updatePlatformSettings = async (req, res) => {
             settings.availablePaymentGateways = (Array.isArray(availablePaymentGateways) ? availablePaymentGateways : [])
                 .map((g) => String(g).toLowerCase())
                 .filter((g) => allowed.includes(g));
+        }
+        if (shiprocketEnabled !== undefined) {
+            settings.shiprocketEnabled = Boolean(shiprocketEnabled);
         }
 
         await settings.save();

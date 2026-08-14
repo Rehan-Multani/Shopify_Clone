@@ -5,6 +5,7 @@ import storeRoutes from './routes/storeRoutes.js';
 import storePageRoutes from './routes/storePageRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import themeRoutes from './routes/themeRoutes.js';
+import shippingRoutes from './routes/shippingRoutes.js';
 import { getThemeStore } from './controllers/themeController.js';
 import jwt from 'jsonwebtoken';
 import { verifyPreviewToken } from './utils/previewToken.js';
@@ -36,6 +37,12 @@ app.use(async (req, res, next) => {
         if (req.headers['x-admin-id']) {
             req.admin = { _id: req.headers['x-admin-id'] };
         }
+        if (req.headers['x-vendor-id']) {
+            req.vendor = { _id: req.headers['x-vendor-id'] };
+            if (req.headers['x-store-id']) {
+                req.vendor.store = req.headers['x-store-id'];
+            }
+        }
 
         // Wave 5/6 — dedicated preview tokens (never treat as merchant session JWT)
         if (req.query && req.query.previewToken) {
@@ -53,12 +60,12 @@ app.use(async (req, res, next) => {
             }
         }
 
-        if (!req.merchant && !req.admin) {
+        if (!req.merchant && !req.admin && !req.vendor) {
             let token;
             if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
                 token = req.headers.authorization.split(' ')[1];
-            } else if (req.cookies && (req.cookies.jwt_merchant || req.cookies.jwt_admin)) {
-                token = req.cookies.jwt_merchant || req.cookies.jwt_admin;
+            } else if (req.cookies && (req.cookies.jwt_merchant || req.cookies.jwt_admin || req.cookies.jwt_vendor)) {
+                token = req.cookies.jwt_merchant || req.cookies.jwt_admin || req.cookies.jwt_vendor;
             }
 
             if (token) {
@@ -67,8 +74,12 @@ app.use(async (req, res, next) => {
                     if (decoded && decoded.purpose === 'theme-preview') {
                         req.previewAuthError = { ok: false, status: 403, message: 'Use previewToken query, not Bearer' };
                     } else if (decoded && decoded.id) {
-                        req.merchant = { _id: decoded.id };
-                        req.admin = { _id: decoded.id };
+                        if (decoded.type === 'vendor' || req.cookies?.jwt_vendor) {
+                            req.vendor = { _id: decoded.id, store: decoded.storeId };
+                        } else {
+                            req.merchant = { _id: decoded.id };
+                            req.admin = { _id: decoded.id };
+                        }
                     }
                 } catch (err) {
                     console.error('JWT Verification Error in store-service:', err.message);
@@ -103,6 +114,7 @@ app.use('/api/stores', storeRoutes);
 app.use('/api/store-pages', storePageRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/themes', themeRoutes);
+app.use('/api', shippingRoutes);
 app.get('/api/theme-store', getThemeStore);
 
 app.get('/api/store/health', (req, res) => {

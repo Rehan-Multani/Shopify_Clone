@@ -7,7 +7,7 @@
  * Prefer enqueueTransactionalEmail for customer-facing mail with merchantId/vendorId.
  */
 
-import { enqueueTransactionalEmail } from './transactionalEmail.js';
+import { emitEmail } from './emailService.js';
 import { sendEmail } from './sendEmail.js';
 
 export const MERCHANT_EMAIL_EVENTS = [
@@ -40,23 +40,21 @@ function wrap({ title, name, bodyHtml, footerNote }) {
  * Platform ops emails omit both and use platform SMTP.
  */
 export async function sendMerchantMail(payload) {
-  const { merchantId = null, vendorId = null, event = 'merchant_mail', ...mail } = payload || {};
-  try {
-    enqueueTransactionalEmail({
-      to: mail.to,
-      subject: mail.subject,
-      text: mail.text,
-      html: mail.html,
-      merchantId,
-      vendorId,
-      event
-    });
-  } catch (err) {
-    // Fallback to direct platform send if queue layer fails to load
+  const { merchantId = null, vendorId = null, event = 'signup_welcome', ...mail } = payload || {};
+  const result = emitEmail({
+    event,
+    to: mail.to,
+    subject: mail.subject,
+    text: mail.text,
+    html: mail.html,
+    merchantId,
+    vendorId,
+  });
+  if (result?.skipped && mail.to) {
     try {
       await sendEmail({ ...mail, throwOnError: true });
     } catch (e2) {
-      console.error('[merchant-mail]', e2.message || err.message || err);
+      console.error('[merchant-mail]', e2.message);
     }
   }
 }

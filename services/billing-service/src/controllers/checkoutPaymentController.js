@@ -9,6 +9,10 @@ import {
 } from '../services/gatewayResolver.js';
 import { finalizeSuccessfulPayment, markOrderPaymentFailed } from '../services/orderPaymentService.js';
 import { isSupportedGateway, isCheckoutReadyGateway } from '../constants/gateways.js';
+import {
+    applyPaymentToggles,
+    describeCheckoutAvailability,
+} from '../services/checkoutOptionsPolicy.js';
 
 function normalizeId(value) {
     if (!value) return null;
@@ -48,16 +52,17 @@ export const getPaymentOptions = async (req, res) => {
         });
 
         const onlineEnabled = store.paymentSettings?.onlineEnabled !== false;
-        const options = (result.options || []).filter((opt) => {
-            if (opt.gateway === 'cod') return true;
-            return onlineEnabled;
-        });
+        const codEnabled = store.paymentSettings?.codEnabled !== false;
+        const options = applyPaymentToggles(result.options || [], { onlineEnabled, codEnabled });
+        const availability = describeCheckoutAvailability(options);
 
         res.json({
             ...result,
             options,
             onlineEnabled,
-            codEnabled: store.paymentSettings?.codEnabled !== false,
+            codEnabled,
+            code: availability.code || undefined,
+            message: availability.message || undefined,
             resolvedOwner: safeVendorId ? 'vendor' : 'merchant',
             vendorId: safeVendorId,
             merchantId: store.merchantId

@@ -2,6 +2,13 @@ import Order from '../models/Order.js';
 import Store from '../models/Store.js';
 import Product from '../models/Product.js';
 import Coupon from '../models/Coupon.js';
+import { fulfillOrderShipment, syncOrderTracking } from '../services/shippingService.js';
+import { emitEmail, ownerFromOrder } from '../../../shared/emailService.js';
+import { statusEmailEvent } from '../../../shared/emailEvents.js';
+import {
+    orderConfirmationEmail,
+    orderStatusEmail,
+} from '../../../shared/storefrontEmails.js';
 
 // @desc    Get all orders for the merchant
 // @route   GET /api/orders
@@ -174,12 +181,36 @@ export const createOrder = async (req, res) => {
             status: status || 'pending',
             // Always pending on create — paid only via verified payment / webhook
             paymentStatus: 'pending',
-            trackingStatus: initialTrackingStatus
+            trackingStatus: initialTrackingStatus,
+            shipping: {
+                provider: 'manual',
+                status: 'manual',
+            },
         });
 
         await Store.findByIdAndUpdate(finalStoreId, {
             $inc: { totalOrders: 1 }
         });
+
+        try {
+            await fulfillOrderShipment(order);
+            await order.save();
+        } catch (shipErr) {
+            console.error('[Shipping] fulfill skipped:', shipErr.message);
+        }
+
+        const method = String(order.paymentMethod || 'COD').toUpperCase();
+        if (method === 'COD' && order.customerEmail) {
+            try {
+                emitEmail({
+                    event: 'customer_order_confirmation',
+                    ...ownerFromOrder(order),
+                    ...orderConfirmationEmail(order),
+                });
+            } catch (mailErr) {
+                console.error('[order email]', mailErr.message);
+            }
+        }
 
         res.status(201).json(order);
     } catch (error) {
@@ -226,11 +257,52 @@ export const updateOrderStatus = async (req, res) => {
 
         const updatedOrder = await order.save();
 
+        // Retry Shiprocket if merchant accepted / marked shipped and still on manual fallback
+        if (
+            status !== undefined
+            && ['accepted', 'shipped'].includes(updatedOrder.status)
+            && updatedOrder.shipping?.provider !== 'shiprocket'
+        ) {
+            try {
+                await fulfillOrderShipment(updatedOrder);
+                await updatedOrder.save();
+            } catch (shipErr) {
+                console.error('[Shipping] retry skipped:', shipErr.message);
+            }
+        }
+
         // If payment status changed to paid, update store revenue
         if (prevPaymentStatus !== 'paid' && updatedOrder.paymentStatus === 'paid') {
             await Store.findByIdAndUpdate(order.storeId, {
                 $inc: { revenue: order.totalAmount }
             });
+        }
+
+        try {
+            if (status !== undefined && status !== prevStatus && updatedOrder.customerEmail) {
+                const event = statusEmailEvent(status);
+                const mail = event ? orderStatusEmail(updatedOrder, event) : null;
+                if (mail) {
+                    emitEmail({ event, ...ownerFromOrder(updatedOrder), ...mail });
+                }
+            }
+            if (
+                paymentStatus !== undefined
+                && prevPaymentStatus !== 'refunded'
+                && updatedOrder.paymentStatus === 'refunded'
+                && updatedOrder.customerEmail
+            ) {
+                const mail = orderStatusEmail(updatedOrder, 'customer_order_refunded');
+                if (mail) {
+                    emitEmail({
+                        event: 'customer_order_refunded',
+                        ...ownerFromOrder(updatedOrder),
+                        ...mail,
+                    });
+                }
+            }
+        } catch (mailErr) {
+            console.error('[order status email]', mailErr.message);
         }
 
         res.json(updatedOrder);
@@ -260,6 +332,17 @@ export const getOrderDetails = async (req, res) => {
         const order = await Order.findById(req.params.id);
         if (!order) {
             return res.status(404).json({ success: false, message: 'Order not found' });
+        }
+        if (order.shipping?.provider === 'shiprocket' && order.shipping?.awb) {
+            const last = order.shipping.lastSyncedAt ? new Date(order.shipping.lastSyncedAt).getTime() : 0;
+            if (Date.now() - last > 60_000) {
+                try {
+                    await syncOrderTracking(order);
+                    await order.save();
+                } catch (err) {
+                    console.error('[Shipping] track skipped:', err.message);
+                }
+            }
         }
         res.json({ success: true, order });
     } catch (error) {
@@ -301,6 +384,20 @@ export const cancelOrder = async (req, res) => {
         });
 
         const updatedOrder = await order.save();
+        try {
+            if (updatedOrder.customerEmail) {
+                const mail = orderStatusEmail(updatedOrder, 'customer_order_cancelled');
+                if (mail) {
+                    emitEmail({
+                        event: 'customer_order_cancelled',
+                        ...ownerFromOrder(updatedOrder),
+                        ...mail,
+                    });
+                }
+            }
+        } catch (mailErr) {
+            console.error('[cancel email]', mailErr.message);
+        }
         res.json({ success: true, order: updatedOrder });
     } catch (error) {
         res.status(500).json({ message: error.message });
