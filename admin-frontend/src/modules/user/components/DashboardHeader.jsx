@@ -38,7 +38,7 @@ const DashboardHeader = ({ isOpen, setIsOpen, storeName: propStoreName, isCollap
     const location = useLocation();
 
     const [stores, setStores] = useState([]);
-    const activeStoreId = localStorage.getItem('activeStoreId');
+    const [activeStoreId, setActiveStoreId] = useState(() => localStorage.getItem('activeStoreId'));
     const currentTab = location.pathname.split('/')[2] || 'home';
 
     useEffect(() => {
@@ -60,28 +60,19 @@ const DashboardHeader = ({ isOpen, setIsOpen, storeName: propStoreName, isCollap
                         ? list.find((s) => String(s._id) === String(currentId))
                         : null;
 
+                    // Stay on global merchant view until the merchant picks a store.
+                    // Do not auto-select even when there is only one store.
                     if (currentId && !owned) {
                         localStorage.removeItem('activeStoreId');
-                        if (list.length === 1) {
-                            const only = list[0];
-                            localStorage.setItem('activeStoreId', only._id);
-                            localStorage.setItem('shopStoreName', only.storeName || only.name || 'My Store');
-                            localStorage.setItem('adminPanelType', only.planType === 'Multi Vendor' ? 'multi' : 'single');
-                            window.location.reload();
-                            return;
-                        }
-                    } else if (!currentId && list.length === 1) {
-                        const only = list[0];
-                        localStorage.setItem('activeStoreId', only._id);
-                        localStorage.setItem('shopStoreName', only.storeName || only.name || 'My Store');
-                        localStorage.setItem('adminPanelType', only.planType === 'Multi Vendor' ? 'multi' : 'single');
-                        window.location.reload();
-                        return;
+                        setActiveStoreId(null);
                     } else if (owned) {
                         localStorage.setItem('shopStoreName', owned.storeName || owned.name || 'My Store');
                         if (owned.planType) {
                             localStorage.setItem('adminPanelType', owned.planType === 'Multi Vendor' ? 'multi' : 'single');
                         }
+                        setActiveStoreId(owned._id);
+                    } else {
+                        setActiveStoreId(null);
                     }
                 }
             } catch (err) {
