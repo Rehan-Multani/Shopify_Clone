@@ -1,1 +1,0 @@
-var e=(e,t=``)=>{let n=window.location.hostname,r=n===`localhost`||n===`127.0.0.1`||n===`admin.cloudedata.in`||n===`storify.cloudedata.in`,i=t.startsWith(`/`)?t.substring(1):t;return r?`/store/${e}/${i}`:`/${i}`};export{e as t};

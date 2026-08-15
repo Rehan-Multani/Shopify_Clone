@@ -5,6 +5,14 @@ temp_interactive_push.bat
 # Node modules (recursively ignores node_modules in root, services, frontend, etc.)
 node_modules/
 
+# Build outputs (Vite/React/etc.)
+dist/
+**/dist/
+dist-ssr/
+**/dist-ssr/
+build/
+**/build/
+
 # Environment files
 .env
 .env.local
