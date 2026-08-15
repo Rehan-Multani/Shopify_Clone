@@ -123,7 +123,7 @@ const StorefrontOrderTrack = ({ cartCount, customer, onLogout, storeInfo }) => {
                 <div className="text-[10px] font-black uppercase tracking-wider text-zinc-400 flex items-center gap-1.5 pl-0.5">
                     <Link to={getStorePath(storeId, '/account')} className="hover:text-[var(--color-primary)] transition-colors">My Account</Link>
                     <span className="text-zinc-300">/</span>
-                    <span className="text-zinc-650">Order Tracking</span>
+                    <span className="text-zinc-600">Order Tracking</span>
                 </div>
 
                 {/* Order header summary */}
@@ -139,7 +139,7 @@ const StorefrontOrderTrack = ({ cartCount, customer, onLogout, storeInfo }) => {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2 text-xs font-semibold text-zinc-650 leading-relaxed">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pt-2 text-xs font-semibold text-zinc-600 leading-relaxed">
                         <div className="space-y-1.5">
                             <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Shipping Address</p>
                             <p className="text-zinc-800 font-bold">{order.customerName}</p>
@@ -176,7 +176,7 @@ const StorefrontOrderTrack = ({ cartCount, customer, onLogout, storeInfo }) => {
                                     <button
                                         onClick={handleCancelOrder}
                                         disabled={cancelling}
-                                        className="text-[9px] font-black uppercase tracking-wider text-red-500 hover:text-red-750 hover:underline disabled:opacity-50 cursor-pointer transition-all"
+                                        className="text-[9px] font-black uppercase tracking-wider text-red-500 hover:text-red-700 hover:underline disabled:opacity-50 cursor-pointer transition-all"
                                     >
                                         {cancelling ? 'Cancelling...' : 'Cancel Order'}
                                     </button>
@@ -185,6 +185,29 @@ const StorefrontOrderTrack = ({ cartCount, customer, onLogout, storeInfo }) => {
                                     <span className="text-[8px] font-bold text-red-500 leading-normal">{cancelError}</span>
                                 )}
                             </div>
+                        </div>
+                        <div className="space-y-1.5">
+                            <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Shipment</p>
+                            {order.shipping?.provider === 'shiprocket' && order.shipping?.awb ? (
+                                <>
+                                    <p className="text-zinc-800 font-bold">AWB: {order.shipping.awb}</p>
+                                    {order.shipping.courierName && (
+                                        <p>Courier: <strong className="text-zinc-800">{order.shipping.courierName}</strong></p>
+                                    )}
+                                    {order.shipping.trackingUrl && (
+                                        <a
+                                            href={order.shipping.trackingUrl}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="inline-block text-[10px] font-black uppercase tracking-wider text-[var(--color-primary)] hover:underline"
+                                        >
+                                            Track on Shiprocket
+                                        </a>
+                                    )}
+                                </>
+                            ) : (
+                                <p className="text-zinc-500">Manual / COD — status updates appear in the timeline below.</p>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -322,7 +345,7 @@ const StorefrontOrderTrack = ({ cartCount, customer, onLogout, storeInfo }) => {
                         ))}
                     </div>
 
-                    <div className="border-t border-zinc-200/50 pt-4 text-xs font-semibold text-zinc-650 space-y-2">
+                    <div className="border-t border-zinc-200/50 pt-4 text-xs font-semibold text-zinc-600 space-y-2">
                         <div className="flex justify-between">
                             <span>Subtotal</span>
                             <span className="text-zinc-900">₹{(order.subtotal || order.totalAmount).toLocaleString()}</span>

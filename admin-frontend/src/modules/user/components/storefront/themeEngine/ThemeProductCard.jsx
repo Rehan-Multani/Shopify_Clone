@@ -277,8 +277,8 @@ export default function ThemeProductCard({ product, storeId, onAddToCart, cardSh
                         </>
                     )}
                     <button type="button" onClick={handleAdd} disabled={outOfStock}
-                        className="absolute bottom-3 left-3 right-3 py-2.5 text-xs font-bold text-white opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-40 btn-premium"
-                        style={{ background: 'var(--color-accent)', borderRadius: radius }}>
+                        className="absolute bottom-3 left-3 right-3 py-2.5 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-40 btn-premium btn-on-primary"
+                        style={{ background: 'var(--color-accent)', borderRadius: radius, color: 'var(--color-on-accent)' }}>
                         {addLabel}
                     </button>
                 </Link>
@@ -306,8 +306,8 @@ export default function ThemeProductCard({ product, storeId, onAddToCart, cardSh
                     <Link to={link} className="text-sm font-medium line-clamp-2 leading-snug flex-1" style={{ fontFamily: 'var(--heading-font)' }}>{product.name}</Link>
                     {price}
                     <button type="button" onClick={handleAdd} disabled={outOfStock}
-                        className="w-full py-2.5 text-[11px] font-bold text-white disabled:opacity-40 btn-premium mt-1"
-                        style={{ background: 'var(--color-primary)', borderRadius: radius }}>
+                        className="w-full py-2.5 text-[11px] font-bold disabled:opacity-40 btn-premium btn-on-primary mt-1"
+                        style={{ background: 'var(--color-primary)', borderRadius: radius, color: 'var(--color-on-primary)' }}>
                         {addLabel}
                     </button>
                 </div>
@@ -384,8 +384,8 @@ export default function ThemeProductCard({ product, storeId, onAddToCart, cardSh
                 <Link to={link} className="text-sm font-medium line-clamp-1 group-hover:opacity-70 transition-opacity" style={{ fontFamily: 'var(--heading-font)' }}>{product.name}</Link>
                 {price}
                 <button type="button" onClick={handleAdd} disabled={outOfStock}
-                    className="mt-2 w-full py-2.5 text-[11px] font-bold text-white disabled:opacity-40 btn-premium"
-                    style={{ background: 'var(--color-primary)', borderRadius: radius }}>
+                    className="mt-2 w-full py-2.5 text-[11px] font-bold disabled:opacity-40 btn-premium btn-on-primary"
+                    style={{ background: 'var(--color-primary)', borderRadius: radius, color: 'var(--color-on-primary)' }}>
                     {addLabel}
                 </button>
             </div>

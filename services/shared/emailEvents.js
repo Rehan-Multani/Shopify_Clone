@@ -2,10 +2,10 @@
  * Central transactional email events + routing policy.
  * Does not send mail. Used by EmailService.
  *
- * Routes:
- *   platform  — ignore tenant configs (merchant/vendor signup, SaaS billing)
- *   merchant  — Store merchant → platform (customer signup)
- *   order     — Vendor → Merchant → Platform (order lifecycle)
+ * Routes (owner-only SMTP — no cross-tenant fallback):
+ *   platform  — platform env SMTP only (SaaS signup, billing, portal OTP)
+ *   merchant  — merchant SMTP only (customer signup / store mails)
+ *   order     — vendor SMTP if vendorId, else merchant SMTP only
  */
 
 export const EMAIL_ROUTE = {
@@ -34,7 +34,8 @@ export const EMAIL_EVENTS = {
     theme_purchase_success: { route: EMAIL_ROUTE.PLATFORM, label: 'Theme purchase' },
     password_changed: { route: EMAIL_ROUTE.PLATFORM, label: 'Merchant password changed' },
     support_admin_reply: { route: EMAIL_ROUTE.PLATFORM, label: 'Support reply' },
-    forgot_password_otp: { route: EMAIL_ROUTE.MERCHANT, label: 'Forgot password OTP' },
+    // Forgot-password OTP — always admin / platform env SMTP (never tenant config)
+    forgot_password_otp: { route: EMAIL_ROUTE.PLATFORM, label: 'Forgot password OTP' },
 
     // Storefront customer
     customer_signup: {
@@ -42,7 +43,7 @@ export const EMAIL_EVENTS = {
         label: 'Customer welcome / account created',
     },
 
-    // Order lifecycle (store owner chain)
+    // Order lifecycle (owner-only: vendor XOR merchant)
     customer_order_confirmation: {
         route: EMAIL_ROUTE.ORDER,
         label: 'Order confirmation (COD placed / online paid)',
@@ -101,10 +102,14 @@ export const applyEmailRoute = ({ event, merchantId = null, vendorId = null } = 
     if (route === EMAIL_ROUTE.MERCHANT) {
         return { route, merchantId: merchantId || null, vendorId: null };
     }
+    // ORDER: exclusive owner — vendor if present, otherwise merchant. Never both.
+    if (vendorId) {
+        return { route, merchantId: null, vendorId: vendorId || null };
+    }
     return {
         route,
         merchantId: merchantId || null,
-        vendorId: vendorId || null,
+        vendorId: null,
     };
 };
 

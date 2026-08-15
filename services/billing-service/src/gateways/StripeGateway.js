@@ -91,6 +91,34 @@ export class StripeGateway extends BaseGateway {
         }
     }
 
+    async refundPayment({ paymentId, amount, reason = 'requested_by_customer' }) {
+        if (!this.secretKey) {
+            return { success: false, message: 'Stripe is not configured' };
+        }
+        if (!paymentId) {
+            return { success: false, message: 'Missing Stripe payment intent id for refund' };
+        }
+        try {
+            const body = {
+                payment_intent: paymentId,
+                reason: 'requested_by_customer',
+                'metadata[note]': String(reason || '').slice(0, 100),
+            };
+            if (amount != null && Number(amount) > 0) {
+                body.amount = String(Math.round(Number(amount) * 100));
+            }
+            const refund = await this.#request('/refunds', { method: 'POST', body });
+            return {
+                success: true,
+                refundId: refund.id,
+                message: 'Stripe refund created',
+                raw: refund,
+            };
+        } catch (error) {
+            return { success: false, message: error.message || 'Stripe refund failed' };
+        }
+    }
+
     verifyWebhook(rawBody, signature) {
         if (!this.webhookSecret) {
             return { valid: false, message: 'Webhook secret not configured' };

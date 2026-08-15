@@ -33,6 +33,8 @@ const Login = () => {
         localStorage.setItem('merchantInfo', JSON.stringify(data.merchant));
         localStorage.setItem('merchantToken', data.token);
         localStorage.setItem('shopStoreName', data.merchant.name);
+        // Drop previous session store — may belong to another merchant (causes 404 on /stores/:id)
+        localStorage.removeItem('activeStoreId');
         
         const isMulti =
           email.trim().toLowerCase() === 'multi@storify.com' ||

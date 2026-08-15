@@ -73,6 +73,21 @@ export async function markOrderPaid({
             $inc: { revenue: order.totalAmount }
         });
 
+        // Ask store-service to create Shiprocket shipment now that payment is captured
+        try {
+            const storeApi = process.env.STORE_SERVICE_URL || 'http://localhost:5004';
+            const secret = process.env.INTERNAL_SERVICE_SECRET || '';
+            fetch(`${storeApi}/api/orders/internal/${order._id}/fulfill-shipping`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(secret ? { 'x-internal-secret': secret } : {}),
+                },
+            }).catch(() => {});
+        } catch {
+            /* best-effort */
+        }
+
         try {
             if (order.customerEmail) {
                 emitEmail({

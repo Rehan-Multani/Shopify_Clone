@@ -76,6 +76,34 @@ export class RazorpayGateway extends BaseGateway {
         return { success: true, paymentId: razorpay_payment_id, orderId: razorpay_order_id };
     }
 
+    async refundPayment({ paymentId, amount, reason = 'requested_by_customer' }) {
+        if (!this.client) {
+            return { success: false, message: 'Razorpay is not configured' };
+        }
+        if (!paymentId) {
+            return { success: false, message: 'Missing Razorpay payment id for refund' };
+        }
+        try {
+            const payload = {
+                speed: 'normal',
+                notes: { reason: String(reason || '').slice(0, 100) },
+            };
+            if (amount != null && Number(amount) > 0) {
+                payload.amount = Math.round(Number(amount) * 100);
+            }
+            const refund = await this.client.payments.refund(paymentId, payload);
+            return {
+                success: true,
+                refundId: refund.id,
+                message: 'Razorpay refund initiated',
+                raw: refund,
+            };
+        } catch (error) {
+            const message = error?.error?.description || error?.message || 'Razorpay refund failed';
+            return { success: false, message };
+        }
+    }
+
     verifyWebhook(rawBody, signature) {
         if (!this.webhookSecret) {
             return { valid: false, message: 'Webhook secret not configured' };

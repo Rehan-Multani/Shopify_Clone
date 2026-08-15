@@ -1,3 +1,11 @@
+/**
+ * Resolve which payment gateway processes a checkout.
+ * Email / Shiprocket parity:
+ *   - Owner-only: vendorId → that vendor's verified GW only (no merchant fallback)
+ *   - No vendorId → merchant verified GW only
+ *   - Live = enabled && status === 'verified'
+ *   - Missing → online unavailable (COD still listed separately)
+ */
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import MerchantPaymentGateway from '../models/MerchantPaymentGateway.js';
@@ -12,6 +20,8 @@ import { GATEWAY_META, SUPPORTED_GATEWAYS, CHECKOUT_READY_GATEWAYS } from '../co
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const LIVE_STATUS = 'verified';
+
 async function loadEncryption() {
     const sharedPath = path.resolve(__dirname, '../../../shared/encryption.js');
     return import(pathToFileURL(sharedPath).href);
@@ -23,22 +33,21 @@ export async function getOrCreateMarketplaceSettings(merchantId, storeId = null)
         settings = await MarketplaceSettings.create({
             merchantId,
             storeId,
-            // Multi Vendor: vendors always configure their own gateways
             allowVendorGateway: true,
-            allowVendorGatewayFallback: true,
+            // Owner-only: never collect on merchant keys for vendor orders
+            allowVendorGatewayFallback: false,
             allowedVendorGateways: [...SUPPORTED_GATEWAYS],
             paymentMode: 'vendor',
             defaultGateway: null
         });
     }
-    // Always keep vendor gateways allowed + merchant fallback on (no merchant toggles)
     let dirty = false;
     if (settings.allowVendorGateway !== true) {
         settings.allowVendorGateway = true;
         dirty = true;
     }
-    if (settings.allowVendorGatewayFallback !== true) {
-        settings.allowVendorGatewayFallback = true;
+    if (settings.allowVendorGatewayFallback !== false) {
+        settings.allowVendorGatewayFallback = false;
         dirty = true;
     }
     if (settings.paymentMode === 'merchant') {
@@ -60,6 +69,7 @@ export function serializeGatewayDoc(doc, credentialsMasked, meta) {
         enabled: doc.enabled,
         isDefault: !!doc.isDefault,
         status: doc.status,
+        verified: doc.status === 'verified' && !!doc.enabled,
         credentials: credentialsMasked,
         webhookSecretConfigured: Boolean(doc.webhookSecret),
         lastTestedAt: doc.lastTestedAt,
@@ -91,19 +101,85 @@ export async function buildGatewayClient(doc) {
     });
 }
 
+/**
+ * Mark tenant gateway broken after runtime auth failure (email/shipping parity).
+ */
+export async function markPaymentGatewayBroken(doc, message) {
+    if (!doc) return;
+    try {
+        doc.status = 'error';
+        doc.enabled = false;
+        doc.lastTestedAt = new Date();
+        doc.lastTestResult = {
+            success: false,
+            message: String(message || 'Payment gateway authentication failed').slice(0, 300),
+        };
+        await doc.save();
+    } catch (err) {
+        console.error('[payment] mark broken failed:', err.message);
+    }
+}
+
+/**
+ * One-time: previously enabled + configured (pre verify-to-activate) → verified
+ * so existing live keys keep working without forcing every merchant to re-test.
+ */
+export async function promoteLegacyLiveGateways(Model, filter = {}) {
+    try {
+        const result = await Model.updateMany(
+            {
+                ...filter,
+                enabled: true,
+                status: 'configured',
+                credentials: { $exists: true, $nin: [null, ''] },
+            },
+            {
+                $set: {
+                    status: 'verified',
+                    lastTestResult: {
+                        success: true,
+                        message: 'Legacy enabled gateway auto-activated. Re-run Test & activate after rotating keys.',
+                    },
+                },
+            }
+        );
+        return result?.modifiedCount || 0;
+    } catch (err) {
+        console.error('[payment] legacy promote failed:', err.message);
+        return 0;
+    }
+}
+
+export function isGatewayAuthFailure(err) {
+    if (!err) return false;
+    const status = Number(err.statusCode || err.status || err.code || 0);
+    if (status === 401 || status === 403) return true;
+    const msg = String(err.message || err.error?.description || '').toLowerCase();
+    const code = String(err.code || '').toUpperCase();
+    if (code === 'INVALID_KEYS' || code === 'MISSING_CREDENTIALS') return true;
+    return msg.includes('unauthorized')
+        || msg.includes('unauthenticated')
+        || msg.includes('authentication failed')
+        || msg.includes('invalid key')
+        || msg.includes('invalid api')
+        || msg.includes('access denied')
+        || msg.includes('authentication failure')
+        || msg.includes('bad credentials')
+        || msg.includes('auth failed');
+}
+
 function filterByPlatform(gateways, platformAvailable) {
     const set = new Set(platformAvailable);
     return (gateways || []).filter((g) => set.has(g.gateway));
 }
 
+const liveQuery = {
+    enabled: true,
+    status: LIVE_STATUS,
+};
+
 /**
  * Resolve which gateway config should process a checkout payment.
- *
- * Multi Vendor + vendorId:
- *   1. Vendor's own gateway (always allowed)
- *   2. If vendor has none → Merchant gateway fallback
- *
- * Single Vendor / no vendorId: Merchant gateway only.
  */
 export async function resolveCheckoutGateway({ merchantId, storeId, vendorId, preferredGateway }) {
     const store = storeId ? await Store.findById(storeId).lean() : null;
@@ -111,71 +187,79 @@ export async function resolveCheckoutGateway({ merchantId, storeId, vendorId, pr
     const settings = await getOrCreateMarketplaceSettings(merchantId, storeId);
     const platformAvailable = await getPlatformAvailableGateways();
 
+    const useVendorFlow = isMultiVendor && vendorId;
+
+    // Vendor-owned order — never use merchant payment keys
+    if (useVendorFlow) {
+        const vendor = await Vendor.findById(vendorId).lean();
+        if (!vendor || String(vendor.merchant) !== String(merchantId)) {
+            return {
+                error: 'VENDOR_NOT_FOUND',
+                message: 'Vendor not found for this checkout',
+            };
+        }
+
+        const vendorGateways = filterByPlatform(
+            await VendorPaymentGateway.find({
+                vendorId,
+                ...liveQuery,
+                gateway: { $in: platformAvailable },
+            }),
+            platformAvailable
+        );
+
+        if (preferredGateway) {
+            const vendorMatch = vendorGateways.find((g) => g.gateway === preferredGateway);
+            if (vendorMatch) return { config: vendorMatch, ownerType: 'vendor', fallback: false };
+            if (vendorGateways.length === 0) {
+                return {
+                    error: 'VENDOR_NOT_CONFIGURED',
+                    message: 'This seller has not activated online payments. Please use Cash on Delivery.',
+                };
+            }
+            return {
+                error: 'GATEWAY_UNAVAILABLE',
+                message: `${preferredGateway} is not available for this seller. Try another method or COD.`,
+            };
+        }
+
+        if (vendorGateways.length > 0) {
+            return pickFromPool(vendorGateways, null, settings, 'vendor');
+        }
+
+        return {
+            error: 'VENDOR_NOT_CONFIGURED',
+            message: 'This seller has not activated online payments. Please use Cash on Delivery.',
+        };
+    }
+
+    // Merchant / single-vendor store order
     const merchantGateways = filterByPlatform(
         await MerchantPaymentGateway.find({
             merchantId,
-            enabled: true,
-            status: { $in: ['configured', 'verified'] },
-            ...(storeId ? { $or: [{ storeId }, { storeId: null }] } : {})
+            ...liveQuery,
+            ...(storeId ? { $or: [{ storeId }, { storeId: null }] } : {}),
         }),
         platformAvailable
     );
 
-    const useVendorFlow = isMultiVendor && vendorId;
-
-    let vendorGateways = [];
-    if (useVendorFlow) {
-        const vendor = await Vendor.findById(vendorId).lean();
-        if (vendor && String(vendor.merchant) === String(merchantId)) {
-            vendorGateways = await VendorPaymentGateway.find({
-                vendorId,
-                enabled: true,
-                status: { $in: ['configured', 'verified'] },
-                gateway: { $in: platformAvailable }
-            });
-        }
-
-        if (preferredGateway) {
-            const vendorMatch = vendorGateways.find((g) => g.gateway === preferredGateway);
-            if (vendorMatch) return { config: vendorMatch, ownerType: 'vendor' };
-        } else if (vendorGateways.length > 0) {
-            return pickFromPool(vendorGateways, null, settings, 'vendor');
-        }
-
-        // Vendor has no gateway → always fall back to merchant
-        if (vendorGateways.length === 0) {
-            if (preferredGateway) {
-                const merchantMatch = merchantGateways.find((g) => g.gateway === preferredGateway);
-                if (merchantMatch) return { config: merchantMatch, ownerType: 'merchant', fallback: true };
-            }
-            if (merchantGateways.length > 0) {
-                const picked = pickFromPool(merchantGateways, preferredGateway, settings, 'merchant');
-                if (picked) return { ...picked, fallback: true };
-            }
-            return { error: 'NO_GATEWAY_AVAILABLE', message: 'No payment gateway available' };
-        }
-
-        if (preferredGateway) {
-            const merchantMatch = merchantGateways.find((g) => g.gateway === preferredGateway);
-            if (merchantMatch) return { config: merchantMatch, ownerType: 'merchant', fallback: true };
-            return {
-                error: 'GATEWAY_UNAVAILABLE',
-                message: `${preferredGateway} is not available for this checkout.`
-            };
-        }
-    }
-
     if (preferredGateway) {
         const merchantMatch = merchantGateways.find((g) => g.gateway === preferredGateway);
-        if (merchantMatch) return { config: merchantMatch, ownerType: 'merchant' };
-        return null;
+        if (merchantMatch) return { config: merchantMatch, ownerType: 'merchant', fallback: false };
+        return {
+            error: 'GATEWAY_UNAVAILABLE',
+            message: `${preferredGateway} is not available. Try another method or COD.`,
+        };
     }
 
     if (merchantGateways.length > 0) {
         return pickFromPool(merchantGateways, null, settings, 'merchant');
     }
 
-    return null;
+    return {
+        error: 'NO_GATEWAY_AVAILABLE',
+        message: 'No online payment gateway is activated. Please use Cash on Delivery.',
+    };
 }
 
 function pickFromPool(pool, preferredGateway, settings, ownerType) {
@@ -189,7 +273,7 @@ function pickFromPool(pool, preferredGateway, settings, ownerType) {
     if (!selected) {
         selected = pool.find((g) => g.isDefault) || pool[0];
     }
-    return selected ? { config: selected, ownerType } : null;
+    return selected ? { config: selected, ownerType, fallback: false } : null;
 }
 
 /**
@@ -201,9 +285,8 @@ export async function listCheckoutPaymentOptions({ merchantId, storeId, vendorId
     const platformAvailable = await getPlatformAvailableGateways();
     const options = [];
 
-    const pushOption = (doc, ownerType, { fallback = false } = {}) => {
+    const pushOption = (doc, ownerType) => {
         if (!platformAvailable.includes(doc.gateway)) return;
-        // Stripe/Cashfree stay configurable in admin but are not offered at checkout until E2E-ready
         if (!CHECKOUT_READY_GATEWAYS.includes(doc.gateway)) return;
         const meta = GATEWAY_META[doc.gateway];
         options.push({
@@ -215,39 +298,32 @@ export async function listCheckoutPaymentOptions({ merchantId, storeId, vendorId
             ownerType,
             isDefault: !!doc.isDefault,
             checkoutReady: true,
-            fallback
+            fallback: false,
         });
     };
 
     const isMultiVendor = store?.planType === 'Multi Vendor';
     const useVendorFlow = isMultiVendor && vendorId;
+    let vendorGatewayMissing = false;
 
     if (useVendorFlow) {
         const vendorGws = await VendorPaymentGateway.find({
             vendorId,
-            enabled: true,
-            status: { $in: ['configured', 'verified'] },
-            gateway: { $in: platformAvailable }
+            ...liveQuery,
+            gateway: { $in: platformAvailable },
         });
 
         if (vendorGws.length) {
             vendorGws.forEach((g) => pushOption(g, 'vendor'));
         } else {
-            // Always fall back to merchant gateways when vendor has none
-            const merchantGws = await MerchantPaymentGateway.find({
-                merchantId,
-                enabled: true,
-                status: { $in: ['configured', 'verified'] },
-                ...(storeId ? { $or: [{ storeId }, { storeId: null }] } : {})
-            });
-            merchantGws.forEach((g) => pushOption(g, 'merchant', { fallback: true }));
+            vendorGatewayMissing = true;
+            // Owner-only: do NOT list merchant gateways for vendor carts
         }
     } else {
         const merchantGws = await MerchantPaymentGateway.find({
             merchantId,
-            enabled: true,
-            status: { $in: ['configured', 'verified'] },
-            ...(storeId ? { $or: [{ storeId }, { storeId: null }] } : {})
+            ...liveQuery,
+            ...(storeId ? { $or: [{ storeId }, { storeId: null }] } : {}),
         });
         merchantGws.forEach((g) => pushOption(g, 'merchant'));
     }
@@ -261,7 +337,7 @@ export async function listCheckoutPaymentOptions({ merchantId, storeId, vendorId
             environment: null,
             currency: 'INR',
             ownerType: 'store',
-            isDefault: options.length === 0
+            isDefault: options.length === 0,
         });
     }
 
@@ -269,11 +345,13 @@ export async function listCheckoutPaymentOptions({ merchantId, storeId, vendorId
         options,
         paymentMode: 'vendor',
         allowVendorGateway: true,
-        allowVendorGatewayFallback: true,
-        vendorGatewayMissing: false,
-        vendorGatewayError: null,
+        allowVendorGatewayFallback: false,
+        vendorGatewayMissing,
+        vendorGatewayError: vendorGatewayMissing
+            ? 'This seller has not activated online payments. You can still pay with Cash on Delivery.'
+            : null,
         storePlanType: store?.planType || 'Single Vendor',
-        platformAvailableGateways: platformAvailable
+        platformAvailableGateways: platformAvailable,
     };
 }
 

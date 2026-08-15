@@ -2,7 +2,8 @@
  * EmailService — event emit + owner routing.
  * Never throws to callers. Never coupled to Shiprocket / payment adapters.
  *
- * Preferred Config → tenant Brevo/SMTP → platform SMTP → skip.
+ * Owner-only SMTP: vendor XOR merchant XOR platform. No cross-tenant fallback.
+ * If the intended owner has no SMTP configured, the send is skipped.
  */
 import { enqueueTransactionalEmail } from './transactionalEmail.js';
 import { applyEmailRoute } from './emailEvents.js';
@@ -25,6 +26,14 @@ export function emitEmail({
             return { skipped: true, reason: 'NO_RECIPIENT_OR_SUBJECT' };
         }
         const routed = applyEmailRoute({ event, merchantId, vendorId });
+        // ORDER with neither owner → nothing to send
+        if (
+            routed.route !== 'platform'
+            && !routed.merchantId
+            && !routed.vendorId
+        ) {
+            return { skipped: true, reason: 'NO_EMAIL_OWNER', route: routed.route };
+        }
         enqueueTransactionalEmail({
             to,
             subject,

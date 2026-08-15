@@ -58,9 +58,10 @@ const ImageTextSection = ({ settings = {} }) => {
                     {buttonLabel && (
                         <a
                             href={buttonLink || '/catalog'}
-                            className="inline-flex items-center gap-2 mt-2 px-7 py-3.5 text-[11px] font-bold uppercase tracking-widest text-white btn-premium transition-transform hover:-translate-y-0.5"
+                            className="inline-flex items-center gap-2 mt-2 px-7 py-3.5 text-[11px] font-bold uppercase tracking-widest btn-premium transition-transform hover:-translate-y-0.5"
                             style={{
                                 backgroundColor: 'var(--color-accent, var(--color-primary))',
+                                color: 'var(--color-on-accent, #fff)',
                                 borderRadius: 'var(--radius-button, var(--border-radius, 0px))',
                             }}
                         >

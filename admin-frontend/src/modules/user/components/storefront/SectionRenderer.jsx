@@ -35,22 +35,41 @@ const formatText = (text) => {
 const NewsletterSection = ({ settings = {} }) => {
     const { title = 'Subscribe to our newsletter', subtitle = 'Get promotions and announcements', buttonLabel = 'Subscribe' } = settings;
     return (
-        <section className="py-20 md:py-24 px-6 w-full text-center" style={{ background: 'var(--color-secondary, #0f172a)', color: '#fff' }}>
+        <section
+            className="theme-newsletter py-20 md:py-24 px-6 w-full text-center"
+            style={{ background: 'var(--color-band, #0f172a)', color: 'var(--color-on-band, #fff)' }}
+        >
             <div className="max-w-xl mx-auto space-y-5">
-                <h2 className="text-2xl sm:text-3xl font-medium tracking-tight text-white" style={{ fontFamily: 'var(--heading-font)' }}>{title}</h2>
+                <h2
+                    className="text-2xl sm:text-3xl font-medium tracking-tight"
+                    style={{ fontFamily: 'var(--heading-font)', color: 'var(--color-on-band, #fff)' }}
+                >
+                    {title}
+                </h2>
                 <div className="h-[2px] w-14 mx-auto" style={{ backgroundColor: 'var(--color-accent, var(--color-primary))' }} />
-                <p className="text-sm text-white/70 font-medium leading-relaxed">{subtitle}</p>
+                <p className="text-sm font-medium leading-relaxed" style={{ color: 'var(--color-on-band-muted, rgba(255,255,255,0.7))' }}>
+                    {subtitle}
+                </p>
                 <div className="max-w-md mx-auto flex flex-col sm:flex-row gap-2.5 pt-2">
                     <input
                         type="email"
                         placeholder="Enter your email address"
-                        className="flex-grow px-4 py-3.5 text-sm focus:outline-none bg-white/10 border border-white/15 text-white placeholder:text-white/40"
-                        style={{ borderRadius: 'var(--border-radius, 10px)' }}
+                        className="flex-grow px-4 py-3.5 text-sm focus:outline-none"
+                        style={{
+                            borderRadius: 'var(--border-radius, 10px)',
+                            background: 'var(--color-on-band-faint, rgba(255,255,255,0.1))',
+                            border: '1px solid var(--color-on-band-border, rgba(255,255,255,0.15))',
+                            color: 'var(--color-on-band, #fff)',
+                        }}
                     />
                     <button
                         type="button"
-                        className="px-7 py-3.5 text-[11px] font-bold uppercase tracking-widest btn-premium text-white shrink-0"
-                        style={{ backgroundColor: 'var(--color-accent, var(--color-primary))', borderRadius: 'var(--radius-button, var(--border-radius, 10px))' }}
+                        className="px-7 py-3.5 text-[11px] font-bold uppercase tracking-widest btn-premium shrink-0"
+                        style={{
+                            backgroundColor: 'var(--color-accent, var(--color-primary))',
+                            color: 'var(--color-on-accent, #fff)',
+                            borderRadius: 'var(--radius-button, var(--border-radius, 10px))',
+                        }}
                     >
                         {buttonLabel}
                     </button>

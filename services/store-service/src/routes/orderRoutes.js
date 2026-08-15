@@ -5,7 +5,8 @@ import {
     updateOrderStatus, 
     getCustomerOrders, 
     getOrderDetails,
-    cancelOrder
+    cancelOrder,
+    fulfillShippingInternal,
 } from '../controllers/orderController.js';
 
 const router = express.Router();
@@ -16,6 +17,9 @@ router.route('/')
 
 router.route('/customer/:customerId')
     .get(getCustomerOrders);
+
+// Internal routes before /:id
+router.post('/internal/:id/fulfill-shipping', fulfillShippingInternal);
 
 router.route('/:id')
     .get(getOrderDetails)

@@ -33,7 +33,7 @@ const request = async (path, { method = 'GET', token, body, timeoutMs = 12000 } 
 
 export const loginShiprocket = async ({ email, password }) => {
     if (!email || !password) {
-        return { ok: false, message: 'Shiprocket email and password are required' };
+        return { ok: false, status: 400, message: 'Shiprocket email and password are required' };
     }
     const result = await request('/auth/login', {
         method: 'POST',
@@ -43,10 +43,11 @@ export const loginShiprocket = async ({ email, password }) => {
     if (!result.ok || !token) {
         return {
             ok: false,
+            status: result.status,
             message: result.data?.message || result.data?.error || 'Shiprocket login failed',
         };
     }
-    return { ok: true, token, companyId: result.data?.company_id };
+    return { ok: true, status: result.status, token, companyId: result.data?.company_id };
 };
 
 export const createShiprocketOrder = async (token, payload) => {
@@ -58,11 +59,12 @@ export const createShiprocketOrder = async (token, payload) => {
     if (!result.ok) {
         return {
             ok: false,
+            status: result.status,
             message: result.data?.message || result.data?.error || 'Shiprocket order create failed',
             data: result.data,
         };
     }
-    return { ok: true, data: result.data };
+    return { ok: true, status: result.status, data: result.data };
 };
 
 export const assignShiprocketAwb = async (token, shipmentId) => {
@@ -74,11 +76,12 @@ export const assignShiprocketAwb = async (token, shipmentId) => {
     if (!result.ok) {
         return {
             ok: false,
+            status: result.status,
             message: result.data?.message || result.data?.error || 'AWB assignment failed',
             data: result.data,
         };
     }
-    return { ok: true, data: result.data };
+    return { ok: true, status: result.status, data: result.data };
 };
 
 export const trackShiprocketAwb = async (token, awb) => {
@@ -86,11 +89,34 @@ export const trackShiprocketAwb = async (token, awb) => {
     if (!result.ok) {
         return {
             ok: false,
+            status: result.status,
             message: result.data?.message || 'Tracking lookup failed',
             data: result.data,
         };
     }
-    return { ok: true, data: result.data };
+    return { ok: true, status: result.status, data: result.data };
+};
+
+/** Cancel Shiprocket order(s) by Shiprocket order id(s). Best-effort. */
+export const cancelShiprocketOrders = async (token, ids = []) => {
+    const list = (Array.isArray(ids) ? ids : [ids]).map(String).filter(Boolean);
+    if (!list.length) {
+        return { ok: false, status: 400, message: 'No Shiprocket order ids to cancel' };
+    }
+    const result = await request('/orders/cancel', {
+        method: 'POST',
+        token,
+        body: { ids: list },
+    });
+    if (!result.ok) {
+        return {
+            ok: false,
+            status: result.status,
+            message: result.data?.message || result.data?.error || 'Shiprocket cancel failed',
+            data: result.data,
+        };
+    }
+    return { ok: true, status: result.status, data: result.data };
 };
 
 export default {
@@ -98,4 +124,5 @@ export default {
     createShiprocketOrder,
     assignShiprocketAwb,
     trackShiprocketAwb,
+    cancelShiprocketOrders,
 };

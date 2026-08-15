@@ -19,6 +19,14 @@ export class BaseGateway {
         throw new Error('verifyPayment() not implemented');
     }
 
+    /**
+     * Provider refund. amount = major currency units (e.g. INR rupees), optional.
+     * @returns {{ success: boolean, refundId?: string, message?: string, raw?: object }}
+     */
+    async refundPayment({ paymentId, amount, reason }) {
+        throw new Error('refundPayment() not implemented');
+    }
+
     verifyWebhook(rawBody, signature, headers = {}) {
         throw new Error('verifyWebhook() not implemented');
     }

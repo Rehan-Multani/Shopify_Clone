@@ -157,7 +157,7 @@ const StorefrontCheckout = ({ cart, cartCount, onClearCart, customer, onLogout, 
                         });
                     }
                     setPaymentOptions(fallback);
-                    setVendorGatewayError('Cart me alag-alag vendors ke products hain. Online payment ke liye ek vendor ke products hi rakhein, ya COD use karein.');
+                    setVendorGatewayError('Your cart has products from different vendors. For online payment, keep products from one vendor only, or use COD.');
                     setPaymentMethod(fallback[0] ? 'COD' : '');
                     setLoadingPayments(false);
                     return;
@@ -450,7 +450,7 @@ const StorefrontCheckout = ({ cart, cartCount, onClearCart, customer, onLogout, 
 
     const handleOnlinePayment = async (gateway) => {
         if (isMixedVendorCart) {
-            throw new Error('Cart me multiple vendors ke products hain. Online payment ke liye ek vendor ke products hi checkout karein.');
+            throw new Error('Your cart has products from multiple vendors. For online payment, checkout with products from one vendor only.');
         }
 
         // Order-first: money can never succeed without an order row
@@ -854,7 +854,17 @@ const StorefrontCheckout = ({ cart, cartCount, onClearCart, customer, onLogout, 
                                             </div>
                                         )}
 
-                                        {!loadingPayments && vendorGatewayError && paymentOptions.length > 0 && onlineOptions.length === 0 && (
+                                        {!loadingPayments && isMixedVendorCart && (
+                                            <div className="sm:col-span-2 p-4 bg-amber-50 border border-amber-100 text-amber-950 text-xs font-semibold rounded-xl space-y-2">
+                                                <p className="font-bold">Mixed-vendor cart</p>
+                                                <p>
+                                                    Your cart has products from more than one seller. Online payment can only charge one seller at a time.
+                                                    Use <strong>Cash on Delivery</strong> for this cart, or go back and checkout each vendor separately for UPI/cards.
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        {!loadingPayments && !isMixedVendorCart && vendorGatewayError && paymentOptions.length > 0 && onlineOptions.length === 0 && (
                                             <div className="sm:col-span-2 p-4 bg-red-50 border border-red-100 text-red-800 text-xs font-bold rounded-xl text-center">
                                                 {vendorGatewayError}
                                             </div>

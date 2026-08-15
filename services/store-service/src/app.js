@@ -25,22 +25,59 @@ app.use(cookieParser());
 
 /**
  * Auth middleware:
- * 1) Gateway headers
- * 2) Merchant Bearer JWT (Authorization / cookies) — full merchant access
+ * 1) JWT (always trusted when valid)
+ * 2) Gateway headers only with matching x-gateway-secret
  * 3) Dedicated short-lived previewToken query — read-only draft preview (NOT merchant JWT)
  */
 app.use(async (req, res, next) => {
     try {
-        if (req.headers['x-merchant-id']) {
-            req.merchant = { _id: req.headers['x-merchant-id'] };
+        const trustSecret = String(
+            process.env.GATEWAY_INTERNAL_SECRET
+            || process.env.INTERNAL_SERVICE_SECRET
+            || (process.env.NODE_ENV === 'production' ? '' : 'dev-gateway-secret')
+        ).trim();
+        const fromGateway = Boolean(trustSecret)
+            && String(req.headers['x-gateway-secret'] || '').trim() === trustSecret;
+
+        // JWT first
+        let token;
+        if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+            token = req.headers.authorization.split(' ')[1];
+        } else if (req.cookies && (req.cookies.jwt_merchant || req.cookies.jwt_admin || req.cookies.jwt_vendor)) {
+            token = req.cookies.jwt_merchant || req.cookies.jwt_admin || req.cookies.jwt_vendor;
         }
-        if (req.headers['x-admin-id']) {
-            req.admin = { _id: req.headers['x-admin-id'] };
+
+        if (token) {
+            try {
+                const decoded = jwt.verify(token, process.env.JWT_SECRET || 'super_secret_jwt_key_for_storify_2026');
+                if (decoded && decoded.purpose === 'theme-preview') {
+                    req.previewAuthError = { ok: false, status: 403, message: 'Use previewToken query, not Bearer' };
+                } else if (decoded && decoded.id) {
+                    if (decoded.type === 'vendor' || req.cookies?.jwt_vendor) {
+                        req.vendor = { _id: decoded.id, store: decoded.storeId };
+                    } else {
+                        req.merchant = { _id: decoded.id };
+                        req.admin = { _id: decoded.id };
+                    }
+                }
+            } catch (err) {
+                console.error('JWT Verification Error in store-service:', err.message);
+            }
         }
-        if (req.headers['x-vendor-id']) {
-            req.vendor = { _id: req.headers['x-vendor-id'] };
-            if (req.headers['x-store-id']) {
-                req.vendor.store = req.headers['x-store-id'];
+
+        // Trusted gateway headers fill gaps (after JWT)
+        if (fromGateway) {
+            if (!req.merchant && req.headers['x-merchant-id']) {
+                req.merchant = { _id: req.headers['x-merchant-id'] };
+            }
+            if (!req.admin && req.headers['x-admin-id']) {
+                req.admin = { _id: req.headers['x-admin-id'] };
+            }
+            if (!req.vendor && req.headers['x-vendor-id']) {
+                req.vendor = { _id: req.headers['x-vendor-id'] };
+                if (req.headers['x-store-id']) {
+                    req.vendor.store = req.headers['x-store-id'];
+                }
             }
         }
 
@@ -57,33 +94,6 @@ app.use(async (req, res, next) => {
                 req.previewAuth = result.claims;
             } else {
                 req.previewAuthError = result;
-            }
-        }
-
-        if (!req.merchant && !req.admin && !req.vendor) {
-            let token;
-            if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
-                token = req.headers.authorization.split(' ')[1];
-            } else if (req.cookies && (req.cookies.jwt_merchant || req.cookies.jwt_admin || req.cookies.jwt_vendor)) {
-                token = req.cookies.jwt_merchant || req.cookies.jwt_admin || req.cookies.jwt_vendor;
-            }
-
-            if (token) {
-                try {
-                    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'super_secret_jwt_key_for_storify_2026');
-                    if (decoded && decoded.purpose === 'theme-preview') {
-                        req.previewAuthError = { ok: false, status: 403, message: 'Use previewToken query, not Bearer' };
-                    } else if (decoded && decoded.id) {
-                        if (decoded.type === 'vendor' || req.cookies?.jwt_vendor) {
-                            req.vendor = { _id: decoded.id, store: decoded.storeId };
-                        } else {
-                            req.merchant = { _id: decoded.id };
-                            req.admin = { _id: decoded.id };
-                        }
-                    }
-                } catch (err) {
-                    console.error('JWT Verification Error in store-service:', err.message);
-                }
             }
         }
 

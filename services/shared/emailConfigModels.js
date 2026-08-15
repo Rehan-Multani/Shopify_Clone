@@ -4,7 +4,9 @@
  * so never call mongoose.model() at module top-level with a bare import.
  */
 
-const EMAIL_PROVIDERS = ['brevo', 'smtp'];
+const EMAIL_PROVIDERS = ['brevo'];
+const BREVO_SMTP_HOST = 'smtp-relay.brevo.com';
+const BREVO_SMTP_PORT = 587;
 
 export function registerEmailConfigModels(mongoose) {
     if (!mongoose) throw new Error('registerEmailConfigModels(mongoose) requires mongoose');
@@ -22,13 +24,13 @@ export function registerEmailConfigModels(mongoose) {
             senderName: { type: String, default: '' },
             senderEmail: { type: String, default: '' },
             replyToEmail: { type: String, default: '' },
-            smtpHost: { type: String, default: 'smtp-relay.brevo.com' },
-            smtpPort: { type: Number, default: 587 },
+            smtpHost: { type: String, default: BREVO_SMTP_HOST },
+            smtpPort: { type: Number, default: BREVO_SMTP_PORT },
             smtpSecure: { type: Boolean, default: false },
             smtpUsername: { type: String, default: '' },
             smtpPasswordEncrypted: { type: String, default: '' },
             apiKeyEncrypted: { type: String, default: '' },
-            authMode: { type: String, enum: ['smtp', 'api'], default: 'smtp' },
+            authMode: { type: String, enum: ['smtp'], default: 'smtp' },
             status: {
                 type: String,
                 enum: ['disabled', 'configured', 'verified', 'error'],
@@ -65,13 +67,13 @@ export function registerEmailConfigModels(mongoose) {
             senderName: { type: String, default: '' },
             senderEmail: { type: String, default: '' },
             replyToEmail: { type: String, default: '' },
-            smtpHost: { type: String, default: 'smtp-relay.brevo.com' },
-            smtpPort: { type: Number, default: 587 },
+            smtpHost: { type: String, default: BREVO_SMTP_HOST },
+            smtpPort: { type: Number, default: BREVO_SMTP_PORT },
             smtpSecure: { type: Boolean, default: false },
             smtpUsername: { type: String, default: '' },
             smtpPasswordEncrypted: { type: String, default: '' },
             apiKeyEncrypted: { type: String, default: '' },
-            authMode: { type: String, enum: ['smtp', 'api'], default: 'smtp' },
+            authMode: { type: String, enum: ['smtp'], default: 'smtp' },
             status: {
                 type: String,
                 enum: ['disabled', 'configured', 'verified', 'error'],
@@ -99,7 +101,7 @@ export function registerEmailConfigModels(mongoose) {
             subject: { type: String, default: '' },
             event: { type: String, default: '' },
             fromEmail: { type: String, default: '' },
-            status: { type: String, enum: ['queued', 'sent', 'failed'], default: 'queued' },
+            status: { type: String, enum: ['queued', 'sent', 'failed', 'skipped'], default: 'queued' },
             error: { type: String, default: '' },
             fallbackUsed: { type: Boolean, default: false },
             fallbackChain: { type: [String], default: [] }

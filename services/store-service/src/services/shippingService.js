@@ -1,16 +1,23 @@
 /**
  * ShippingService — create / track Shiprocket shipments.
  * Never throws into the order HTTP path: caller should catch and keep the order.
+ *
+ * Fulfill only when eligible (COD, or online paid / accepted) — avoids orphan Shiprocket
+ * shipments for abandoned unpaid checkouts.
  */
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
-import { resolveShippingConfig } from './shippingResolver.js';
+import { resolveShippingConfig, markShippingConfigBroken } from './shippingResolver.js';
 import {
     loginShiprocket,
     createShiprocketOrder,
     assignShiprocketAwb,
     trackShiprocketAwb,
+    cancelShiprocketOrders,
 } from '../utils/shiprocketClient.js';
+import { emitEmail, ownerFromOrder } from '../../../shared/emailService.js';
+import { statusEmailEvent } from '../../../shared/emailEvents.js';
+import { orderStatusEmail } from '../../../shared/storefrontEmails.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,7 +27,47 @@ async function loadEncryption() {
     return import(pathToFileURL(sharedPath).href);
 }
 
-const TOKEN_TTL_MS = 9 * 24 * 60 * 60 * 1000; // ~9 days (Shiprocket tokens last ~10)
+const TOKEN_TTL_MS = 9 * 24 * 60 * 60 * 1000;
+
+const isAuthFailureMessage = (msg = '', status = 0) => {
+    const s = String(msg || '').toLowerCase();
+    if (status === 401 || status === 403) return true;
+    return s.includes('unauthorized')
+        || s.includes('unauthenticated')
+        || s.includes('invalid login')
+        || s.includes('login failed')
+        || s.includes('authentication failed')
+        || s.includes('invalid credentials')
+        || s.includes('token expired')
+        || s.includes('token has expired')
+        || s.includes('jwt expired');
+};
+
+const isDuplicateOrderMessage = (msg = '') => {
+    const s = String(msg || '').toLowerCase();
+    return s.includes('already exists')
+        || s.includes('duplicate')
+        || s.includes('order id already');
+};
+
+/**
+ * When to create / finish a Shiprocket shipment for an order.
+ * Skips only when AWB already exists (fully fulfilled).
+ */
+export function canFulfillShiprocket(order) {
+    if (!order) return false;
+    if (order.shipping?.provider === 'shiprocket' && order.shipping?.awb) return false;
+    if (['cancelled', 'rejected'].includes(String(order.status || '').toLowerCase())) return false;
+
+    const method = String(order.paymentMethod || 'COD').toUpperCase();
+    const paid = String(order.paymentStatus || '').toLowerCase() === 'paid';
+    const status = String(order.status || '').toLowerCase();
+
+    if (method === 'COD') return true;
+    if (paid) return true;
+    if (['accepted', 'shipped', 'out_for_delivery', 'processing'].includes(status)) return true;
+    return false;
+}
 
 const splitName = (full = '') => {
     const parts = String(full).trim().split(/\s+/).filter(Boolean);
@@ -39,7 +86,9 @@ const manualShipping = (reason = 'NO_KEYS') => ({
     awb: '',
     courierName: '',
     trackingUrl: '',
-    lastError: reason === 'NO_KEYS' || reason === 'PLATFORM_DISABLED' ? '' : String(reason || '').slice(0, 300),
+    lastError: ['NO_KEYS', 'PLATFORM_DISABLED', 'VENDOR_NOT_CONFIGURED', 'MERCHANT_NOT_CONFIGURED', 'NOT_ELIGIBLE'].includes(reason)
+        ? ''
+        : String(reason || '').slice(0, 300),
     lastSyncedAt: new Date(),
     fallbackReason: reason,
 });
@@ -60,8 +109,13 @@ async function getTokenForDoc(doc) {
         if (cached) return cached;
     }
     const creds = decryptCredentials(doc.credentials);
+    if (!creds?.email || !creds?.password) {
+        await markShippingConfigBroken(doc, 'Shiprocket credentials incomplete');
+        throw new Error('Shiprocket credentials incomplete');
+    }
     const login = await loginShiprocket({ email: creds.email, password: creds.password });
     if (!login.ok) {
+        await markShippingConfigBroken(doc, login.message || 'Shiprocket login failed');
         throw new Error(login.message || 'Shiprocket login failed');
     }
     doc.tokenEncrypted = encrypt(login.token);
@@ -81,6 +135,8 @@ const buildCreatePayload = (order, doc) => {
         selling_price: Number(p.price) || 0,
     }));
     const phone = String(order.customerPhone || '').replace(/\D/g, '').slice(-10);
+    // Never use warehouse pickup PIN as customer delivery PIN
+    const pincode = String(addr.pincode || '').replace(/\D/g, '');
     return {
         order_id: String(order._id),
         order_date: new Date(order.createdAt || Date.now()).toISOString().slice(0, 10),
@@ -89,11 +145,11 @@ const buildCreatePayload = (order, doc) => {
         billing_last_name: name.last,
         billing_address: addr.address || 'Address not provided',
         billing_city: addr.city || 'NA',
-        billing_pincode: String(addr.pincode || doc.pickupPincode || '110001'),
+        billing_pincode: pincode,
         billing_state: addr.state || 'NA',
         billing_country: 'India',
         billing_email: order.customerEmail || 'noreply@storify.local',
-        billing_phone: phone || '9999999999',
+        billing_phone: phone,
         shipping_is_billing: true,
         order_items: items.length ? items : [{
             name: 'Order item',
@@ -107,16 +163,32 @@ const buildCreatePayload = (order, doc) => {
         breadth: 10,
         height: 10,
         weight: 0.5,
-        ...(doc.channelId ? { channel_id: Number(doc.channelId) || doc.channelId } : {}),
     };
 };
 
-/**
- * Best-effort Shiprocket create. Mutates order.shipping. Does not throw to caller
- * unless you want the message — wrap at orderController.
- */
+const assertShiprocketAddress = (payload) => {
+    if (!/^\d{6}$/.test(String(payload.billing_pincode || ''))) {
+        return { ok: false, message: 'Valid 6-digit delivery pincode required for Shiprocket' };
+    }
+    if (!/^\d{10}$/.test(String(payload.billing_phone || ''))) {
+        return { ok: false, message: 'Valid 10-digit phone required for Shiprocket' };
+    }
+    if (!String(payload.billing_address || '').trim() || payload.billing_address === 'Address not provided') {
+        return { ok: false, message: 'Shipping address required for Shiprocket' };
+    }
+    return { ok: true };
+};
+
 export async function fulfillOrderShipment(order) {
     try {
+        if (!canFulfillShiprocket(order)) {
+            // Prepaid unpaid: leave shipping as-is (usually pending/manual), do not stamp errors
+            if (!order.shipping?.provider || order.shipping.provider === 'manual') {
+                applyManualFallback(order, 'NOT_ELIGIBLE');
+            }
+            return { ok: false, mode: 'manual', reason: 'NOT_ELIGIBLE' };
+        }
+
         const resolved = await resolveShippingConfig({
             merchantId: order.merchantId,
             storeId: order.storeId,
@@ -129,16 +201,41 @@ export async function fulfillOrderShipment(order) {
         }
 
         const token = await getTokenForDoc(resolved.doc);
-        const created = await createShiprocketOrder(token, buildCreatePayload(order, resolved.doc));
-        if (!created.ok) {
-            applyManualFallback(order, created.message);
-            return { ok: false, mode: 'manual', reason: created.message };
-        }
+        const existing = order.shipping || {};
+        let shipmentId = String(existing.shipmentId || '');
+        let shiprocketOrderId = String(existing.shiprocketOrderId || '');
+        let awb = String(existing.awb || '');
+        let courierName = String(existing.courierName || '');
 
-        const data = created.data || {};
-        let awb = data.awb_code || data.awb || '';
-        const shipmentId = String(data.shipment_id || data.shipmentId || '');
-        let courierName = data.courier_name || '';
+        // Idempotent: only create when we have no Shiprocket shipment yet
+        if (!shipmentId && !awb) {
+            const payload = buildCreatePayload(order, resolved.doc);
+            const addrOk = assertShiprocketAddress(payload);
+            if (!addrOk.ok) {
+                applyManualFallback(order, addrOk.message);
+                return { ok: false, mode: 'manual', reason: addrOk.message };
+            }
+
+            const created = await createShiprocketOrder(token, payload);
+            if (!created.ok) {
+                if (isAuthFailureMessage(created.message, created.status)) {
+                    await markShippingConfigBroken(resolved.doc, created.message);
+                }
+                // Duplicate order_id on Shiprocket — keep trying AWB via existing ids if any
+                if (!isDuplicateOrderMessage(created.message)) {
+                    applyManualFallback(order, created.message);
+                    return { ok: false, mode: 'manual', reason: created.message };
+                }
+                // If duplicate and we somehow have no shipmentId, mark as created without AWB for later retry
+                shiprocketOrderId = shiprocketOrderId || String(order._id);
+            } else {
+                const data = created.data || {};
+                awb = data.awb_code || data.awb || '';
+                shipmentId = String(data.shipment_id || data.shipmentId || '');
+                courierName = data.courier_name || courierName;
+                shiprocketOrderId = String(data.order_id || order._id);
+            }
+        }
 
         if (shipmentId && !awb) {
             const assigned = await assignShiprocketAwb(token, shipmentId);
@@ -146,6 +243,8 @@ export async function fulfillOrderShipment(order) {
                 const inner = assigned.data?.response?.data || assigned.data || {};
                 awb = inner.awb_code || inner.awb || awb;
                 courierName = inner.courier_name || courierName;
+            } else if (isAuthFailureMessage(assigned.message, assigned.status)) {
+                await markShippingConfigBroken(resolved.doc, assigned.message);
             }
         }
 
@@ -153,7 +252,7 @@ export async function fulfillOrderShipment(order) {
             provider: 'shiprocket',
             ownerType: resolved.ownerType,
             status: awb ? 'awb_generated' : 'created',
-            shiprocketOrderId: String(data.order_id || order._id),
+            shiprocketOrderId: shiprocketOrderId || String(order._id),
             shipmentId,
             awb: String(awb || ''),
             courierName: String(courierName || ''),
@@ -164,10 +263,79 @@ export async function fulfillOrderShipment(order) {
         };
         return { ok: true, mode: 'shiprocket', shipping: order.shipping };
     } catch (err) {
+        if (isAuthFailureMessage(err.message, 0)) {
+            try {
+                const resolved = await resolveShippingConfig({
+                    merchantId: order.merchantId,
+                    storeId: order.storeId,
+                    vendorId: order.vendorId,
+                });
+                if (resolved.ok) await markShippingConfigBroken(resolved.doc, err.message);
+            } catch {
+                /* ignore */
+            }
+        }
         applyManualFallback(order, err.message || 'SHIPROCKET_FAILED');
         return { ok: false, mode: 'manual', reason: err.message };
     }
 }
+
+/**
+ * Best-effort cancel on Shiprocket when local order is cancelled.
+ * Never throws — local cancel must always succeed.
+ */
+export async function cancelOrderShipment(order) {
+    try {
+        if (order?.shipping?.provider !== 'shiprocket') {
+            return { ok: false, skipped: true };
+        }
+        const id = order.shipping.shiprocketOrderId || order._id;
+        if (!id) return { ok: false, skipped: true };
+
+        const resolved = await resolveShippingConfig({
+            merchantId: order.merchantId,
+            storeId: order.storeId,
+            vendorId: order.vendorId,
+        });
+        if (!resolved.ok) {
+            order.shipping.lastError = 'Cancel skipped — Shiprocket not live';
+            return { ok: false, skipped: true };
+        }
+
+        const token = await getTokenForDoc(resolved.doc);
+        const cancelled = await cancelShiprocketOrders(token, [id]);
+        if (!cancelled.ok) {
+            if (isAuthFailureMessage(cancelled.message, cancelled.status)) {
+                await markShippingConfigBroken(resolved.doc, cancelled.message);
+            }
+            order.shipping.lastError = String(cancelled.message || 'Cancel failed').slice(0, 300);
+            return { ok: false, message: cancelled.message };
+        }
+        order.shipping.status = 'failed';
+        order.shipping.lastError = '';
+        order.shipping.lastSyncedAt = new Date();
+        return { ok: true };
+    } catch (err) {
+        if (order?.shipping) {
+            order.shipping.lastError = String(err.message || 'Cancel failed').slice(0, 300);
+        }
+        return { ok: false, message: err.message };
+    }
+}
+
+const emitStatusMailIfChanged = (order, prevStatus, nextStatus) => {
+    try {
+        if (!nextStatus || prevStatus === nextStatus || !order?.customerEmail) return;
+        const event = statusEmailEvent(nextStatus);
+        if (!event) return;
+        const mail = orderStatusEmail(order, event);
+        if (mail) {
+            emitEmail({ event, ...ownerFromOrder(order), ...mail });
+        }
+    } catch (err) {
+        console.error('[Shipping] status email skipped:', err.message);
+    }
+};
 
 export async function syncOrderTracking(order) {
     try {
@@ -183,7 +351,12 @@ export async function syncOrderTracking(order) {
 
         const token = await getTokenForDoc(resolved.doc);
         const tracked = await trackShiprocketAwb(token, order.shipping.awb);
-        if (!tracked.ok) return { ok: false, message: tracked.message };
+        if (!tracked.ok) {
+            if (isAuthFailureMessage(tracked.message, tracked.status)) {
+                await markShippingConfigBroken(resolved.doc, tracked.message);
+            }
+            return { ok: false, message: tracked.message };
+        }
 
         const tracking = tracked.data?.tracking_data || tracked.data || {};
         const current = tracking.shipment_status
@@ -198,6 +371,7 @@ export async function syncOrderTracking(order) {
         order.shipping.lastError = '';
         if (mapped.orderStatus && !['delivered', 'cancelled', 'rejected'].includes(order.status)) {
             if (order.status !== mapped.orderStatus) {
+                const prevStatus = order.status;
                 order.status = mapped.orderStatus;
                 order.trackingStatus = order.trackingStatus || [];
                 order.trackingStatus.push({
@@ -205,6 +379,7 @@ export async function syncOrderTracking(order) {
                     updatedAt: new Date(),
                     description: mapped.description,
                 });
+                emitStatusMailIfChanged(order, prevStatus, mapped.orderStatus);
             }
         }
         return { ok: true, current };
@@ -224,15 +399,23 @@ export function mapShiprocketStatus(raw) {
     if (s.includes('SHIPPED') || s.includes('IN TRANSIT') || s.includes('PICKED')) {
         return { shippingStatus: 'in_transit', orderStatus: 'shipped', description: 'Shipped via Shiprocket.' };
     }
-    if (s.includes('CANCEL')) {
-        return { shippingStatus: 'failed', orderStatus: null, description: 'Shiprocket shipment cancelled.' };
+    if (s.includes('CANCEL') || s.includes('RTO')) {
+        return { shippingStatus: 'failed', orderStatus: null, description: 'Shiprocket shipment cancelled / RTO.' };
     }
     return { shippingStatus: 'created', orderStatus: null, description: raw || '' };
 }
 
+/** Used by webhook + sync when order status advances via Shiprocket. */
+export function emitShippingStatusEmail(order, prevStatus, nextStatus) {
+    emitStatusMailIfChanged(order, prevStatus, nextStatus);
+}
+
 export default {
     fulfillOrderShipment,
+    cancelOrderShipment,
     syncOrderTracking,
     applyManualFallback,
     mapShiprocketStatus,
+    canFulfillShiprocket,
+    emitShippingStatusEmail,
 };

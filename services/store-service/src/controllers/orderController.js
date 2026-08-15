@@ -2,7 +2,7 @@ import Order from '../models/Order.js';
 import Store from '../models/Store.js';
 import Product from '../models/Product.js';
 import Coupon from '../models/Coupon.js';
-import { fulfillOrderShipment, syncOrderTracking } from '../services/shippingService.js';
+import { fulfillOrderShipment, syncOrderTracking, cancelOrderShipment, canFulfillShiprocket } from '../services/shippingService.js';
 import { emitEmail, ownerFromOrder } from '../../../shared/emailService.js';
 import { statusEmailEvent } from '../../../shared/emailEvents.js';
 import {
@@ -193,8 +193,12 @@ export const createOrder = async (req, res) => {
         });
 
         try {
-            await fulfillOrderShipment(order);
-            await order.save();
+            const method = String(order.paymentMethod || 'COD').toUpperCase();
+            // Prepaid: wait until paid / accepted (avoid orphan Shiprocket orders)
+            if (method === 'COD') {
+                await fulfillOrderShipment(order);
+                await order.save();
+            }
         } catch (shipErr) {
             console.error('[Shipping] fulfill skipped:', shipErr.message);
         }
@@ -234,8 +238,17 @@ export const updateOrderStatus = async (req, res) => {
         const prevPaymentStatus = order.paymentStatus;
         const prevStatus = order.status;
 
+        const wantsProviderRefund =
+            paymentStatus !== undefined
+            && paymentStatus === 'refunded'
+            && prevPaymentStatus === 'paid'
+            && String(order.paymentMethod || '').toLowerCase() !== 'cod';
+
+        // Never mark refunded locally before gateway succeeds
         if (status !== undefined) order.status = status;
-        if (paymentStatus !== undefined) order.paymentStatus = paymentStatus;
+        if (paymentStatus !== undefined && !wantsProviderRefund) {
+            order.paymentStatus = paymentStatus;
+        }
 
         // If status changed, push to tracking timeline
         if (status !== undefined && status !== prevStatus) {
@@ -255,19 +268,81 @@ export const updateOrderStatus = async (req, res) => {
             });
         }
 
-        const updatedOrder = await order.save();
-
-        // Retry Shiprocket if merchant accepted / marked shipped and still on manual fallback
+        // Merchant cancel/reject → best-effort cancel on Shiprocket
         if (
             status !== undefined
-            && ['accepted', 'shipped'].includes(updatedOrder.status)
-            && updatedOrder.shipping?.provider !== 'shiprocket'
+            && status !== prevStatus
+            && ['cancelled', 'rejected'].includes(String(status))
+            && order.shipping?.provider === 'shiprocket'
         ) {
             try {
-                await fulfillOrderShipment(updatedOrder);
-                await updatedOrder.save();
+                await cancelOrderShipment(order);
             } catch (shipErr) {
-                console.error('[Shipping] retry skipped:', shipErr.message);
+                console.error('[Shipping] merchant cancel skipped:', shipErr.message);
+            }
+        }
+
+        // Provider refund FIRST — only then return refreshed refunded order
+        if (wantsProviderRefund) {
+            await order.save();
+            try {
+                const billingApi = process.env.BILLING_SERVICE_URL || 'http://localhost:5005';
+                const secret = process.env.INTERNAL_SERVICE_SECRET || '';
+                const refundRes = await fetch(`${billingApi}/api/checkout/refund-payment`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(secret ? { 'x-internal-secret': secret } : {}),
+                        ...(req.headers.authorization ? { Authorization: req.headers.authorization } : {}),
+                        ...(req.merchant?._id ? { 'x-merchant-id': String(req.merchant._id) } : {}),
+                        ...(req.vendor?._id ? { 'x-vendor-id': String(req.vendor._id) } : {}),
+                    },
+                    body: JSON.stringify({
+                        orderId: String(order._id),
+                        reason: trackingDescription || 'Refund from order status update',
+                    }),
+                });
+                const errBody = await refundRes.json().catch(() => ({}));
+                if (!refundRes.ok) {
+                    return res.status(400).json({
+                        message: errBody.message || 'Gateway refund failed. Order was not marked refunded.',
+                        code: errBody.code || 'REFUND_FAILED',
+                    });
+                }
+                const refreshed = await Order.findById(order._id);
+                return res.json(refreshed || errBody.order || order);
+            } catch (refundErr) {
+                console.error('[Refund] call failed:', refundErr.message);
+                return res.status(502).json({
+                    message: 'Could not reach billing service for refund. Order was not marked refunded.',
+                    code: 'REFUND_UNAVAILABLE',
+                });
+            }
+        }
+
+        const updatedOrder = await order.save();
+
+        // Shiprocket when eligible: paid online, accepted/shipped, or retry AWB if shipment created without AWB
+        const needsFulfill =
+            !updatedOrder.shipping?.awb
+            && canFulfillShiprocket(updatedOrder)
+            && (
+                updatedOrder.shipping?.provider !== 'shiprocket'
+                || !updatedOrder.shipping?.shipmentId
+                || (updatedOrder.shipping?.provider === 'shiprocket' && !updatedOrder.shipping?.awb)
+            );
+
+        if (needsFulfill) {
+            const paidNow = prevPaymentStatus !== 'paid' && updatedOrder.paymentStatus === 'paid';
+            const statusRetry = status !== undefined && ['accepted', 'shipped', 'processing'].includes(String(updatedOrder.status));
+            const awbRetry = updatedOrder.shipping?.provider === 'shiprocket' && !updatedOrder.shipping?.awb;
+            if (paidNow || statusRetry || awbRetry) {
+                try {
+                    await fulfillOrderShipment(updatedOrder);
+                    await updatedOrder.save();
+                } catch (shipErr) {
+                    console.error('[Shipping] retry skipped:', shipErr.message);
+                }
             }
         }
 
@@ -286,8 +361,10 @@ export const updateOrderStatus = async (req, res) => {
                     emitEmail({ event, ...ownerFromOrder(updatedOrder), ...mail });
                 }
             }
+            // Manual COD/offline refund status (provider path already emails from billing)
             if (
                 paymentStatus !== undefined
+                && !wantsProviderRefund
                 && prevPaymentStatus !== 'refunded'
                 && updatedOrder.paymentStatus === 'refunded'
                 && updatedOrder.customerEmail
@@ -383,6 +460,12 @@ export const cancelOrder = async (req, res) => {
             description: 'Order cancelled by customer.'
         });
 
+        try {
+            await cancelOrderShipment(order);
+        } catch (shipErr) {
+            console.error('[Shipping] cancel skipped:', shipErr.message);
+        }
+
         const updatedOrder = await order.save();
         try {
             if (updatedOrder.customerEmail) {
@@ -401,5 +484,43 @@ export const cancelOrder = async (req, res) => {
         res.json({ success: true, order: updatedOrder });
     } catch (error) {
         res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Internal: create Shiprocket shipment after online payment capture
+// @route   POST /api/orders/internal/:id/fulfill-shipping
+// @access  Internal (billing-service)
+export const fulfillShippingInternal = async (req, res) => {
+    try {
+        const isProd = process.env.NODE_ENV === 'production';
+        const expected = String(process.env.INTERNAL_SERVICE_SECRET || '').trim();
+        if (isProd && !expected) {
+            console.error('[Shipping] INTERNAL_SERVICE_SECRET is required in production');
+            return res.status(503).json({ ok: false, message: 'Internal fulfill not configured' });
+        }
+        if (expected) {
+            const provided = String(req.headers['x-internal-secret'] || '').trim();
+            if (!provided || provided !== expected) {
+                return res.status(401).json({ ok: false, message: 'Unauthorized' });
+            }
+        }
+
+        const order = await Order.findById(req.params.id);
+        if (!order) {
+            return res.status(404).json({ ok: false, message: 'Order not found' });
+        }
+
+        // Ensure payment is reflected (billing may have just marked paid)
+        if (String(order.paymentStatus || '').toLowerCase() !== 'paid'
+            && String(order.paymentMethod || '').toUpperCase() !== 'COD') {
+            return res.status(200).json({ ok: false, skipped: true, reason: 'NOT_PAID' });
+        }
+
+        await fulfillOrderShipment(order);
+        await order.save();
+        return res.json({ ok: true, shipping: order.shipping });
+    } catch (error) {
+        console.error('[Shipping] internal fulfill:', error.message);
+        return res.status(200).json({ ok: false, message: error.message });
     }
 };

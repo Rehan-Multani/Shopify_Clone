@@ -52,7 +52,37 @@ const DashboardHeader = ({ isOpen, setIsOpen, storeName: propStoreName, isCollap
                 });
                 if (response.ok) {
                     const data = await response.json();
-                    setStores(data);
+                    const list = Array.isArray(data) ? data : [];
+                    setStores(list);
+
+                    const currentId = localStorage.getItem('activeStoreId');
+                    const owned = currentId
+                        ? list.find((s) => String(s._id) === String(currentId))
+                        : null;
+
+                    if (currentId && !owned) {
+                        localStorage.removeItem('activeStoreId');
+                        if (list.length === 1) {
+                            const only = list[0];
+                            localStorage.setItem('activeStoreId', only._id);
+                            localStorage.setItem('shopStoreName', only.storeName || only.name || 'My Store');
+                            localStorage.setItem('adminPanelType', only.planType === 'Multi Vendor' ? 'multi' : 'single');
+                            window.location.reload();
+                            return;
+                        }
+                    } else if (!currentId && list.length === 1) {
+                        const only = list[0];
+                        localStorage.setItem('activeStoreId', only._id);
+                        localStorage.setItem('shopStoreName', only.storeName || only.name || 'My Store');
+                        localStorage.setItem('adminPanelType', only.planType === 'Multi Vendor' ? 'multi' : 'single');
+                        window.location.reload();
+                        return;
+                    } else if (owned) {
+                        localStorage.setItem('shopStoreName', owned.storeName || owned.name || 'My Store');
+                        if (owned.planType) {
+                            localStorage.setItem('adminPanelType', owned.planType === 'Multi Vendor' ? 'multi' : 'single');
+                        }
+                    }
                 }
             } catch (err) {
                 console.error('Failed to load stores inside header dropdown:', err);

@@ -28,7 +28,7 @@ const vendorPaymentGatewaySchema = new mongoose.Schema({
     environment: {
         type: String,
         enum: ENVIRONMENTS,
-        default: 'sandbox'
+        default: 'production'
     },
     credentials: {
         type: String,

@@ -5,9 +5,12 @@ import CheckoutPayment from '../models/CheckoutPayment.js';
 import {
     listCheckoutPaymentOptions,
     resolveCheckoutGateway,
-    buildGatewayClient
+    buildGatewayClient,
+    markPaymentGatewayBroken,
+    isGatewayAuthFailure,
 } from '../services/gatewayResolver.js';
 import { finalizeSuccessfulPayment, markOrderPaymentFailed } from '../services/orderPaymentService.js';
+import { refundOrderPayment } from '../services/paymentRefundService.js';
 import { isSupportedGateway, isCheckoutReadyGateway } from '../constants/gateways.js';
 import {
     applyPaymentToggles,
@@ -138,6 +141,19 @@ export const createCheckoutPayment = async (req, res) => {
             vendorId = null;
         }
 
+        // Mixed-vendor order: online payment cannot settle two sellers in one charge
+        const productVendorIds = [...new Set(
+            (order.products || [])
+                .map((p) => normalizeId(p.vendorId))
+                .filter(Boolean)
+        )];
+        if (productVendorIds.length > 1 && gateway !== 'cod') {
+            return res.status(422).json({
+                message: 'This order has products from multiple vendors. Use Cash on Delivery, or checkout one vendor at a time for online payment.',
+                code: 'MIXED_VENDOR_CART',
+            });
+        }
+
         const idempotencyKey = String(clientIdempotencyKey || `${orderId}:${gateway || 'cod'}`).slice(0, 120);
 
         // Idempotent replay
@@ -232,26 +248,19 @@ export const createCheckoutPayment = async (req, res) => {
             preferredGateway: gateway
         });
 
-        if (!resolved) {
-            return res.status(400).json({
-                message: 'No configured payment gateway available. Please contact the store.',
-                code: 'NO_GATEWAY_AVAILABLE'
-            });
-        }
-
         if (resolved.error) {
-            const status = resolved.error === 'VENDOR_GATEWAY_NOT_CONFIGURED' ? 422 : 400;
+            const status = resolved.error === 'VENDOR_NOT_CONFIGURED' ? 422 : 400;
             return res.status(status).json({
                 message: resolved.message || 'Payment gateway unavailable',
                 code: resolved.error
             });
         }
 
-        if (!resolved.config || resolved.config.gateway !== gateway) {
+        if (!resolved?.config || resolved.config.gateway !== gateway) {
             return res.status(400).json({
-                message: `${gateway} is not available for this checkout. Try another method.`,
+                message: `${gateway} is not available for this checkout. Try another method or COD.`,
                 code: 'GATEWAY_UNAVAILABLE',
-                availableGateway: resolved.config?.gateway
+                availableGateway: resolved?.config?.gateway
             });
         }
 
@@ -269,6 +278,7 @@ export const createCheckoutPayment = async (req, res) => {
         try {
             client = await buildGatewayClient(resolved.config);
         } catch (err) {
+            await markPaymentGatewayBroken(resolved.config, err.message || 'Invalid gateway credentials');
             return res.status(400).json({
                 message: err.message || 'Invalid gateway credentials',
                 code: 'INVALID_KEYS'
@@ -299,6 +309,9 @@ export const createCheckoutPayment = async (req, res) => {
                 notifyUrl: effectiveNotifyUrl
             });
         } catch (err) {
+            if (isGatewayAuthFailure(err)) {
+                await markPaymentGatewayBroken(resolved.config, err.message);
+            }
             const code = err.code || 'GATEWAY_ERROR';
             const status = code === 'MISSING_CREDENTIALS' ? 400 : 502;
             return res.status(status).json({
@@ -413,7 +426,8 @@ async function loadPaymentGatewayClient(payment) {
     if (!configDoc) {
         throw Object.assign(new Error('Gateway configuration missing for verification'), { code: 'NOT_CONFIGURED' });
     }
-    return buildGatewayClient(configDoc);
+    const client = await buildGatewayClient(configDoc);
+    return { client, configDoc };
 }
 
 // POST /checkout/verify-payment
@@ -443,39 +457,46 @@ export const verifyCheckoutPayment = async (req, res) => {
             });
         }
 
-        const client = await loadPaymentGatewayClient(payment);
+        const { client, configDoc } = await loadPaymentGatewayClient(payment);
         let result;
 
-        if (payment.gateway === 'razorpay') {
-            result = await client.verifyPayment({
-                razorpay_order_id: gatewayPayload.razorpay_order_id || payment.gatewayOrderId,
-                razorpay_payment_id: gatewayPayload.razorpay_payment_id,
-                razorpay_signature: gatewayPayload.razorpay_signature
-            });
-        } else if (payment.gateway === 'payu') {
-            result = await client.verifyPayment({
-                txnid: gatewayPayload.txnid || payment.gatewayOrderId,
-                amount: gatewayPayload.amount,
-                productinfo: gatewayPayload.productinfo,
-                firstname: gatewayPayload.firstname,
-                email: gatewayPayload.email,
-                status: gatewayPayload.status,
-                hash: gatewayPayload.hash,
-                mihpayid: gatewayPayload.mihpayid
-            });
-            if (result.success && gatewayPayload.amount != null && !amountsMatch(gatewayPayload.amount, payment.amount)) {
-                result = { success: false, message: 'Paid amount does not match order amount' };
+        try {
+            if (payment.gateway === 'razorpay') {
+                result = await client.verifyPayment({
+                    razorpay_order_id: gatewayPayload.razorpay_order_id || payment.gatewayOrderId,
+                    razorpay_payment_id: gatewayPayload.razorpay_payment_id,
+                    razorpay_signature: gatewayPayload.razorpay_signature
+                });
+            } else if (payment.gateway === 'payu') {
+                result = await client.verifyPayment({
+                    txnid: gatewayPayload.txnid || payment.gatewayOrderId,
+                    amount: gatewayPayload.amount,
+                    productinfo: gatewayPayload.productinfo,
+                    firstname: gatewayPayload.firstname,
+                    email: gatewayPayload.email,
+                    status: gatewayPayload.status,
+                    hash: gatewayPayload.hash,
+                    mihpayid: gatewayPayload.mihpayid
+                });
+                if (result.success && gatewayPayload.amount != null && !amountsMatch(gatewayPayload.amount, payment.amount)) {
+                    result = { success: false, message: 'Paid amount does not match order amount' };
+                }
+            } else if (payment.gateway === 'stripe') {
+                result = await client.verifyPayment({
+                    paymentIntentId: gatewayPayload.paymentIntentId || gatewayPayload.gatewayPaymentId || payment.gatewayOrderId
+                });
+            } else if (payment.gateway === 'cashfree') {
+                result = await client.verifyPayment({
+                    orderId: gatewayPayload.orderId || payment.gatewayOrderId
+                });
+            } else {
+                return res.status(400).json({ message: 'Unsupported gateway for verification' });
             }
-        } else if (payment.gateway === 'stripe') {
-            result = await client.verifyPayment({
-                paymentIntentId: gatewayPayload.paymentIntentId || gatewayPayload.gatewayPaymentId || payment.gatewayOrderId
-            });
-        } else if (payment.gateway === 'cashfree') {
-            result = await client.verifyPayment({
-                orderId: gatewayPayload.orderId || payment.gatewayOrderId
-            });
-        } else {
-            return res.status(400).json({ message: 'Unsupported gateway for verification' });
+        } catch (err) {
+            if (isGatewayAuthFailure(err)) {
+                await markPaymentGatewayBroken(configDoc, err.message);
+            }
+            throw err;
         }
 
         if (!result.success) {
@@ -490,7 +511,12 @@ export const verifyCheckoutPayment = async (req, res) => {
             });
         }
 
-        await finalizeSuccessfulPayment(payment, result.paymentId || gatewayPayload.razorpay_payment_id || gatewayPayload.mihpayid || '');
+        await finalizeSuccessfulPayment(
+            payment,
+            payment.gateway === 'payu'
+                ? (gatewayPayload.mihpayid || result.mihpayid || result.paymentId || '')
+                : (result.paymentId || gatewayPayload.razorpay_payment_id || gatewayPayload.mihpayid || '')
+        );
 
         res.json({
             success: true,
@@ -556,7 +582,7 @@ export const payuReturn = async (req, res) => {
             });
         }
 
-        const client = await loadPaymentGatewayClient(payment);
+        const { client } = await loadPaymentGatewayClient(payment);
         const result = await client.verifyPayment({
             txnid: payload.txnid,
             amount: payload.amount,
@@ -618,5 +644,77 @@ export const getPaymentStatus = async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({ message: error.message || 'Failed to load payment status' });
+    }
+};
+
+/**
+ * Provider refund for a paid order (merchant / vendor dashboard).
+ * POST /checkout/refund-payment
+ */
+export const refundCheckoutPayment = async (req, res) => {
+    try {
+        const { orderId, reason, amount } = req.body || {};
+        // Identity only from JWT / trusted gateway middleware — never raw headers
+        const merchantId = req.merchant?._id || null;
+        const vendorId = req.vendor?._id || null;
+
+        if (!merchantId && !vendorId) {
+            const isProd = process.env.NODE_ENV === 'production';
+            const expected = String(process.env.INTERNAL_SERVICE_SECRET || '').trim();
+            const provided = String(req.headers['x-internal-secret'] || '').trim();
+            if (isProd && !expected) {
+                return res.status(503).json({
+                    message: 'INTERNAL_SERVICE_SECRET required in production',
+                    code: 'MISCONFIGURED',
+                });
+            }
+            if (expected && provided && provided === expected) {
+                // internal store-service call — owner filter skipped
+            } else if (!expected && !isProd) {
+                return res.status(401).json({ message: 'Authentication required', code: 'UNAUTHORIZED' });
+            } else {
+                return res.status(401).json({ message: 'Authentication required', code: 'UNAUTHORIZED' });
+            }
+        }
+        if (!orderId) {
+            return res.status(400).json({ message: 'orderId is required', code: 'ORDER_REQUIRED' });
+        }
+
+        const result = await refundOrderPayment({
+            orderId,
+            merchantId: merchantId || null,
+            vendorId: vendorId || null,
+            reason: reason || 'Refund from dashboard',
+            amount: amount != null ? Number(amount) : null,
+        });
+
+        if (!result.ok) {
+            const status = result.code === 'FORBIDDEN' ? 403
+                : result.code === 'ORDER_NOT_FOUND' ? 404
+                    : 400;
+            return res.status(status).json({
+                success: false,
+                message: result.message,
+                code: result.code,
+                details: result.details,
+            });
+        }
+
+        return res.json({
+            success: true,
+            message: result.message,
+            alreadyRefunded: !!result.alreadyRefunded,
+            mode: result.mode,
+            refundId: result.refundId || null,
+            order: result.order,
+            paymentId: result.payment?._id || null,
+        });
+    } catch (error) {
+        console.error('refundCheckoutPayment:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Refund failed',
+            code: 'REFUND_FAILURE',
+        });
     }
 };

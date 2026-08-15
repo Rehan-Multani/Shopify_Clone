@@ -11,7 +11,7 @@ export const GATEWAY_META = {
         credentialFields: [
             { key: 'keyId', label: 'Key ID', type: 'text', secret: false, required: true },
             { key: 'keySecret', label: 'Key Secret', type: 'password', secret: true, required: true },
-            { key: 'webhookSecret', label: 'Webhook Secret', type: 'password', secret: true, required: false }
+            { key: 'webhookSecret', label: 'Webhook Secret', type: 'password', secret: true, required: false },
         ],
         defaultCurrency: 'INR'
     },
@@ -22,7 +22,7 @@ export const GATEWAY_META = {
         credentialFields: [
             { key: 'publishableKey', label: 'Publishable Key', type: 'text', secret: false, required: true },
             { key: 'secretKey', label: 'Secret Key', type: 'password', secret: true, required: true },
-            { key: 'webhookSecret', label: 'Webhook Secret', type: 'password', secret: true, required: false }
+            { key: 'webhookSecret', label: 'Webhook Secret', type: 'password', secret: true, required: false },
         ],
         defaultCurrency: 'INR'
     },
@@ -43,7 +43,7 @@ export const GATEWAY_META = {
         credentialFields: [
             { key: 'appId', label: 'App ID', type: 'text', secret: false, required: true },
             { key: 'secretKey', label: 'Secret Key', type: 'password', secret: true, required: true },
-            { key: 'webhookSecret', label: 'Webhook Secret', type: 'password', secret: true, required: false }
+            { key: 'webhookSecret', label: 'Webhook Secret', type: 'password', secret: true, required: false },
         ],
         defaultCurrency: 'INR'
     }
@@ -51,7 +51,10 @@ export const GATEWAY_META = {
 
 export const PAYMENT_MODES = ['merchant', 'vendor', 'split'];
 
-export const ENVIRONMENTS = ['sandbox', 'production'];
+/** Payment gateways always run in production / INR — no sandbox toggle in product UI. */
+export const ENVIRONMENTS = ['production'];
+export const FIXED_GATEWAY_ENVIRONMENT = 'production';
+export const FIXED_GATEWAY_CURRENCY = 'INR';
 
 export function isSupportedGateway(gateway) {
     return SUPPORTED_GATEWAYS.includes(String(gateway || '').toLowerCase());

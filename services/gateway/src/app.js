@@ -124,6 +124,20 @@ const createServiceProxy = (target, pathRewrite = null) => {
         pathRewrite: pathRewrite || ((path, req) => req.originalUrl),
         on: {
             proxyReq: (proxyReq, req, res) => {
+                // Never forward client-spoofed identity; only what gatewayAuthMiddleware set
+                proxyReq.removeHeader('x-merchant-id');
+                proxyReq.removeHeader('x-vendor-id');
+                proxyReq.removeHeader('x-admin-id');
+
+                const gatewaySecret = String(
+                    process.env.GATEWAY_INTERNAL_SECRET
+                    || process.env.INTERNAL_SERVICE_SECRET
+                    || (process.env.NODE_ENV === 'production' ? '' : 'dev-gateway-secret')
+                ).trim();
+                if (gatewaySecret) {
+                    proxyReq.setHeader('x-gateway-secret', gatewaySecret);
+                }
+
                 // Forward trusted headers from gateway to downstream services
                 if (req.headers['x-admin-id']) {
                     proxyReq.setHeader('x-admin-id', req.headers['x-admin-id']);

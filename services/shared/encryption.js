@@ -2,10 +2,48 @@ import crypto from 'crypto';
 
 const ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 16;
-const AUTH_TAG_LENGTH = 16;
+const DEFAULT_DEV_SECRET = 'storify_payment_credentials_key_2026';
+
+function isProductionEnv() {
+    const env = String(process.env.NODE_ENV || 'development').toLowerCase();
+    return env === 'production' || process.env.REQUIRE_REDIS === 'true';
+}
+
+function resolveSecretSource() {
+    if (process.env.CREDENTIALS_ENCRYPTION_KEY) {
+        return { secret: process.env.CREDENTIALS_ENCRYPTION_KEY, source: 'CREDENTIALS_ENCRYPTION_KEY' };
+    }
+    if (process.env.JWT_SECRET) {
+        return { secret: process.env.JWT_SECRET, source: 'JWT_SECRET' };
+    }
+    return { secret: DEFAULT_DEV_SECRET, source: 'default' };
+}
+
+/**
+ * Call once at service boot. Production must not use the baked-in default key.
+ */
+export function assertCredentialsEncryptionKey() {
+    const { secret, source } = resolveSecretSource();
+    if (source === 'default') {
+        const msg =
+            'CREDENTIALS_ENCRYPTION_KEY (or JWT_SECRET) must be set — refusing default encryption key';
+        if (isProductionEnv()) {
+            throw new Error(msg);
+        }
+        console.warn(`[encryption] WARNING: ${msg}. Dev-only default in use.`);
+        return { ok: false, source };
+    }
+    if (String(secret).length < 16) {
+        const msg = 'CREDENTIALS_ENCRYPTION_KEY / JWT_SECRET should be at least 16 characters';
+        if (isProductionEnv()) throw new Error(msg);
+        console.warn(`[encryption] WARNING: ${msg}`);
+        return { ok: false, source };
+    }
+    return { ok: true, source };
+}
 
 function getKey() {
-    const secret = process.env.CREDENTIALS_ENCRYPTION_KEY || process.env.JWT_SECRET || 'storify_payment_credentials_key_2026';
+    const { secret } = resolveSecretSource();
     return crypto.createHash('sha256').update(String(secret)).digest();
 }
 
@@ -108,4 +146,4 @@ export function maskCredentials(gateway, credentials = {}) {
     return result;
 }
 
-export default { encrypt, decrypt, encryptCredentials, decryptCredentials, maskSecret, maskCredentials };
+export default { encrypt, decrypt, encryptCredentials, decryptCredentials, maskSecret, maskCredentials, assertCredentialsEncryptionKey };

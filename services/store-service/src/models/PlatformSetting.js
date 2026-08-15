@@ -50,6 +50,31 @@ const platformSettingSchema = new mongoose.Schema({
     shiprocketEnabled: {
         type: Boolean,
         default: true
+    },
+    // Platform SaaS mail (forgot OTP, merchant signup) — optional DB override of env SMTP
+    platformSmtpEnabled: {
+        type: Boolean,
+        default: true
+    },
+    platformSmtpHost: {
+        type: String,
+        default: 'smtp-relay.brevo.com'
+    },
+    platformSmtpPort: {
+        type: Number,
+        default: 587
+    },
+    platformSmtpUser: {
+        type: String,
+        default: ''
+    },
+    platformSmtpPassEncrypted: {
+        type: String,
+        default: ''
+    },
+    platformSmtpFrom: {
+        type: String,
+        default: '"Storify" <noreply@storify.com>'
     }
 }, {
     timestamps: true

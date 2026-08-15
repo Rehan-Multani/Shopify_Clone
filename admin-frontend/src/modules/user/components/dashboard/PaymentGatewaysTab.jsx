@@ -12,14 +12,14 @@ const GATEWAY_LOGOS = {
 
 const FIELD_DEFS = {
     razorpay: [
-        { key: 'keyId', label: 'Key ID', type: 'text', placeholderSandbox: 'rzp_test_...', placeholderLive: 'rzp_live_...' },
+        { key: 'keyId', label: 'Key ID', type: 'text', placeholder: 'rzp_live_...' },
         { key: 'keySecret', label: 'Key Secret', type: 'password', placeholder: '••••••••', secret: true },
-        { key: 'webhookSecret', label: 'Webhook Secret', type: 'password', placeholder: 'Optional', secret: true, optional: true }
+        { key: 'webhookSecret', label: 'Webhook Secret', type: 'password', placeholder: 'From Razorpay → Webhooks', secret: true },
     ],
     stripe: [
-        { key: 'publishableKey', label: 'Publishable Key', type: 'text', placeholderSandbox: 'pk_test_...', placeholderLive: 'pk_live_...' },
+        { key: 'publishableKey', label: 'Publishable Key', type: 'text', placeholder: 'pk_live_...' },
         { key: 'secretKey', label: 'Secret Key', type: 'password', placeholder: '••••••••', secret: true },
-        { key: 'webhookSecret', label: 'Webhook Secret', type: 'password', placeholder: 'whsec_...', secret: true, optional: true }
+        { key: 'webhookSecret', label: 'Webhook Secret', type: 'password', placeholder: 'whsec_...', secret: true },
     ],
     payu: [
         { key: 'merchantKey', label: 'Merchant Key', type: 'text', placeholder: 'Merchant Key' },
@@ -28,7 +28,7 @@ const FIELD_DEFS = {
     cashfree: [
         { key: 'appId', label: 'App ID', type: 'text', placeholder: 'App ID' },
         { key: 'secretKey', label: 'Secret Key', type: 'password', placeholder: '••••••••', secret: true },
-        { key: 'webhookSecret', label: 'Webhook Secret', type: 'password', placeholder: 'Optional', secret: true, optional: true }
+        { key: 'webhookSecret', label: 'Webhook Secret', type: 'password', placeholder: 'Optional webhook secret', secret: true },
     ]
 };
 
@@ -78,16 +78,17 @@ const PaymentGatewaysTab = () => {
         let cancelled = false;
         (async () => {
             try {
-                const res = await fetch(`${STORE_API_URL}/stores/${storeId}`, {
+                const res = await fetch(`${STORE_API_URL}/stores/my-stores`, {
                     headers: { Authorization: `Bearer ${token}` },
                     credentials: 'include'
                 });
                 if (!res.ok) return;
-                const data = await res.json();
-                if (cancelled) return;
-                if (data.planType) {
-                    setStorePlanType(data.planType);
-                    localStorage.setItem('adminPanelType', data.planType === 'Multi Vendor' ? 'multi' : 'single');
+                const list = await res.json();
+                if (cancelled || !Array.isArray(list)) return;
+                const store = list.find((s) => String(s._id) === String(storeId));
+                if (store?.planType) {
+                    setStorePlanType(store.planType);
+                    localStorage.setItem('adminPanelType', store.planType === 'Multi Vendor' ? 'multi' : 'single');
                 }
             } catch {
                 // keep fallback from localStorage
@@ -119,15 +120,36 @@ const PaymentGatewaysTab = () => {
         if (token) fetchGateways();
     }, [token, fetchGateways]);
 
+    const isMaskedValue = (value) =>
+        typeof value === 'string' && (value.includes('•') || /^\*+$/.test(value.trim()));
+
     const openConfigure = (gw) => {
+        const fields = FIELD_DEFS[gw.gateway] || [];
+        const credentials = {};
+        const configured = {};
+        for (const field of fields) {
+            const raw = gw.credentials?.[field.key] || '';
+            if (field.key === 'webhookSecret') {
+                configured[field.key] = !!gw.webhookSecretConfigured;
+                credentials[field.key] = '';
+                continue;
+            }
+            if (field.secret) {
+                configured[field.key] = !!(
+                    gw.credentials?.[`${field.key}Configured`]
+                    || (raw && isMaskedValue(raw))
+                );
+                credentials[field.key] = '';
+            } else {
+                credentials[field.key] = isMaskedValue(raw) ? '' : raw;
+            }
+        }
         setEditing(gw.gateway);
         setForm({
-            environment: gw.environment || 'sandbox',
-            currency: 'INR',
             enabled: !!gw.enabled,
             isDefault: !!gw.isDefault,
-            credentials: { ...(gw.credentials || {}) },
-            webhookSecret: gw.credentials?.webhookSecret || ''
+            credentials,
+            configured,
         });
     };
 
@@ -140,14 +162,18 @@ const PaymentGatewaysTab = () => {
         if (!editing) return;
         setSaving(true);
         try {
+            const credentials = {};
+            for (const [key, value] of Object.entries(form.credentials || {})) {
+                const str = String(value || '').trim();
+                if (!str || isMaskedValue(str)) continue;
+                credentials[key] = str;
+            }
             const payload = {
                 storeId: storeId || undefined,
-                environment: form.environment,
+                environment: 'production',
                 currency: 'INR',
-                enabled: form.enabled,
                 isDefault: form.isDefault,
-                credentials: { ...form.credentials },
-                webhookSecret: form.webhookSecret || form.credentials?.webhookSecret
+                credentials,
             };
             const res = await fetch(`${API_BASE}/merchant/payment-gateways/${editing}`, {
                 method: 'PUT',
@@ -157,7 +183,7 @@ const PaymentGatewaysTab = () => {
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.message || 'Failed to save');
-            showToast(data.message || 'Gateway saved');
+            showToast(data.message || 'Gateway saved. Use Test & activate next.');
             closeConfigure();
             await fetchGateways();
         } catch (err) {
@@ -169,26 +195,37 @@ const PaymentGatewaysTab = () => {
 
     const handleToggleEnable = async (gw, enabled) => {
         try {
-            if (gw.status === 'not_configured' && enabled) {
-                openConfigure(gw);
-                showToast('Configure credentials before enabling', 'error');
-                return;
+            if (enabled) {
+                if (gw.status !== 'verified') {
+                    showToast('Use Test & activate after saving credentials', 'error');
+                    return;
+                }
+                const res = await fetch(`${API_BASE}/merchant/payment-gateways/${gw.gateway}`, {
+                    method: 'PUT',
+                    headers: authHeaders(),
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        storeId: storeId || undefined,
+                        enabled: true,
+                        environment: 'production',
+                        currency: 'INR',
+                        credentials: {}
+                    })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || 'Failed to update');
+                showToast(`${gw.name} enabled`);
+            } else {
+                const res = await fetch(`${API_BASE}/merchant/payment-gateways/${gw.gateway}/disable`, {
+                    method: 'POST',
+                    headers: authHeaders(),
+                    credentials: 'include',
+                    body: JSON.stringify({ storeId: storeId || undefined })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || 'Failed to disable');
+                showToast(data.message || `${gw.name} disabled`);
             }
-            const res = await fetch(`${API_BASE}/merchant/payment-gateways/${gw.gateway}`, {
-                method: 'PUT',
-                headers: authHeaders(),
-                credentials: 'include',
-                body: JSON.stringify({
-                    storeId: storeId || undefined,
-                    enabled,
-                    environment: gw.environment,
-                    currency: 'INR',
-                    credentials: {}
-                })
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.message || 'Failed to update');
-            showToast(enabled ? `${gw.name} enabled` : `${gw.name} disabled`);
             await fetchGateways();
         } catch (err) {
             showToast(err.message, 'error');
@@ -206,7 +243,7 @@ const PaymentGatewaysTab = () => {
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.message || 'Test connection failure');
-            showToast(data.message || 'Connection verified');
+            showToast(data.message || 'Gateway verified and activated');
             await fetchGateways();
         } catch (err) {
             showToast(err.message || 'Test connection failure', 'error');
@@ -239,8 +276,8 @@ const PaymentGatewaysTab = () => {
                     <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-1">Settings</p>
                     <h1 className="text-xl lg:text-2xl font-bold text-[#202223] tracking-tight">Payment Gateways</h1>
                     <p className="text-xs text-zinc-500 mt-1">
-                        Configure Razorpay, Stripe, PayU and Cashfree for{' '}
-                        {isMultiVendor ? 'your marketplace' : 'your store'}. Secrets are encrypted and never shown in full.
+                        Save credentials, then Test &amp; activate. Only verified gateways appear at checkout
+                        {isMultiVendor ? ' for your own products' : ''}. Secrets are encrypted and never shown in full.
                     </p>
                 </div>
                 <Link
@@ -281,9 +318,14 @@ const PaymentGatewaysTab = () => {
                                 <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${STATUS_STYLES[gw.status] || STATUS_STYLES.not_configured}`}>
                                     {String(gw.status || 'not_configured').replace('_', ' ')}
                                 </span>
-                                <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${gw.environment === 'production' ? 'bg-violet-50 text-violet-700' : 'bg-sky-50 text-sky-700'}`}>
-                                    {gw.environment || 'sandbox'}
+                                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-violet-50 text-violet-700">
+                                    Production · INR
                                 </span>
+                                {gw.webhookSecretConfigured && (
+                                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-sky-50 text-sky-700">
+                                        Webhook OK
+                                    </span>
+                                )}
                                 {gw.isDefault && (
                                     <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700">
                                         Default
@@ -310,7 +352,7 @@ const PaymentGatewaysTab = () => {
                                     onClick={() => handleTest(gw.gateway)}
                                     className="px-3.5 py-2 bg-white border border-zinc-200 hover:border-zinc-400 disabled:opacity-40 text-zinc-700 rounded-lg text-[11px] font-bold uppercase tracking-wider transition"
                                 >
-                                    {testing === gw.gateway ? 'Testing…' : 'Test Connection'}
+                                    {testing === gw.gateway ? 'Testing…' : 'Test & activate'}
                                 </button>
                             </div>
                         </div>
@@ -318,28 +360,29 @@ const PaymentGatewaysTab = () => {
                 })}
             </div>
 
-            {/* Multi Vendor note — vendors configure gateways themselves in Vendor Portal */}
+            {/* Multi Vendor note — owner-only keys */}
             {isMultiVendor && (
                 <div className="bg-teal-50/60 border border-teal-100 rounded-2xl px-5 py-4">
                     <p className="text-xs text-teal-900 font-semibold leading-relaxed">
-                        Multi Vendor mode: Vendors apna payment gateway <span className="font-bold">Vendor Portal → Settings</span> se khud configure karte hain.
-                        Order pe pehle vendor ka gateway use hoga; agar vendor ne configure nahi kiya to aapka merchant gateway fallback rahega.
+                        Multi-vendor mode: each vendor must configure and <span className="font-bold">Test & activate</span> their own gateway in{' '}
+                        <span className="font-bold">Vendor Portal → Settings</span>.
+                        Merchant keys are never used for vendor orders — buyers get COD if that seller has no live gateway.
                     </p>
                 </div>
             )}
 
             {/* Configure modal */}
             {editing && editingGw && (
-                <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/40 backdrop-blur-[2px]" onClick={closeConfigure}>
+                <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-[2px]" onClick={closeConfigure}>
                     <div
-                        className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col"
+                        className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-lg max-h-[92vh] overflow-hidden flex flex-col"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="flex items-start justify-between px-5 py-4 border-b border-zinc-100 shrink-0">
                             <div>
                                 <h3 className="text-base font-bold text-[#202223]">Configure {editingGw.name}</h3>
-                                <p className="text-[10px] text-zinc-400 font-semibold uppercase tracking-wider mt-0.5">
-                                    Credentials are encrypted at rest
+                                <p className="text-[11px] text-zinc-400 font-medium mt-0.5">
+                                    Production · INR · Credentials encrypted at rest
                                 </p>
                             </div>
                             <button
@@ -352,103 +395,71 @@ const PaymentGatewaysTab = () => {
                             </button>
                         </div>
 
-                        <div className="px-5 py-4 space-y-4 overflow-y-auto flex-1">
-                            <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1.5">Environment</label>
-                                    <select
-                                        value={form.environment}
-                                        onChange={(e) => setForm((f) => ({ ...f, environment: e.target.value }))}
-                                        className="w-full border border-zinc-200 rounded-lg px-3 py-2.5 text-sm font-semibold bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
-                                    >
-                                        <option value="sandbox">Sandbox</option>
-                                        <option value="production">Production</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1.5">Currency</label>
-                                    <div className="w-full border border-zinc-100 bg-zinc-50 rounded-lg px-3 py-2.5 text-sm font-bold text-zinc-700">
-                                        INR
-                                    </div>
-                                </div>
+                        <div className="px-5 py-4 space-y-4 overflow-y-auto flex-1 overscroll-contain">
+                            <div className="flex flex-wrap gap-2">
+                                <span className="inline-flex items-center px-3 py-1.5 rounded-lg bg-violet-50 text-violet-700 text-[11px] font-bold uppercase tracking-wide">
+                                    Production
+                                </span>
+                                <span className="inline-flex items-center px-3 py-1.5 rounded-lg bg-zinc-100 text-zinc-600 text-[11px] font-bold uppercase tracking-wide">
+                                    INR
+                                </span>
                             </div>
 
                             {(FIELD_DEFS[editing] || []).map((field) => {
-                                const rawValue = field.key === 'webhookSecret'
-                                    ? (form.webhookSecret || form.credentials?.webhookSecret || '')
-                                    : (form.credentials?.[field.key] || '');
-                                const isMasked = typeof rawValue === 'string' && rawValue.includes('•');
-                                const displayValue = isMasked && field.secret ? '' : rawValue;
-                                const placeholder = form.environment === 'production'
-                                    ? (field.placeholderLive || field.placeholder || '')
-                                    : (field.placeholderSandbox || field.placeholder || '');
+                                const value = form.credentials?.[field.key] || '';
+                                const alreadySaved = !!form.configured?.[field.key];
+                                const placeholder = alreadySaved && field.secret
+                                    ? 'Leave blank to keep existing'
+                                    : (field.placeholder || '');
 
                                 return (
                                     <div key={field.key}>
-                                        <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1.5">
+                                        <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wide mb-1.5">
                                             {field.label}
-                                            {field.optional && <span className="ml-1 font-medium normal-case text-zinc-400">(optional)</span>}
                                         </label>
                                         <input
-                                            type={field.type}
-                                            value={displayValue}
+                                            type={field.type === 'password' ? 'password' : 'text'}
+                                            value={value}
                                             onChange={(e) => {
                                                 const val = e.target.value;
-                                                if (field.key === 'webhookSecret') {
-                                                    setForm((f) => ({
-                                                        ...f,
-                                                        webhookSecret: val,
-                                                        credentials: { ...f.credentials, webhookSecret: val }
-                                                    }));
-                                                } else {
-                                                    setForm((f) => ({
-                                                        ...f,
-                                                        credentials: { ...f.credentials, [field.key]: val }
-                                                    }));
-                                                }
+                                                setForm((f) => ({
+                                                    ...f,
+                                                    credentials: { ...f.credentials, [field.key]: val }
+                                                }));
                                             }}
-                                            className="w-full border border-zinc-200 rounded-lg px-3 py-2.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
-                                            placeholder={isMasked ? 'Leave blank to keep existing' : placeholder}
-                                            autoComplete="off"
+                                            className="w-full border border-zinc-200 rounded-lg px-3 py-2.5 text-sm font-semibold bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                                            placeholder={placeholder}
+                                            autoComplete="new-password"
+                                            spellCheck={false}
                                         />
-                                        {field.secret && isMasked && (
+                                        {field.secret && alreadySaved && !value && (
                                             <p className="text-[10px] text-zinc-400 mt-1">Secret already saved. Enter a new value only to replace it.</p>
                                         )}
                                     </div>
                                 );
                             })}
 
-                            <div className="rounded-xl border border-zinc-100 bg-zinc-50/80 divide-y divide-zinc-100">
-                                <label className="flex items-center justify-between gap-3 px-3.5 py-3 cursor-pointer">
-                                    <div>
-                                        <p className="text-xs font-bold text-zinc-800">Enable gateway</p>
-                                        <p className="text-[10px] text-zinc-400 mt-0.5">Make this gateway available at checkout</p>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        role="switch"
-                                        aria-checked={!!form.enabled}
-                                        onClick={() => setForm((f) => ({ ...f, enabled: !f.enabled }))}
-                                        className={`relative inline-flex h-5 w-9 flex-shrink-0 rounded-full border-2 border-transparent transition-colors ${form.enabled ? 'bg-emerald-600' : 'bg-zinc-300'}`}
-                                    >
-                                        <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow transition ${form.enabled ? 'translate-x-4' : 'translate-x-0'}`} />
-                                    </button>
-                                </label>
-                                <label className="flex items-center justify-between gap-3 px-3.5 py-3 cursor-pointer">
-                                    <div>
-                                        <p className="text-xs font-bold text-zinc-800">Set as default</p>
-                                        <p className="text-[10px] text-zinc-400 mt-0.5">Preferred gateway when multiple are enabled</p>
+                            <div className="space-y-3 pt-1">
+                                <div className="rounded-xl bg-amber-50 border border-amber-100 px-3 py-2.5">
+                                    <p className="text-[11px] text-amber-900 font-semibold leading-relaxed">
+                                        Save stores credentials only. Use <span className="font-bold">Test & activate</span> on the card to enable checkout. Changing keys turns the gateway off until you test again.
+                                    </p>
+                                </div>
+                                <div className="flex items-center justify-between gap-4">
+                                    <div className="min-w-0">
+                                        <p className="text-sm font-semibold text-zinc-800">Set as default</p>
+                                        <p className="text-[11px] text-zinc-400 mt-0.5">Preferred when multiple are activated</p>
                                     </div>
                                     <button
                                         type="button"
                                         role="switch"
                                         aria-checked={!!form.isDefault}
                                         onClick={() => setForm((f) => ({ ...f, isDefault: !f.isDefault }))}
-                                        className={`relative inline-flex h-5 w-9 flex-shrink-0 rounded-full border-2 border-transparent transition-colors ${form.isDefault ? 'bg-emerald-600' : 'bg-zinc-300'}`}
+                                        className={`relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors ${form.isDefault ? 'bg-emerald-600' : 'bg-zinc-300'}`}
                                     >
-                                        <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow transition ${form.isDefault ? 'translate-x-4' : 'translate-x-0'}`} />
+                                        <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow transition ${form.isDefault ? 'translate-x-5' : 'translate-x-0'}`} />
                                     </button>
-                                </label>
+                                </div>
                             </div>
                         </div>
 

@@ -1019,7 +1019,7 @@ export const activateTheme = async (req, res) => {
             themeId: install.themeId,
             folder: install.folder,
             version: install.version,
-            mode: 'activate',
+            mode: 'switch',
             preparedAt: new Date(),
         };
         // Ensure draft exists

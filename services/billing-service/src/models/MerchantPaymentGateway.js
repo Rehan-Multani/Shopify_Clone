@@ -22,7 +22,7 @@ const merchantPaymentGatewaySchema = new mongoose.Schema({
     environment: {
         type: String,
         enum: ENVIRONMENTS,
-        default: 'sandbox'
+        default: 'production'
     },
     // AES-GCM encrypted JSON blob of API credentials
     credentials: {

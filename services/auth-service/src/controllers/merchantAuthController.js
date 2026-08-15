@@ -75,12 +75,12 @@ export const merchantForgotPassword = async (req, res) => {
         `;
 
         try {
+            // Storify portal OTP — platform SMTP only (no merchant tenant fallback)
             await sendTransactionalEmail({
                 to: email,
                 subject: emailSubject,
                 text: emailText,
                 html: emailHtml,
-                merchantId: merchant._id,
                 event: 'forgot_password_otp'
             });
         } catch (mailErr) {
@@ -88,8 +88,8 @@ export const merchantForgotPassword = async (req, res) => {
             merchant.resetPasswordExpire = undefined;
             await merchant.save();
             return res.status(502).json({
-                message: 'Could not send verification email. Please check Brevo SMTP settings or try again later.',
-                code: 'EMAIL_SEND_FAILED'
+                message: 'Could not send verification email. Please try again later.',
+                code: mailErr.code || 'EMAIL_SEND_FAILED'
             });
         }
 

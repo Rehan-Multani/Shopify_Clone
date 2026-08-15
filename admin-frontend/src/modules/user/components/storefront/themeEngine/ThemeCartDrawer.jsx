@@ -65,7 +65,7 @@ export default function ThemeCartDrawer({
                     {cart.length === 0 ? (
                         <div className="py-16 text-center space-y-3">
                             <p className="text-sm font-bold text-zinc-700">Your cart is empty</p>
-                            <Link to={getStorePath(storeId, '/catalog')} onClick={onClose} className="inline-block px-5 py-2.5 text-white text-[10px] font-black uppercase tracking-wider" style={{ background: 'var(--color-primary)', borderRadius: 'var(--border-radius)' }}>
+                            <Link to={getStorePath(storeId, '/catalog')} onClick={onClose} className="inline-block px-5 py-2.5 text-[10px] font-black uppercase tracking-wider btn-on-primary" style={{ background: 'var(--color-primary)', borderRadius: 'var(--border-radius)', color: 'var(--color-on-primary)' }}>
                                 Continue shopping
                             </Link>
                         </div>
@@ -101,8 +101,8 @@ export default function ThemeCartDrawer({
                         <Link
                             to={getStorePath(storeId, '/checkout')}
                             onClick={onClose}
-                            className="block w-full py-3.5 text-center text-white text-[10px] font-black uppercase tracking-widest btn-premium"
-                            style={{ background: 'var(--color-primary)', borderRadius: 'var(--border-radius)' }}
+                            className="block w-full py-3.5 text-center text-[10px] font-black uppercase tracking-widest btn-premium btn-on-primary"
+                            style={{ background: 'var(--color-primary)', borderRadius: 'var(--border-radius)', color: 'var(--color-on-primary)' }}
                         >
                             Checkout
                         </Link>

@@ -19,7 +19,7 @@ export const getMarketplacePaymentSettings = async (req, res) => {
             merchantId: settings.merchantId,
             storeId: settings.storeId,
             allowVendorGateway: settings.allowVendorGateway,
-            allowVendorGatewayFallback: settings.allowVendorGatewayFallback !== false,
+            allowVendorGatewayFallback: false,
             allowedVendorGateways: (settings.allowedVendorGateways || []).filter((g) => platformAvailable.includes(g)),
             paymentMode: settings.paymentMode,
             defaultGateway: settings.defaultGateway,
@@ -66,9 +66,8 @@ export const updateMarketplacePaymentSettings = async (req, res) => {
             }
         }
 
-        if (typeof allowVendorGatewayFallback === 'boolean') {
-            settings.allowVendorGatewayFallback = allowVendorGatewayFallback;
-        }
+        // Owner-only: ignore attempts to re-enable merchant fallback for vendor carts
+        settings.allowVendorGatewayFallback = false;
 
         if (Array.isArray(allowedVendorGateways)) {
             settings.allowedVendorGateways = allowedVendorGateways
@@ -115,7 +114,7 @@ export const updateMarketplacePaymentSettings = async (req, res) => {
                 merchantId: settings.merchantId,
                 storeId: settings.storeId,
                 allowVendorGateway: settings.allowVendorGateway,
-                allowVendorGatewayFallback: settings.allowVendorGatewayFallback !== false,
+                allowVendorGatewayFallback: false,
                 allowedVendorGateways: settings.allowedVendorGateways,
                 paymentMode: settings.paymentMode,
                 defaultGateway: settings.defaultGateway,

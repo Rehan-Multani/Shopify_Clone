@@ -38,7 +38,7 @@ const ord = applyEmailRoute({
     merchantId: 'm1',
     vendorId: 'v1',
 });
-assert(ord.merchantId === 'm1' && ord.vendorId === 'v1', 'order keeps vendor');
+assert(ord.vendorId === 'v1' && !ord.merchantId, 'order XOR: vendor clears merchant');
 
 assert(statusEmailEvent('shipped') === 'customer_order_shipped', 'shipped map');
 assert(statusEmailEvent('pending') === null, 'pending no email');

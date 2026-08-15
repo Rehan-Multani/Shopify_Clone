@@ -39,9 +39,19 @@ const SettingsTab = () => {
         sshUser: 'root',
         sshPassword: '',
         availablePaymentGateways: ['razorpay', 'stripe', 'payu', 'cashfree'],
-        shiprocketEnabled: true
+        shiprocketEnabled: true,
+        platformSmtpEnabled: true,
+        platformSmtpHost: 'smtp-relay.brevo.com',
+        platformSmtpPort: '587',
+        platformSmtpUser: '',
+        platformSmtpPassword: '',
+        platformSmtpFrom: '"Storify" <noreply@storify.com>',
+        platformSmtpConfigured: false,
+        platformSmtpSource: 'none',
+        platformSmtpPasswordConfigured: false
     });
     const [showSshPassword, setShowSshPassword] = useState(false);
+    const [showSmtpPassword, setShowSmtpPassword] = useState(false);
 
     const [passwordData, setPasswordData] = useState({
         currentPassword: '',
@@ -58,7 +68,8 @@ const SettingsTab = () => {
     const sections = [
         { id: 'platform', label: 'Platform Config', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
         { id: 'payments', label: 'Payment Gateways', icon: 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z' },
-        { id: 'shipping', label: 'Shipping', icon: 'M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z' },
+        { id: 'shipping', label: 'Shipping', icon: 'M3 8h9v9H3V8zm9 3h3.5L18 14v3h-6v-6zM7 19a2 2 0 100-4 2 2 0 000 4zm10 0a2 2 0 100-4 2 2 0 000 4z' },
+        { id: 'email', label: 'Email (Platform)', icon: 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' },
         { id: 'security', label: 'Security', icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z' },
     ];
 
@@ -108,7 +119,16 @@ const SettingsTab = () => {
                         availablePaymentGateways: Array.isArray(data.availablePaymentGateways) && data.availablePaymentGateways.length
                             ? data.availablePaymentGateways
                             : ['razorpay', 'stripe', 'payu', 'cashfree'],
-                        shiprocketEnabled: data.shiprocketEnabled !== false
+                        shiprocketEnabled: data.shiprocketEnabled !== false,
+                        platformSmtpEnabled: data.platformSmtpEnabled !== false,
+                        platformSmtpHost: data.platformSmtpHost || 'smtp-relay.brevo.com',
+                        platformSmtpPort: String(data.platformSmtpPort || 587),
+                        platformSmtpUser: data.platformSmtpUser || '',
+                        platformSmtpPassword: data.platformSmtpPasswordMasked || '',
+                        platformSmtpFrom: data.platformSmtpFrom || '"Storify" <noreply@storify.com>',
+                        platformSmtpConfigured: !!data.platformSmtpConfigured,
+                        platformSmtpSource: data.platformSmtpSource || 'none',
+                        platformSmtpPasswordConfigured: !!data.platformSmtpPasswordConfigured
                     });
                 }
             } catch (err) {
@@ -341,6 +361,102 @@ const SettingsTab = () => {
                                         onChange={(v) => setPlatformConfig((prev) => ({ ...prev, shiprocketEnabled: v }))}
                                     />
                                 </div>
+                                <div className="pt-2">
+                                    <button onClick={handleSave} className="px-6 py-2.5 rounded-lg text-sm font-bold text-white hover:opacity-90 transition-all" style={{ background: '#1a1c23' }}>
+                                        Save Changes
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Email - Platform Brevo SMTP for SaaS / forgot OTP */}
+                    {activeSection === 'email' && (
+                        <div className={card}>
+                            <SectionHeader
+                                title="Platform Email (Brevo SMTP)"
+                                desc="Used for forgot-password OTP and Storify SaaS emails. Env SMTP_USER/SMTP_PASS overrides DB if both are set."
+                            />
+                            <div className="p-6 space-y-4">
+                                <div className={`rounded-xl px-4 py-3 text-xs font-semibold border ${platformConfig.platformSmtpConfigured ? 'bg-emerald-50 border-emerald-100 text-emerald-800' : 'bg-amber-50 border-amber-100 text-amber-900'}`}>
+                                    {platformConfig.platformSmtpConfigured
+                                        ? `Platform SMTP ready (source: ${platformConfig.platformSmtpSource}).`
+                                        : 'Platform SMTP not configured. Forgot-password OTP will fail until env or DB credentials are set.'}
+                                </div>
+                                <div className="flex items-center justify-between p-4 rounded-xl border border-[#e3e3e3] bg-[#fafafa]">
+                                    <div>
+                                        <h4 className="text-sm font-bold text-[#202223]">Enable DB SMTP</h4>
+                                        <p className="text-xs text-[#9CA3AF] mt-0.5">When off, only server env SMTP is used</p>
+                                    </div>
+                                    <Toggle
+                                        enabled={platformConfig.platformSmtpEnabled !== false}
+                                        onChange={(v) => setPlatformConfig((prev) => ({ ...prev, platformSmtpEnabled: v }))}
+                                    />
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-semibold text-[#5c5f62] mb-1.5">SMTP host</label>
+                                        <input
+                                            type="text"
+                                            value={platformConfig.platformSmtpHost || ''}
+                                            onChange={(e) => setPlatformConfig((prev) => ({ ...prev, platformSmtpHost: e.target.value }))}
+                                            className="w-full px-3 py-2 border border-[#d3d3d3] rounded-lg text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-semibold text-[#5c5f62] mb-1.5">Port</label>
+                                        <input
+                                            type="text"
+                                            value={platformConfig.platformSmtpPort || ''}
+                                            onChange={(e) => setPlatformConfig((prev) => ({ ...prev, platformSmtpPort: e.target.value }))}
+                                            className="w-full px-3 py-2 border border-[#d3d3d3] rounded-lg text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-semibold text-[#5c5f62] mb-1.5">SMTP username</label>
+                                        <input
+                                            type="text"
+                                            value={platformConfig.platformSmtpUser || ''}
+                                            onChange={(e) => setPlatformConfig((prev) => ({ ...prev, platformSmtpUser: e.target.value }))}
+                                            className="w-full px-3 py-2 border border-[#d3d3d3] rounded-lg text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30"
+                                            placeholder="xxx@smtp-brevo.com"
+                                            autoComplete="off"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-semibold text-[#5c5f62] mb-1.5">SMTP password / key</label>
+                                        <div className="relative">
+                                            <input
+                                                type={showSmtpPassword ? 'text' : 'password'}
+                                                value={platformConfig.platformSmtpPassword || ''}
+                                                onChange={(e) => setPlatformConfig((prev) => ({ ...prev, platformSmtpPassword: e.target.value }))}
+                                                className="w-full px-3 py-2 pr-10 border border-[#d3d3d3] rounded-lg text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30"
+                                                placeholder={platformConfig.platformSmtpPasswordConfigured ? 'Leave blank to keep' : 'xsmtpsib-...'}
+                                                autoComplete="new-password"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowSmtpPassword(!showSmtpPassword)}
+                                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400"
+                                            >
+                                                <span className="text-[10px] font-bold uppercase">{showSmtpPassword ? 'Hide' : 'Show'}</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className="md:col-span-2">
+                                        <label className="block text-xs font-semibold text-[#5c5f62] mb-1.5">From header</label>
+                                        <input
+                                            type="text"
+                                            value={platformConfig.platformSmtpFrom || ''}
+                                            onChange={(e) => setPlatformConfig((prev) => ({ ...prev, platformSmtpFrom: e.target.value }))}
+                                            className="w-full px-3 py-2 border border-[#d3d3d3] rounded-lg text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30"
+                                            placeholder={'"Storify" <noreply@storify.com>'}
+                                        />
+                                    </div>
+                                </div>
+                                <p className="text-[11px] text-[#9CA3AF]">
+                                    Merchant/vendor store emails use their own Brevo config. This section is only for platform SaaS mail.
+                                </p>
                                 <div className="pt-2">
                                     <button onClick={handleSave} className="px-6 py-2.5 rounded-lg text-sm font-bold text-white hover:opacity-90 transition-all" style={{ background: '#1a1c23' }}>
                                         Save Changes

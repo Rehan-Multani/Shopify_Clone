@@ -11,7 +11,8 @@ import {
     serializeGatewayDoc,
     buildGatewayClient,
     getOrCreateMarketplaceSettings,
-    getPlatformAvailableGateways
+    getPlatformAvailableGateways,
+    promoteLegacyLiveGateways,
 } from '../services/gatewayResolver.js';
 
 function getMerchantId(req) {
@@ -56,18 +57,24 @@ async function mergeCredentials(gateway, existingEncrypted, incoming = {}, exist
     const existingWebhook = existingWebhookEncrypted ? decrypt(existingWebhookEncrypted) : '';
 
     const merged = { ...existing };
+    let credentialsChanged = false;
+    let webhookSecretChanged = false;
+    let nextWebhook = existingWebhook || '';
+
     for (const [key, value] of Object.entries(incoming || {})) {
         if (value === undefined || value === null) continue;
         const str = String(value);
-        if (!str || str.includes('•')) continue; // keep existing secret
+        if (!str || str.includes('•')) continue;
+        if (key === 'webhookSecret') {
+            if (str !== existingWebhook) webhookSecretChanged = true;
+            nextWebhook = str;
+            continue;
+        }
+        if (String(existing[key] || '') !== str) credentialsChanged = true;
         merged[key] = str;
     }
 
-    let webhookSecret = existingWebhook || merged.webhookSecret || '';
-    if (incoming.webhookSecret && !String(incoming.webhookSecret).includes('•')) {
-        webhookSecret = String(incoming.webhookSecret);
-        merged.webhookSecret = webhookSecret;
-    }
+    delete merged.webhookSecret;
 
     const meta = GATEWAY_META[gateway];
     const requiredKeys = (meta?.credentialFields || []).filter((f) => f.required).map((f) => f.key);
@@ -75,9 +82,11 @@ async function mergeCredentials(gateway, existingEncrypted, incoming = {}, exist
 
     return {
         encryptedCredentials: encryptCredentials(merged),
-        encryptedWebhook: webhookSecret ? encrypt(webhookSecret) : '',
+        encryptedWebhook: nextWebhook ? encrypt(nextWebhook) : '',
         plainCredentials: merged,
-        hasAllRequired
+        hasAllRequired,
+        credentialsChanged: credentialsChanged || webhookSecretChanged,
+        webhookSecretChanged,
     };
 }
 
@@ -88,6 +97,8 @@ export const listMerchantGateways = async (req, res) => {
         if (!merchantId) return res.status(401).json({ message: 'Merchant authentication required' });
 
         const storeId = req.query.storeId || req.headers['x-store-id'] || null;
+        await promoteLegacyLiveGateways(MerchantPaymentGateway, { merchantId });
+
         const docs = await MerchantPaymentGateway.find({
             merchantId,
             ...(storeId ? { $or: [{ storeId }, { storeId: null }] } : {})
@@ -107,7 +118,7 @@ export const listMerchantGateways = async (req, res) => {
                     gateway: gw,
                     name: meta.name,
                     description: meta.description,
-                    environment: 'sandbox',
+                    environment: 'production',
                     currency: 'INR',
                     enabled: false,
                     isDefault: false,
@@ -128,7 +139,7 @@ export const listMerchantGateways = async (req, res) => {
             platformAvailableGateways: platformAvailable,
             marketplace: {
                 allowVendorGateway: settings.allowVendorGateway,
-                allowVendorGatewayFallback: settings.allowVendorGatewayFallback !== false,
+                allowVendorGatewayFallback: false,
                 allowedVendorGateways: settings.allowedVendorGateways,
                 paymentMode: settings.paymentMode,
                 defaultGateway: settings.defaultGateway,
@@ -164,12 +175,9 @@ export const upsertMerchantGateway = async (req, res) => {
 
         const storeId = req.body.storeId || req.headers['x-store-id'] || null;
         const {
-            environment = 'sandbox',
-            currency,
             enabled,
             isDefault,
             credentials = {},
-            webhookSecret
         } = req.body;
 
         let doc = await MerchantPaymentGateway.findOne({
@@ -181,7 +189,7 @@ export const upsertMerchantGateway = async (req, res) => {
         const merged = await mergeCredentials(
             gateway,
             doc?.credentials || '',
-            { ...credentials, ...(webhookSecret !== undefined ? { webhookSecret } : {}) },
+            credentials,
             doc?.webhookSecret || ''
         );
 
@@ -197,23 +205,44 @@ export const upsertMerchantGateway = async (req, res) => {
             }
         }
 
+        const identityChanged = merged.credentialsChanged || !doc;
         const status = merged.hasAllRequired ? 'configured' : 'not_configured';
         const payload = {
             merchantId,
             storeId: storeId || null,
             gateway,
-            environment: environment === 'production' ? 'production' : 'sandbox',
+            environment: 'production',
             currency: 'INR',
             credentials: merged.encryptedCredentials,
             webhookSecret: merged.encryptedWebhook,
             status
         };
 
-        if (typeof enabled === 'boolean') payload.enabled = enabled && merged.hasAllRequired;
+        // Verify-to-activate: never go live from Save alone
+        if (identityChanged || status !== 'verified') {
+            payload.enabled = false;
+            if (merged.hasAllRequired) payload.status = 'configured';
+        }
+        // Explicit disable always allowed; enable only when already verified (no new secrets)
+        if (typeof enabled === 'boolean' && enabled === false) {
+            payload.enabled = false;
+        } else if (typeof enabled === 'boolean' && enabled === true) {
+            if (!identityChanged && doc?.status === 'verified' && merged.hasAllRequired) {
+                payload.enabled = true;
+                payload.status = 'verified';
+            } else {
+                payload.enabled = false;
+            }
+        }
         if (typeof isDefault === 'boolean') payload.isDefault = isDefault;
 
         if (doc) {
             Object.assign(doc, payload);
+            // Credential change demotes live config
+            if (identityChanged && merged.hasAllRequired) {
+                doc.status = 'configured';
+                doc.enabled = false;
+            }
             await doc.save();
             await writeAudit({
                 actorId: merchantId,
@@ -226,7 +255,7 @@ export const upsertMerchantGateway = async (req, res) => {
         } else {
             doc = await MerchantPaymentGateway.create({
                 ...payload,
-                enabled: typeof enabled === 'boolean' ? enabled && merged.hasAllRequired : false,
+                enabled: false,
                 isDefault: !!isDefault
             });
             await writeAudit({
@@ -246,7 +275,13 @@ export const upsertMerchantGateway = async (req, res) => {
             );
         }
 
-        res.json({ gateway: await toPublicGateway(doc), message: 'Payment gateway saved successfully' });
+        const needsTest = !doc.enabled || doc.status !== 'verified';
+        res.json({
+            gateway: await toPublicGateway(doc),
+            message: needsTest
+                ? 'Credentials saved. Use Test & activate to enable checkout payments.'
+                : 'Payment gateway saved successfully',
+        });
     } catch (error) {
         console.error('upsertMerchantGateway:', error);
         if (error.code === 11000) {
@@ -319,7 +354,13 @@ export const testMerchantGateway = async (req, res) => {
 
         doc.lastTestedAt = new Date();
         doc.lastTestResult = { success: result.success, message: result.message };
-        doc.status = result.success ? 'verified' : 'error';
+        if (result.success) {
+            doc.status = 'verified';
+            doc.enabled = true;
+        } else {
+            doc.status = 'error';
+            doc.enabled = false;
+        }
         await doc.save();
 
         await writeAudit({
@@ -342,7 +383,7 @@ export const testMerchantGateway = async (req, res) => {
 
         res.json({
             success: true,
-            message: result.message,
+            message: result.message || 'Gateway verified and activated for checkout',
             gateway: await toPublicGateway(doc)
         });
     } catch (error) {
@@ -352,5 +393,48 @@ export const testMerchantGateway = async (req, res) => {
             message: error.message || 'Test connection failure',
             code: 'TEST_CONNECTION_FAILURE'
         });
+    }
+};
+
+// POST /merchant/payment-gateways/:gateway/disable
+export const disableMerchantGateway = async (req, res) => {
+    try {
+        const merchantId = getMerchantId(req);
+        if (!merchantId) return res.status(401).json({ message: 'Merchant authentication required' });
+
+        const gateway = String(req.params.gateway || '').toLowerCase();
+        if (!isSupportedGateway(gateway)) {
+            return res.status(400).json({ message: 'Unsupported gateway' });
+        }
+
+        const storeId = req.body.storeId || req.headers['x-store-id'] || null;
+        const doc = await MerchantPaymentGateway.findOne({
+            merchantId,
+            gateway,
+            ...(storeId ? { $or: [{ storeId }, { storeId: null }] } : {})
+        });
+
+        if (!doc) return res.status(404).json({ message: 'Gateway configuration not found' });
+
+        doc.enabled = false;
+        if (doc.status === 'verified') doc.status = 'configured';
+        await doc.save();
+
+        await writeAudit({
+            actorId: merchantId,
+            ownerId: merchantId,
+            gateway,
+            action: 'disable',
+            metadata: {},
+            ipAddress: getClientIp(req)
+        });
+
+        res.json({
+            message: 'Payment gateway disabled. Checkout will use COD if available.',
+            gateway: await toPublicGateway(doc),
+        });
+    } catch (error) {
+        console.error('disableMerchantGateway:', error);
+        res.status(500).json({ message: error.message || 'Failed to disable payment gateway' });
     }
 };

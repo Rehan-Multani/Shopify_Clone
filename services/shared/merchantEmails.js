@@ -1,14 +1,11 @@
 /**
  * Merchant transactional emails via multi-tenant email stack.
  *
- * Platform → merchant emails (signup, billing, support) use platform SMTP
- * unless merchantId is passed for tenant branding.
- *
- * Prefer enqueueTransactionalEmail for customer-facing mail with merchantId/vendorId.
+ * Platform SaaS emails (signup, billing, support, portal OTP) use platform SMTP only.
+ * Store/customer/order emails use merchant or vendor SMTP only — no cross-tenant fallback.
  */
 
 import { emitEmail } from './emailService.js';
-import { sendEmail } from './sendEmail.js';
 
 export const MERCHANT_EMAIL_EVENTS = [
   { id: 'signup_welcome', label: 'Signup / account welcome + temp password', service: 'merchant-admin-service' },
@@ -36,8 +33,8 @@ function wrap({ title, name, bodyHtml, footerNote }) {
 
 /**
  * Fire-and-forget — never block API success on mail failure.
- * Pass merchantId / vendorId for Vendor → Merchant → Platform resolution.
- * Platform ops emails omit both and use platform SMTP.
+ * Platform SaaS emails omit merchantId/vendorId and use platform SMTP only.
+ * No env/Ethereal fallback (owner-only / platform-only policy).
  */
 export async function sendMerchantMail(payload) {
   const { merchantId = null, vendorId = null, event = 'signup_welcome', ...mail } = payload || {};
@@ -50,12 +47,8 @@ export async function sendMerchantMail(payload) {
     merchantId,
     vendorId,
   });
-  if (result?.skipped && mail.to) {
-    try {
-      await sendEmail({ ...mail, throwOnError: true });
-    } catch (e2) {
-      console.error('[merchant-mail]', e2.message);
-    }
+  if (result?.skipped) {
+    console.warn('[merchant-mail] skipped:', result.reason || event, mail.to || '');
   }
 }
 

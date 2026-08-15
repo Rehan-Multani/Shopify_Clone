@@ -118,6 +118,41 @@ export class CashfreeGateway extends BaseGateway {
         }
     }
 
+    async refundPayment({ paymentId, amount, reason = 'refund', orderId }) {
+        if (!this.appId || !this.secretKey) {
+            return { success: false, message: 'Cashfree is not configured' };
+        }
+        const cfOrderId = orderId || paymentId;
+        if (!cfOrderId) {
+            return { success: false, message: 'Missing Cashfree order id for refund' };
+        }
+        try {
+            const refundId = `rfnd_${Date.now()}`;
+            const body = {
+                refund_amount: Number(Number(amount || 0).toFixed(2)),
+                refund_id: refundId,
+                refund_note: String(reason || 'refund').slice(0, 100),
+            };
+            const res = await fetch(`${this.apiBase}/orders/${encodeURIComponent(cfOrderId)}/refunds`, {
+                method: 'POST',
+                headers: this.#headers(),
+                body: JSON.stringify(body),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                return { success: false, message: data?.message || 'Cashfree refund failed', raw: data };
+            }
+            return {
+                success: true,
+                refundId: data.cf_refund_id || data.refund_id || refundId,
+                message: 'Cashfree refund initiated',
+                raw: data,
+            };
+        } catch (error) {
+            return { success: false, message: error.message || 'Cashfree refund failed' };
+        }
+    }
+
     verifyWebhook(rawBody, signature, headers = {}) {
         if (!this.webhookSecret && !this.secretKey) {
             return { valid: false, message: 'Webhook secret not configured' };

@@ -102,6 +102,15 @@ export const resolveDesignTokens = (settings = {}) => {
             ? '0px'
             : borderRadius;
 
+    const secondaryIsDark = isDarkColor(secondary);
+    const primaryIsDark = isDarkColor(primary);
+    const accentIsDark = isDarkColor(accent);
+    // Newsletter / CTA bands: never put white text on a light secondary page bg
+    const band = secondaryIsDark
+        ? secondary
+        : (primaryIsDark ? primary : '#0f172a');
+    const bandIsDark = isDarkColor(band);
+
     return {
         '--color-primary': primary,
         '--color-secondary': secondary,
@@ -110,8 +119,15 @@ export const resolveDesignTokens = (settings = {}) => {
         '--color-primary-semi': hexToRgba(primary, 0.25),
         '--color-primary-dark': hexToRgba(primary, 0.8),
         '--color-accent-light': hexToRgba(accent, 0.12),
-        '--color-text': isDarkColor(secondary) ? '#ffffff' : '#18181b',
-        '--color-text-muted': isDarkColor(secondary) ? 'rgba(255,255,255,0.65)' : '#71717a',
+        '--color-text': secondaryIsDark ? '#ffffff' : '#18181b',
+        '--color-text-muted': secondaryIsDark ? 'rgba(255,255,255,0.65)' : '#71717a',
+        '--color-band': band,
+        '--color-on-band': bandIsDark ? '#ffffff' : '#18181b',
+        '--color-on-band-muted': bandIsDark ? 'rgba(255,255,255,0.72)' : 'rgba(24,24,27,0.65)',
+        '--color-on-band-faint': bandIsDark ? 'rgba(255,255,255,0.12)' : 'rgba(24,24,27,0.08)',
+        '--color-on-band-border': bandIsDark ? 'rgba(255,255,255,0.18)' : 'rgba(24,24,27,0.14)',
+        '--color-on-primary': primaryIsDark ? '#ffffff' : '#18181b',
+        '--color-on-accent': accentIsDark ? '#ffffff' : '#18181b',
         '--border-radius': borderRadius,
         '--radius-sm': `max(0px, calc(${borderRadius} - 4px))`,
         '--radius-md': borderRadius,

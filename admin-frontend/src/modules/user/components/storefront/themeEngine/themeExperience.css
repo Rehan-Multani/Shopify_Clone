@@ -343,7 +343,10 @@
   transition-duration: .9s;
 }
 
-/* Buttons */
+/* Buttons — contrast against accent fill (newsletter, CTAs) */
+.theme-experience .btn-premium {
+  color: var(--color-on-accent, #fff);
+}
 [data-button="outline"] .btn-premium {
   background: transparent !important;
   color: var(--color-primary) !important;
@@ -355,7 +358,11 @@
 }
 [data-button="pill"] .btn-premium { border-radius: 999px !important; }
 [data-button="square"] .btn-premium { border-radius: 0 !important; letter-spacing: .14em; }
-[data-button="solid"] .btn-premium { border: 0; border-radius: var(--border-radius, 8px); }
+[data-button="solid"] .btn-premium { border: 0; border-radius: var(--border-radius, 8px); color: var(--color-on-accent, #fff); }
+
+.theme-experience .btn-on-primary {
+  color: var(--color-on-primary, #fff) !important;
+}
 
 [data-footer="minimal"] footer { border-top-width: 0; }
 [data-footer="minimal"] footer .max-w-7xl { padding-block: 2.5rem; }

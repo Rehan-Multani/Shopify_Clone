@@ -2,7 +2,6 @@ import Vendor from '../models/Vendor.js';
 import generateToken from '../../../shared/generateToken.js';
 import { sendTransactionalEmail } from '../../../shared/transactionalEmail.js';
 import bcrypt from 'bcryptjs';
-import mongoose from 'mongoose';
 
 function buildOtpEmail({ name, otp, audience }) {
   const emailSubject = `Storify - ${audience} Password Recovery Code`;
@@ -99,28 +98,12 @@ export const vendorForgotPassword = async (req, res) => {
         });
 
         try {
-            // Resolve merchantId from store for Vendor → Merchant → Platform fallback
-            let merchantId = null;
-            if (vendor.store) {
-                try {
-                    const stores = mongoose.connection.collection('stores');
-                    const store = await stores.findOne(
-                        { _id: new mongoose.Types.ObjectId(String(vendor.store)) },
-                        { projection: { merchantId: 1, merchant: 1 } }
-                    );
-                    merchantId = store?.merchantId || store?.merchant || null;
-                } catch {
-                    // ignore lookup failures — platform SMTP still works
-                }
-            }
-
+            // Storify vendor portal OTP — platform SMTP only (no vendor/merchant fallback)
             await sendTransactionalEmail({
                 to: vendor.email,
                 subject: emailSubject,
                 text: emailText,
                 html: emailHtml,
-                vendorId: vendor._id,
-                merchantId,
                 event: 'forgot_password_otp'
             });
         } catch (mailErr) {
@@ -128,8 +111,8 @@ export const vendorForgotPassword = async (req, res) => {
             vendor.resetPasswordExpire = undefined;
             await vendor.save();
             return res.status(502).json({
-                message: 'Could not send verification email. Please check email SMTP settings or try again later.',
-                code: 'EMAIL_SEND_FAILED'
+                message: 'Could not send verification email. Please try again later.',
+                code: mailErr.code || 'EMAIL_SEND_FAILED'
             });
         }
 

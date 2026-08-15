@@ -1027,7 +1027,15 @@ export const getPlatformSettings = async (req, res) => {
         if (!settings) {
             settings = await PlatformSetting.create({});
         }
-        res.json(settings);
+        const envConfigured = Boolean(process.env.SMTP_USER && process.env.SMTP_PASS);
+        const dbConfigured = Boolean(settings.platformSmtpUser && settings.platformSmtpPassEncrypted);
+        const json = settings.toObject();
+        delete json.platformSmtpPassEncrypted;
+        json.platformSmtpPasswordConfigured = dbConfigured;
+        json.platformSmtpConfigured = envConfigured || (settings.platformSmtpEnabled !== false && dbConfigured);
+        json.platformSmtpSource = envConfigured ? 'env' : (dbConfigured ? 'database' : 'none');
+        json.platformSmtpPasswordMasked = dbConfigured ? '••••••••••••' : '';
+        res.json(json);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -1042,7 +1050,13 @@ export const updatePlatformSettings = async (req, res) => {
         if (!settings) {
             settings = new PlatformSetting();
         }
-        const { expectedStoreIP, sshUser, sshPassword, platformName, supportEmail, adminEmail, maxStoresPerMerchant, trialDays, defaultCurrency, maintenanceMode, availablePaymentGateways, shiprocketEnabled } = req.body;
+        const {
+            expectedStoreIP, sshUser, sshPassword, platformName, supportEmail, adminEmail,
+            maxStoresPerMerchant, trialDays, defaultCurrency, maintenanceMode,
+            availablePaymentGateways, shiprocketEnabled,
+            platformSmtpEnabled, platformSmtpHost, platformSmtpPort,
+            platformSmtpUser, platformSmtpPassword, platformSmtpFrom
+        } = req.body;
 
         if (expectedStoreIP !== undefined) settings.expectedStoreIP = expectedStoreIP.trim();
         if (sshUser !== undefined) settings.sshUser = sshUser.trim();
@@ -1063,9 +1077,44 @@ export const updatePlatformSettings = async (req, res) => {
         if (shiprocketEnabled !== undefined) {
             settings.shiprocketEnabled = Boolean(shiprocketEnabled);
         }
+        if (platformSmtpEnabled !== undefined) {
+            settings.platformSmtpEnabled = Boolean(platformSmtpEnabled);
+        }
+        if (platformSmtpHost !== undefined) {
+            settings.platformSmtpHost = String(platformSmtpHost || 'smtp-relay.brevo.com').trim();
+        }
+        if (platformSmtpPort !== undefined) {
+            settings.platformSmtpPort = Number(platformSmtpPort) || 587;
+        }
+        if (platformSmtpUser !== undefined) {
+            settings.platformSmtpUser = String(platformSmtpUser || '').trim();
+        }
+        if (platformSmtpFrom !== undefined) {
+            settings.platformSmtpFrom = String(platformSmtpFrom || '').trim();
+        }
+        if (platformSmtpPassword && !String(platformSmtpPassword).includes('•')) {
+            const { encrypt } = await import('../../../shared/encryption.js');
+            settings.platformSmtpPassEncrypted = encrypt(String(platformSmtpPassword).trim());
+        }
 
         await settings.save();
-        res.json(settings);
+
+        try {
+            const { clearPlatformSmtpCache } = await import('../../../shared/emailResolver.js');
+            clearPlatformSmtpCache();
+        } catch {
+            /* optional */
+        }
+
+        const envConfigured = Boolean(process.env.SMTP_USER && process.env.SMTP_PASS);
+        const dbConfigured = Boolean(settings.platformSmtpUser && settings.platformSmtpPassEncrypted);
+        const json = settings.toObject();
+        delete json.platformSmtpPassEncrypted;
+        json.platformSmtpPasswordConfigured = dbConfigured;
+        json.platformSmtpConfigured = envConfigured || (settings.platformSmtpEnabled !== false && dbConfigured);
+        json.platformSmtpSource = envConfigured ? 'env' : (dbConfigured ? 'database' : 'none');
+        json.platformSmtpPasswordMasked = dbConfigured ? '••••••••••••' : '';
+        res.json(json);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

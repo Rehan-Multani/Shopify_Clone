@@ -636,8 +636,8 @@ export const ContactFormSection = ({ settings = {} }) => {
                     />
                     <button 
                         type="submit"
-                        className="w-full py-3.5 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-md hover:opacity-90 active:scale-95 transition-premium cursor-pointer btn-premium"
-                        style={{ backgroundColor: 'var(--color-primary)', borderRadius: 'var(--border-radius)' }}
+                        className="w-full py-3.5 rounded-xl text-xs font-black uppercase tracking-wider shadow-md hover:opacity-90 active:scale-95 transition-premium cursor-pointer btn-premium btn-on-primary"
+                        style={{ backgroundColor: 'var(--color-primary)', borderRadius: 'var(--border-radius)', color: 'var(--color-on-primary)' }}
                     >
                         Send Inquiry
                     </button>
@@ -703,7 +703,7 @@ export const PricingTableSection = ({ settings = {}, blocks = [] }) => {
                             style={{ borderRadius: 'var(--border-radius)' }}
                         >
                             {isPopular && (
-                                <span className="absolute -top-3.5 right-6 px-3 py-1 bg-[var(--color-primary)] text-white text-[8px] font-black uppercase tracking-wider rounded-full shadow-sm">
+                                <span className="absolute -top-3.5 right-6 px-3 py-1 bg-[var(--color-primary)] text-[8px] font-black uppercase tracking-wider rounded-full shadow-sm" style={{ color: 'var(--color-on-primary)' }}>
                                     Most Popular
                                 </span>
                             )}
@@ -724,8 +724,8 @@ export const PricingTableSection = ({ settings = {}, blocks = [] }) => {
                             <button 
                                 className="w-full py-3 rounded-xl text-xs font-black uppercase tracking-wider shadow transition-premium btn-premium"
                                 style={{ 
-                                    backgroundColor: isPopular ? 'var(--color-primary)' : 'var(--color-secondary)',
-                                    color: isPopular ? '#ffffff' : 'var(--color-primary)',
+                                    backgroundColor: isPopular ? 'var(--color-primary)' : 'transparent',
+                                    color: isPopular ? 'var(--color-on-primary)' : 'var(--color-primary)',
                                     border: isPopular ? 'none' : '1px solid var(--color-primary)',
                                     borderRadius: 'var(--border-radius)' 
                                 }}

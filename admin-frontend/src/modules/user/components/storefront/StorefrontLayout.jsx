@@ -518,7 +518,7 @@ const StorefrontLayout = ({ children, cartCount, customer, onLogout, storeInfo }
                                                         borderRadius: 'var(--border-radius, 10px)',
                                                     }}
                                                 />
-                                                <button className="bg-[var(--color-accent,var(--color-primary))] text-white text-[10px] px-4 py-2.5 font-bold uppercase tracking-widest btn-premium" style={{ borderRadius: 'var(--border-radius, 10px)' }}>
+                                                <button className="bg-[var(--color-accent,var(--color-primary))] text-[10px] px-4 py-2.5 font-bold uppercase tracking-widest btn-premium" style={{ borderRadius: 'var(--border-radius, 10px)', color: 'var(--color-on-accent, #fff)' }}>
                                                     Join
                                                 </button>
                                             </div>

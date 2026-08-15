@@ -12,7 +12,8 @@ import {
     serializeGatewayDoc,
     buildGatewayClient,
     getOrCreateMarketplaceSettings,
-    getPlatformAvailableGateways
+    getPlatformAvailableGateways,
+    promoteLegacyLiveGateways,
 } from '../services/gatewayResolver.js';
 
 function getVendorId(req) {
@@ -53,18 +54,24 @@ async function mergeCredentials(gateway, existingEncrypted, incoming = {}, exist
     const existingWebhook = existingWebhookEncrypted ? decrypt(existingWebhookEncrypted) : '';
 
     const merged = { ...existing };
+    let credentialsChanged = false;
+    let webhookSecretChanged = false;
+    let nextWebhook = existingWebhook || '';
+
     for (const [key, value] of Object.entries(incoming || {})) {
         if (value === undefined || value === null) continue;
         const str = String(value);
         if (!str || str.includes('•')) continue;
+        if (key === 'webhookSecret') {
+            if (str !== existingWebhook) webhookSecretChanged = true;
+            nextWebhook = str;
+            continue;
+        }
+        if (String(existing[key] || '') !== str) credentialsChanged = true;
         merged[key] = str;
     }
 
-    let webhookSecret = existingWebhook || merged.webhookSecret || '';
-    if (incoming.webhookSecret && !String(incoming.webhookSecret).includes('•')) {
-        webhookSecret = String(incoming.webhookSecret);
-        merged.webhookSecret = webhookSecret;
-    }
+    delete merged.webhookSecret;
 
     const meta = GATEWAY_META[gateway];
     const requiredKeys = (meta?.credentialFields || []).filter((f) => f.required).map((f) => f.key);
@@ -72,9 +79,11 @@ async function mergeCredentials(gateway, existingEncrypted, incoming = {}, exist
 
     return {
         encryptedCredentials: encryptCredentials(merged),
-        encryptedWebhook: webhookSecret ? encrypt(webhookSecret) : '',
+        encryptedWebhook: nextWebhook ? encrypt(nextWebhook) : '',
         plainCredentials: merged,
-        hasAllRequired
+        hasAllRequired,
+        credentialsChanged: credentialsChanged || webhookSecretChanged,
+        webhookSecretChanged,
     };
 }
 
@@ -99,6 +108,8 @@ export const listVendorGateways = async (req, res) => {
         const vendor = await Vendor.findById(vendorId).lean();
         if (!vendor) return res.status(404).json({ message: 'Vendor not found' });
 
+        await promoteLegacyLiveGateways(VendorPaymentGateway, { vendorId });
+
         const settings = await getOrCreateMarketplaceSettings(vendor.merchant, vendor.store);
         const platformAvailable = await getPlatformAvailableGateways();
 
@@ -122,7 +133,7 @@ export const listVendorGateways = async (req, res) => {
                     gateway: gw,
                     name: meta.name,
                     description: meta.description,
-                    environment: 'sandbox',
+                    environment: 'production',
                     currency: 'INR',
                     enabled: false,
                     isDefault: false,
@@ -146,7 +157,7 @@ export const listVendorGateways = async (req, res) => {
             marketplace: {
                 paymentMode: 'vendor',
                 allowVendorGateway: true,
-                allowVendorGatewayFallback: true
+                allowVendorGatewayFallback: false
             },
             meta: Object.fromEntries(permitted.map((g) => [g, GATEWAY_META[g]]))
         });
@@ -177,18 +188,15 @@ export const upsertVendorGateway = async (req, res) => {
         }
 
         const {
-            environment = 'sandbox',
-            currency,
             enabled,
             credentials = {},
-            webhookSecret
         } = req.body;
 
         let doc = await VendorPaymentGateway.findOne({ vendorId, gateway });
         const merged = await mergeCredentials(
             gateway,
             doc?.credentials || '',
-            { ...credentials, ...(webhookSecret !== undefined ? { webhookSecret } : {}) },
+            credentials,
             doc?.webhookSecret || ''
         );
 
@@ -203,22 +211,36 @@ export const upsertVendorGateway = async (req, res) => {
             }
         }
 
+        const identityChanged = merged.credentialsChanged || !doc;
         const status = merged.hasAllRequired ? 'configured' : 'not_configured';
         const payload = {
             vendorId,
             merchantId: vendor.merchant,
             storeId: vendor.store || null,
             gateway,
-            environment: environment === 'production' ? 'production' : 'sandbox',
+            environment: 'production',
             currency: 'INR',
             credentials: merged.encryptedCredentials,
             webhookSecret: merged.encryptedWebhook,
-            status
+            status,
+            enabled: false,
         };
-        if (typeof enabled === 'boolean') payload.enabled = enabled && merged.hasAllRequired;
+
+        if (typeof enabled === 'boolean' && enabled === false) {
+            payload.enabled = false;
+        } else if (typeof enabled === 'boolean' && enabled === true) {
+            if (!identityChanged && doc?.status === 'verified' && merged.hasAllRequired) {
+                payload.enabled = true;
+                payload.status = 'verified';
+            }
+        }
 
         if (doc) {
             Object.assign(doc, payload);
+            if (identityChanged && merged.hasAllRequired) {
+                doc.status = 'configured';
+                doc.enabled = false;
+            }
             await doc.save();
             await writeAudit({
                 actorId: vendorId,
@@ -231,7 +253,7 @@ export const upsertVendorGateway = async (req, res) => {
         } else {
             doc = await VendorPaymentGateway.create({
                 ...payload,
-                enabled: typeof enabled === 'boolean' ? enabled && merged.hasAllRequired : false
+                enabled: false
             });
             await writeAudit({
                 actorId: vendorId,
@@ -243,7 +265,13 @@ export const upsertVendorGateway = async (req, res) => {
             });
         }
 
-        res.json({ gateway: await toPublicGateway(doc), message: 'Vendor payment gateway saved successfully' });
+        const needsTest = !doc.enabled || doc.status !== 'verified';
+        res.json({
+            gateway: await toPublicGateway(doc),
+            message: needsTest
+                ? 'Credentials saved. Use Test & activate to enable checkout payments.'
+                : 'Vendor payment gateway saved successfully',
+        });
     } catch (error) {
         console.error('upsertVendorGateway:', error);
         res.status(500).json({ message: error.message || 'Failed to save vendor payment gateway' });
@@ -299,7 +327,13 @@ export const testVendorGateway = async (req, res) => {
 
         doc.lastTestedAt = new Date();
         doc.lastTestResult = { success: result.success, message: result.message };
-        doc.status = result.success ? 'verified' : 'error';
+        if (result.success) {
+            doc.status = 'verified';
+            doc.enabled = true;
+        } else {
+            doc.status = 'error';
+            doc.enabled = false;
+        }
         await doc.save();
 
         await writeAudit({
@@ -320,7 +354,11 @@ export const testVendorGateway = async (req, res) => {
             });
         }
 
-        res.json({ success: true, message: result.message, gateway: await toPublicGateway(doc) });
+        res.json({
+            success: true,
+            message: result.message || 'Gateway verified and activated for checkout',
+            gateway: await toPublicGateway(doc),
+        });
     } catch (error) {
         console.error('testVendorGateway:', error);
         res.status(500).json({
@@ -328,5 +366,41 @@ export const testVendorGateway = async (req, res) => {
             message: error.message || 'Test connection failure',
             code: 'TEST_CONNECTION_FAILURE'
         });
+    }
+};
+
+export const disableVendorGateway = async (req, res) => {
+    try {
+        const ctx = await getVendorContext(req);
+        if (ctx.error) return res.status(ctx.error.status).json(ctx.error);
+
+        const gateway = String(req.params.gateway || '').toLowerCase();
+        if (!isSupportedGateway(gateway)) {
+            return res.status(400).json({ message: 'Unsupported gateway' });
+        }
+
+        const doc = await VendorPaymentGateway.findOne({ vendorId: ctx.vendorId, gateway });
+        if (!doc) return res.status(404).json({ message: 'Gateway configuration not found' });
+
+        doc.enabled = false;
+        if (doc.status === 'verified') doc.status = 'configured';
+        await doc.save();
+
+        await writeAudit({
+            actorId: ctx.vendorId,
+            ownerId: ctx.vendorId,
+            gateway,
+            action: 'disable',
+            metadata: {},
+            ipAddress: getClientIp(req)
+        });
+
+        res.json({
+            message: 'Payment gateway disabled. Buyer checkout will fall back to COD if available.',
+            gateway: await toPublicGateway(doc),
+        });
+    } catch (error) {
+        console.error('disableVendorGateway:', error);
+        res.status(500).json({ message: error.message || 'Failed to disable vendor payment gateway' });
     }
 };

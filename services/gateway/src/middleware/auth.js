@@ -3,6 +3,11 @@ import jwt from 'jsonwebtoken';
 export const gatewayAuthMiddleware = async (req, res, next) => {
     const path = req.path;
     const method = req.method;
+
+    // Never trust client-supplied identity headers — only this middleware may set them after JWT verify
+    delete req.headers['x-merchant-id'];
+    delete req.headers['x-vendor-id'];
+    delete req.headers['x-admin-id'];
     
     let requiredAuth = null; // default public
     

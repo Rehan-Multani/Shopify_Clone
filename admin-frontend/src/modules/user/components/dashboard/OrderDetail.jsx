@@ -58,6 +58,59 @@ const OrderDetail = ({ orderId }) => {
         e.preventDefault();
         try {
             setUpdating(true);
+
+            // Provider refund when marking paid online order as refunded
+            if (
+                paymentStatus === 'refunded'
+                && order?.paymentStatus === 'paid'
+                && order?.paymentMethod
+                && String(order.paymentMethod).toLowerCase() !== 'cod'
+            ) {
+                const refundRes = await fetch(`${GATEWAY_URL}/checkout/refund-payment`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        orderId,
+                        reason: trackingDescription.trim() || 'Refund from order dashboard',
+                    }),
+                });
+                const refundData = await refundRes.json();
+                if (!refundRes.ok) {
+                    showToast(refundData.message || 'Gateway refund failed', 'error');
+                    return;
+                }
+                showToast(refundData.message || 'Refund processed via payment gateway');
+                if (refundData.order) {
+                    setOrder(refundData.order);
+                    setPaymentStatus(refundData.order.paymentStatus || 'refunded');
+                    setStatus(refundData.order.status || status);
+                } else {
+                    await fetchOrder();
+                }
+                // Still sync order status fields (accepted/cancelled etc.) if changed
+                if (status !== order.status) {
+                    const res = await fetch(`${GATEWAY_URL}/orders/${orderId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${token}`,
+                        },
+                        body: JSON.stringify({
+                            status,
+                            paymentStatus: 'refunded',
+                            trackingDescription: trackingDescription.trim() || undefined,
+                        }),
+                    });
+                    const data = await res.json();
+                    if (res.ok) setOrder(data);
+                }
+                setTrackingDescription('');
+                return;
+            }
+
             const res = await fetch(`${GATEWAY_URL}/orders/${orderId}`, {
                 method: 'PUT',
                 headers: {
@@ -79,7 +132,7 @@ const OrderDetail = ({ orderId }) => {
                 showToast(data.message || 'Failed to update order', 'error');
             }
         } catch (err) {
-            console.error('Error updating order:', err);
+            console.error('Error updating order details:', err);
             showToast('Network error while updating', 'error');
         } finally {
             setUpdating(false);
@@ -243,8 +296,14 @@ const OrderDetail = ({ orderId }) => {
                                 >
                                     <option value="pending">Pending</option>
                                     <option value="paid">Paid</option>
-                                    <option value="refunded">Refunded</option>
+                                    <option value="failed">Failed</option>
+                                    <option value="refunded">Refunded (provider refund)</option>
                                 </select>
+                                {order?.paymentStatus === 'paid' && order?.paymentMethod && String(order.paymentMethod).toLowerCase() !== 'cod' && (
+                                    <p className="text-[10px] text-amber-700 font-semibold mt-1.5 leading-relaxed">
+                                        Choosing Refunded runs a real {String(order.paymentMethod).toUpperCase()} refund to the customer.
+                                    </p>
+                                )}
                             </div>
 
                             <div>
