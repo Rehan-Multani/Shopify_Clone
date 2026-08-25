@@ -4,7 +4,7 @@
   "description": "Root runner for Storify microservices",
   "type": "module",
   "scripts": {
-    "dev": "node start.js"
+    "dev": "node init && node start.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
